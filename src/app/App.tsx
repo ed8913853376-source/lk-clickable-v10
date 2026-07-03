@@ -2172,13 +2172,16 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
 
       {/* Balance: collapses smoothly when sidebar navigation scrolls */}
       <div className="sidebar-collapse-zone px-3 py-3 border-b border-slate-100 shrink-0">
-        <div className="bg-slate-50 rounded-lg border border-slate-200 transition-all duration-300 ease-out overflow-hidden" style={{ padding: compactPad }}>
+        <div
+          className={`transition-all duration-300 ease-out overflow-hidden ${compact ? "bg-transparent border-transparent shadow-none" : "bg-slate-50 rounded-lg border border-slate-200"}`}
+          style={{ padding: compact ? 0 : compactPad }}
+        >
           <div style={hideStyle} aria-hidden={compact}>
             <p className="text-xs text-slate-400 mb-1.5">Баланс и часы</p>
             <p className="text-xl font-extrabold text-slate-900 mb-3">23 791 ₽</p>
           </div>
           <button
-            className="w-full bg-slate-900 text-white text-sm font-semibold rounded-lg py-2.5 hover:bg-slate-800 transition-all duration-300 cursor-pointer"
+            className={`w-full bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-all duration-300 cursor-pointer ${compact ? "py-3 px-3 shadow-sm" : "py-2.5"}`}
             onClick={() => onChange("billing")}
           >
             {compact ? "Пополнить / оплатить · 23 791 ₽" : "Пополнить / оплатить"}
