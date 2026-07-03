@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Home, Building2, MessageSquare, Briefcase, FileText, CreditCard,
   FileCheck, FileSpreadsheet, Server, Database, Key, Monitor,
@@ -2027,6 +2027,7 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
   current: Screen; onChange: (s: Screen) => void; cpName: string; cpInn: string; mobileOpen?: boolean; onClose?: () => void;
 }) {
   const [sidebarProgress, setSidebarProgress] = useState(0);
+  const navRef = useRef<HTMLElement | null>(null);
   const compact = sidebarProgress > 0.18;
   const hideStyle = {
     opacity: Math.max(0, 1 - sidebarProgress * 1.35),
@@ -2038,15 +2039,51 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
   const compactPad = `${Math.round(16 - sidebarProgress * 6)}px`;
   const compactGap = `${Math.round(12 - sidebarProgress * 7)}px`;
 
+  const setSmoothSidebarProgress = (next: number) => {
+    setSidebarProgress(Math.min(1, Math.max(0, next)));
+  };
+
+  const handleSidebarWheel: React.WheelEventHandler<HTMLElement> = (e) => {
+    const navTop = navRef.current?.scrollTop ?? 0;
+    const delta = e.deltaY;
+
+    // 1) При прокрутке вниз сначала плавно сжимаем верхние карточки.
+    // 2) Только после полного сжатия даем прокручиваться меню.
+    // 3) При прокрутке вверх, если меню уже в самом верху, плавно раскрываем карточки обратно.
+    if (delta > 0 && sidebarProgress < 1) {
+      e.preventDefault();
+      setSmoothSidebarProgress(sidebarProgress + Math.min(0.22, delta / 260));
+      return;
+    }
+
+    if (delta < 0 && navTop <= 0 && sidebarProgress > 0) {
+      e.preventDefault();
+      setSmoothSidebarProgress(sidebarProgress + Math.max(-0.22, delta / 260));
+    }
+  };
+
   const handleNavScroll: React.UIEventHandler<HTMLElement> = (e) => {
     const y = e.currentTarget.scrollTop;
-    setSidebarProgress(Math.min(1, Math.max(0, y / 96)));
+    if (y > 6 && sidebarProgress < 1) {
+      setSmoothSidebarProgress(1);
+    }
   };
+
+  useEffect(() => {
+    const handlePageScroll = () => {
+      // Если пользователь прокручивает основную страницу, левая колонка тоже должна перейти в компактный режим.
+      if (window.scrollY > 20) setSmoothSidebarProgress(1);
+      if (window.scrollY <= 2 && (navRef.current?.scrollTop ?? 0) <= 0) setSmoothSidebarProgress(0);
+    };
+    window.addEventListener("scroll", handlePageScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handlePageScroll);
+  }, []);
 
   return (
     <aside
       className={`lk-sidebar-scroll sidebar-scrollbar-hidden select-none w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen overflow-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden fixed lg:sticky top-0 left-0 z-50 transform transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as any}
+      onWheel={handleSidebarWheel}
     >
       {/* Brand */}
       <div className="px-4 py-4 border-b border-slate-100 shrink-0">
@@ -2066,7 +2103,7 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
 
       {/* Profile: collapses smoothly when sidebar navigation scrolls */}
       <div className="sidebar-collapse-zone px-3 py-3 border-b border-slate-100 shrink-0">
-        <div className="bg-slate-50 rounded-lg border border-slate-200 transition-all duration-300 ease-out" style={{ padding: compactPad }}>
+        <div className="bg-slate-50 rounded-lg border border-slate-200 transition-all duration-300 ease-out overflow-hidden" style={{ padding: compactPad }}>
           <div className="flex items-center justify-between gap-2" style={{ marginBottom: compact ? 0 : compactGap, transition: "margin 260ms ease" }}>
             <div className="min-w-0">
               <p className="text-base font-bold text-slate-900 truncate">{cpName}</p>
@@ -2099,7 +2136,7 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
 
       {/* Balance: collapses smoothly when sidebar navigation scrolls */}
       <div className="sidebar-collapse-zone px-3 py-3 border-b border-slate-100 shrink-0">
-        <div className="bg-slate-50 rounded-lg border border-slate-200 transition-all duration-300 ease-out" style={{ padding: compactPad }}>
+        <div className="bg-slate-50 rounded-lg border border-slate-200 transition-all duration-300 ease-out overflow-hidden" style={{ padding: compactPad }}>
           <div style={hideStyle} aria-hidden={compact}>
             <p className="text-xs text-slate-400 mb-1.5">Баланс и часы</p>
             <p className="text-xl font-extrabold text-slate-900 mb-3">23 791 ₽</p>
@@ -2119,7 +2156,7 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
       </div>
 
       {/* Nav */}
-      <nav className="lk-sidebar-scroll flex-1 min-h-0 overflow-y-auto px-3 py-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" onScroll={handleNavScroll}>
+      <nav ref={navRef} className="lk-sidebar-scroll flex-1 min-h-0 overflow-y-auto px-3 py-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" onScroll={handleNavScroll}>
         {navGroups.map(group => (
           <div key={group.label} className="mb-2">
             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 px-2 py-2.5">{group.label}</p>
