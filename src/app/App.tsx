@@ -2026,13 +2026,30 @@ const navGroups = [
 function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose }: {
   current: Screen; onChange: (s: Screen) => void; cpName: string; cpInn: string; mobileOpen?: boolean; onClose?: () => void;
 }) {
+  const [sidebarProgress, setSidebarProgress] = useState(0);
+  const compact = sidebarProgress > 0.18;
+  const hideStyle = {
+    opacity: Math.max(0, 1 - sidebarProgress * 1.35),
+    maxHeight: `${Math.max(0, 150 * (1 - sidebarProgress))}px`,
+    transform: `translateY(${-8 * sidebarProgress}px)`,
+    overflow: "hidden",
+    transition: "opacity 220ms ease, max-height 260ms ease, transform 260ms ease, margin 260ms ease",
+  } as React.CSSProperties;
+  const compactPad = `${Math.round(16 - sidebarProgress * 6)}px`;
+  const compactGap = `${Math.round(12 - sidebarProgress * 7)}px`;
+
+  const handleNavScroll: React.UIEventHandler<HTMLElement> = (e) => {
+    const y = e.currentTarget.scrollTop;
+    setSidebarProgress(Math.min(1, Math.max(0, y / 96)));
+  };
+
   return (
     <aside
-      className={`lk-sidebar-scroll sidebar-scrollbar-hidden select-none w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden fixed lg:sticky top-0 left-0 z-50 transform transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+      className={`lk-sidebar-scroll sidebar-scrollbar-hidden select-none w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen overflow-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden fixed lg:sticky top-0 left-0 z-50 transform transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as any}
     >
       {/* Brand */}
-      <div className="px-4 py-4 border-b border-slate-100">
+      <div className="px-4 py-4 border-b border-slate-100 shrink-0">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
@@ -2047,46 +2064,62 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
         </div>
       </div>
 
-      {/* Profile */}
-      <div className="px-3 py-3 border-b border-slate-100">
-        <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-          <p className="text-base font-bold text-slate-900">{cpName}</p>
-          <p className="text-xs text-slate-500 mb-3">ООО · ИНН <Mono>{cpInn}</Mono></p>
-          <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
-            <span>Менеджер</span><span className="font-semibold text-slate-700">Алексей</span>
-          </div>
-          <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
-            <span>Инженер</span><span className="font-semibold text-slate-700">Иван</span>
-          </div>
-          <div className="rounded-md bg-white border border-slate-200 p-2 mb-3">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Текущий пользователь</p>
-            <div className="flex items-center justify-between gap-2">
-              <Mono cls="text-[11px] truncate">maria@edart.local</Mono>
-              <CopyButton value="maria@edart.local" label="" />
+      {/* Profile: collapses smoothly when sidebar navigation scrolls */}
+      <div className="sidebar-collapse-zone px-3 py-3 border-b border-slate-100 shrink-0">
+        <div className="bg-slate-50 rounded-lg border border-slate-200 transition-all duration-300 ease-out" style={{ padding: compactPad }}>
+          <div className="flex items-center justify-between gap-2" style={{ marginBottom: compact ? 0 : compactGap, transition: "margin 260ms ease" }}>
+            <div className="min-w-0">
+              <p className="text-base font-bold text-slate-900 truncate">{cpName}</p>
+              <p className="text-[11px] text-slate-400 truncate" style={{ opacity: compact ? 1 : 0, maxHeight: compact ? 18 : 0, overflow: "hidden", transition: "opacity 220ms ease, max-height 260ms ease" }}>
+                текущий клиент
+              </p>
             </div>
+            {compact && <Badge v="green" sm>активен</Badge>}
           </div>
-          <Badge v="green" dot>договор активен</Badge>
+
+          <div style={hideStyle} aria-hidden={compact}>
+            <p className="text-xs text-slate-500 mb-3">ООО · ИНН <Mono>{cpInn}</Mono></p>
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+              <span>Менеджер</span><span className="font-semibold text-slate-700">Алексей</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
+              <span>Инженер</span><span className="font-semibold text-slate-700">Иван</span>
+            </div>
+            <div className="rounded-md bg-white border border-slate-200 p-2 mb-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Текущий пользователь</p>
+              <div className="flex items-center justify-between gap-2">
+                <Mono cls="text-[11px] truncate">maria@edart.local</Mono>
+                <CopyButton value="maria@edart.local" label="" />
+              </div>
+            </div>
+            <Badge v="green" dot>договор активен</Badge>
+          </div>
         </div>
       </div>
 
-      {/* Balance */}
-      <div className="px-3 py-3 border-b border-slate-100">
-        <div className="bg-slate-50 rounded-lg border border-slate-200 p-4">
-          <p className="text-xs text-slate-400 mb-1.5">Баланс и часы</p>
-          <p className="text-xl font-extrabold text-slate-900 mb-3">23 791 ₽</p>
+      {/* Balance: collapses smoothly when sidebar navigation scrolls */}
+      <div className="sidebar-collapse-zone px-3 py-3 border-b border-slate-100 shrink-0">
+        <div className="bg-slate-50 rounded-lg border border-slate-200 transition-all duration-300 ease-out" style={{ padding: compactPad }}>
+          <div style={hideStyle} aria-hidden={compact}>
+            <p className="text-xs text-slate-400 mb-1.5">Баланс и часы</p>
+            <p className="text-xl font-extrabold text-slate-900 mb-3">23 791 ₽</p>
+          </div>
           <button
-            className="w-full bg-slate-900 text-white text-sm font-semibold rounded-lg py-2.5 hover:bg-slate-800 transition-colors cursor-pointer mb-3"
-            onClick={() => onChange("billing")}>
-            Пополнить / оплатить
+            className="w-full bg-slate-900 text-white text-sm font-semibold rounded-lg py-2.5 hover:bg-slate-800 transition-all duration-300 cursor-pointer"
+            onClick={() => onChange("billing")}
+          >
+            {compact ? "Пополнить / оплатить · 23 791 ₽" : "Пополнить / оплатить"}
           </button>
-          <div className="flex items-center justify-between text-xs text-slate-500">
-            <span>Остаток часов</span><span className="font-bold text-slate-700">12 из 20</span>
+          <div style={hideStyle} aria-hidden={compact}>
+            <div className="flex items-center justify-between text-xs text-slate-500 mt-3">
+              <span>Остаток часов</span><span className="font-bold text-slate-700">12 из 20</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="lk-sidebar-scroll flex-1 px-3 py-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+      <nav className="lk-sidebar-scroll flex-1 min-h-0 overflow-y-auto px-3 py-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden" onScroll={handleNavScroll}>
         {navGroups.map(group => (
           <div key={group.label} className="mb-2">
             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 px-2 py-2.5">{group.label}</p>
