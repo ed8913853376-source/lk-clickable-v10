@@ -1,0 +1,9 @@
+﻿node_modules/
+dist/
+*.mov
+*.mp4
+*.zip
+!lk_clickable_v10.zip
+!lk_clickable_v10_netlify.zip
+.env
+.DS_Store
