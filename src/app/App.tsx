@@ -2027,7 +2027,9 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
   current: Screen; onChange: (s: Screen) => void; cpName: string; cpInn: string; mobileOpen?: boolean; onClose?: () => void;
 }) {
   const [sidebarProgress, setSidebarProgress] = useState(0);
+  const sidebarRef = useRef<HTMLElement | null>(null);
   const navRef = useRef<HTMLElement | null>(null);
+  const sidebarProgressRef = useRef(0);
   const compact = sidebarProgress > 0.18;
   const hideStyle = {
     opacity: Math.max(0, 1 - sidebarProgress * 1.35),
@@ -2040,26 +2042,47 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
   const compactGap = `${Math.round(12 - sidebarProgress * 7)}px`;
 
   const setSmoothSidebarProgress = (next: number) => {
-    setSidebarProgress(Math.min(1, Math.max(0, next)));
+    const value = Math.min(1, Math.max(0, next));
+    sidebarProgressRef.current = value;
+    setSidebarProgress(value);
   };
 
-  const handleSidebarWheel: React.WheelEventHandler<HTMLElement> = (e) => {
-    const navTop = navRef.current?.scrollTop ?? 0;
-    const delta = e.deltaY;
+  useEffect(() => {
+    sidebarProgressRef.current = sidebarProgress;
+  }, [sidebarProgress]);
 
-    // 1) При прокрутке вниз сначала плавно сжимаем верхние карточки.
-    // 2) Только после полного сжатия даем прокручиваться меню.
-    // 3) При прокрутке вверх, если меню уже в самом верху, плавно раскрываем карточки обратно.
-    if (delta > 0 && sidebarProgress < 1) {
-      e.preventDefault();
-      setSmoothSidebarProgress(sidebarProgress + Math.min(0.22, delta / 260));
+  const scrollSidebarFromAnyPoint = (delta: number, preventDefault: () => void) => {
+    const nav = navRef.current;
+    const currentProgress = sidebarProgressRef.current;
+    const navTop = nav?.scrollTop ?? 0;
+
+    // Колесико должно работать с любого места левой колонки:
+    // логотип, карточка клиента, баланс, пустые отступы и само меню.
+    // Поэтому после сжатия карточек прокрутку меню выполняем вручную.
+    if (delta > 0) {
+      preventDefault();
+      if (currentProgress < 1) {
+        setSmoothSidebarProgress(currentProgress + Math.min(0.2, delta / 300));
+        return;
+      }
+      if (nav) nav.scrollTop += delta;
       return;
     }
 
-    if (delta < 0 && navTop <= 0 && sidebarProgress > 0) {
-      e.preventDefault();
-      setSmoothSidebarProgress(sidebarProgress + Math.max(-0.22, delta / 260));
+    if (delta < 0) {
+      preventDefault();
+      if (nav && navTop > 0) {
+        nav.scrollTop += delta;
+        return;
+      }
+      if (currentProgress > 0) {
+        setSmoothSidebarProgress(currentProgress + Math.max(-0.2, delta / 300));
+      }
     }
+  };
+
+  const handleSidebarWheel: React.WheelEventHandler<HTMLElement> = (e) => {
+    scrollSidebarFromAnyPoint(e.deltaY, () => e.preventDefault());
   };
 
   const handleNavScroll: React.UIEventHandler<HTMLElement> = (e) => {
@@ -2079,11 +2102,24 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
     return () => window.removeEventListener("scroll", handlePageScroll);
   }, []);
 
+  useEffect(() => {
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+
+    const handleNativeWheel = (event: WheelEvent) => {
+      scrollSidebarFromAnyPoint(event.deltaY, () => event.preventDefault());
+    };
+
+    // Нужен именно passive:false, иначе браузер не даст остановить общий скролл страницы.
+    sidebar.addEventListener("wheel", handleNativeWheel, { passive: false, capture: true });
+    return () => sidebar.removeEventListener("wheel", handleNativeWheel, { capture: true } as AddEventListenerOptions);
+  }, []);
+
   return (
     <aside
+      ref={sidebarRef}
       className={`lk-sidebar-scroll sidebar-scrollbar-hidden select-none w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen overflow-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden fixed lg:sticky top-0 left-0 z-50 transform transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as any}
-      onWheel={handleSidebarWheel}
     >
       {/* Brand */}
       <div className="px-4 py-4 border-b border-slate-100 shrink-0">
