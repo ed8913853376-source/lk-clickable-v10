@@ -247,8 +247,8 @@ function InfoGrid({ items }: { items: { label: string; value: React.ReactNode }[
 // ─── Modals ───────────────────────────────────────────────────────────────────
 function Overlay({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-start justify-center p-6 overflow-y-auto" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-2xl my-8 relative">{children}</div>
+    <div className="fixed inset-0 bg-slate-900/40 z-50 flex items-start justify-center p-4 sm:p-6 overflow-y-auto" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="w-full max-w-3xl my-4 sm:my-8 relative">{children}</div>
     </div>
   );
 }
@@ -458,8 +458,27 @@ const basesList = ["1С Бухгалтерия", "1С УНФ", "1С ЗУП"];
 const sectionAccess = ["Финансы", "Документы", "Обращения", "Заказы", "Базы 1С", "Серверы", "Лицензии"];
 
 const FORM_SPECS: Record<ActionKey, FormSpec> = {
-  counterparty: { title: "Добавить контрагента", subtitle: "Только реквизиты и контакты организации. Без полей базы 1С, сервера, лицензий или товара.", result: "Изменения отправлены на согласование", buttons: ["Сохранить контрагента", "Отмена"], fields: [
-    { label: "Тип контрагента", type: "select", options: ["Юридическое лицо", "ИП", "Физическое лицо"] }, { label: "Название организации", placeholder: "ООО Ромашка" }, { label: "ИНН" }, { label: "КПП" }, { label: "ОГРН/ОГРНИП" }, { label: "Юридический адрес", full: true }, { label: "Фактический адрес", full: true }, { label: "Контактное лицо" }, { label: "Должность контактного лица" }, { label: "Телефон" }, { label: "Email для документов" }, { label: "Email для уведомлений" }, { label: "Комментарий", type: "textarea", full: true }
+  counterparty: { title: "Добавить контрагента", subtitle: "Реквизиты организации и контактные данные. Без полей базы 1С, сервера, лицензий или товара.", result: "Контрагент отправлен на проверку реквизитов", buttons: ["Сохранить контрагента", "Отмена"], fields: [
+    { label: "Тип контрагента", type: "select", options: ["Юридическое лицо", "ИП", "Физическое лицо"] },
+    { label: "Краткое название", placeholder: "ED ART" },
+    { label: "Полное юридическое наименование", placeholder: "ООО Ромашка", full: true },
+    { label: "ИНН" },
+    { label: "КПП" },
+    { label: "ОГРН / ОГРНИП" },
+    { label: "Налоговая система", type: "select", options: ["ОСНО", "УСН доходы", "УСН доходы-расходы", "Патент", "Не знаю"] },
+    { label: "Юридический адрес", full: true },
+    { label: "Фактический адрес", full: true },
+    { label: "Почтовый адрес", full: true },
+    { label: "Банк" },
+    { label: "БИК" },
+    { label: "Расчётный счёт" },
+    { label: "Корр. счёт" },
+    { label: "Контактное лицо" },
+    { label: "Должность контактного лица" },
+    { label: "Телефон" },
+    { label: "Email для документов" },
+    { label: "Email для уведомлений" },
+    { label: "Комментарий", type: "textarea", full: true }
   ]},
   user: { title: "Пользователь", subtitle: "Пользователь, логин, пароль, роль и доступы к разделам кабинета и базам 1С.", result: "Изменения отправлены на согласование", buttons: ["Сохранить пользователя", "Отправить приглашение", "Отмена"], fields: [
     { label: "ФИО" }, { label: "Email" }, { label: "Телефон" }, { label: "Должность" }, { label: "Логин" }, { label: "Пароль" }, { label: "Повтор пароля" }, { label: "Контрагент", type: "select", options: cps }, { label: "Роль", type: "select", options: ["Руководитель", "Бухгалтер", "Сотрудник", "Технический специалист", "Администратор"] }, { label: "Доступ к разделам", type: "checks", options: sectionAccess, full: true }, { label: "Доступ к базам 1С", type: "checks", options: basesList, full: true }, { label: "Комментарий", type: "textarea", full: true }
@@ -526,7 +545,7 @@ function actionFromTitle(title: string): ActionKey {
   if (t.includes("обещан")) return "promisedPayment";
   if (t.includes("документ") || t.includes("акт")) return "documents";
   if (t.includes("проект") || t.includes("сделк") || t.includes("этап") || t.includes("статус")) return "project";
-  if (t.includes("сертификат") || t.includes("промокод") || t.includes("промвода") || t.includes("промкод")) return "certificate";
+  if (t.includes("сертификат") || t.includes("промокод") || t.includes("промвода") || t.includes("промкод") || t.includes("применить код") || t.includes("код сертификата")) return "certificate";
   if (t.includes("бонус")) return "bonus";
   return "unknown";
 }
@@ -546,26 +565,28 @@ function GenericActionModal({ title, onClose }: { title: string; onClose: () => 
   const spec = key === "unknown" ? { ...FORM_SPECS.unknown, title, fields: [{ label: "Действие", readonly: title }, { label: "Комментарий", type: "textarea" as const, full: true }] } : FORM_SPECS[key];
   return (
     <Overlay onClose={onClose}>
-      <Card cls="p-6 max-w-3xl w-full">
-        <div className="flex items-start justify-between gap-4 mb-5">
+      <Card cls="max-w-3xl w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+        <div className="flex items-start justify-between gap-4 p-5 sm:p-6 pb-4 border-b border-slate-100 shrink-0">
           <div>
             <h2 className="text-xl font-bold text-slate-900">{spec.title}</h2>
             <p className="text-sm text-slate-500 mt-1">{spec.subtitle}</p>
           </div>
           <Btn v="ghost" sz="sm" onClick={onClose}><X size={16} /></Btn>
         </div>
-        {sent ? (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
-            <div className="flex items-center gap-2 font-bold"><CheckCircle2 size={18} />{spec.result}</div>
-            <p className="text-sm mt-2">Это прототипное состояние. Реальные API, 1С, Битрикс и платежи не подключены.</p>
-          </div>
-        ) : (
-          <>
-            {spec.details && <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">{spec.details.map(d => <div key={d.label} className="rounded-lg border border-blue-100 bg-blue-50/60 p-3"><p className="text-xs font-bold uppercase tracking-wider text-blue-500">{d.label}</p><p className="text-sm text-slate-800 mt-1">{d.value}</p></div>)}</div>}
-            {spec.fields && <div className="grid grid-cols-2 gap-4">{spec.fields.map(renderFormField)}</div>}
-          </>
-        )}
-        <div className="flex flex-wrap gap-2 mt-6 justify-end border-t border-slate-100 pt-4">
+        <div className="px-5 sm:px-6 py-5 overflow-y-auto lk-modal-scroll">
+          {sent ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
+              <div className="flex items-center gap-2 font-bold"><CheckCircle2 size={18} />{spec.result}</div>
+              <p className="text-sm mt-2">Это прототипное состояние. Реальные API, 1С, Битрикс и платежи не подключены.</p>
+            </div>
+          ) : (
+            <>
+              {spec.details && <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">{spec.details.map(d => <div key={d.label} className="rounded-lg border border-blue-100 bg-blue-50/60 p-3"><p className="text-xs font-bold uppercase tracking-wider text-blue-500">{d.label}</p><p className="text-sm text-slate-800 mt-1">{d.value}</p></div>)}</div>}
+              {spec.fields && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{spec.fields.map(renderFormField)}</div>}
+            </>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 justify-end border-t border-slate-100 p-4 sm:px-6 bg-white shrink-0">
           {sent ? <Btn v="default" onClick={onClose}>Закрыть</Btn> : spec.buttons.map((button, i) => {
             const isCancel = button === "Отмена" || button === "Закрыть";
             return <Btn key={button} v={isCancel ? "default" : i === 0 ? "green" : "primary"} onClick={isCancel ? onClose : () => setSent(true)}>{button}</Btn>;
@@ -1334,7 +1355,7 @@ function DocumentsScreen() {
       <Table heads={["Документ", "Дата", "Контрагент", "Сумма", ""]} rows={[
         ["Акт №188 — аренда VPS", "31.05.2026", "ED ART", "12 900 ₽", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
         ["Акт №177 — сопровождение 1С", "31.05.2026", "ED ART", "15 000 ₽", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
-        ["Приложение к договору", "01.01.2026", "ED ART", "—", <Btn v="ghost" sz="sm">Открыть КП</Btn>],
+        ["Приложение к договору", "01.01.2026", "ED ART", "—", <Btn v="ghost" sz="sm" onClick={() => openModal("Открыть КП")}>Открыть КП</Btn>],
         ["Регламент работ", "01.01.2026", "ED ART", "—", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
         ["Акт сверки за Q2 2026", "30.06.2026", "ED ART", "—", <Btn v="default" sz="sm"><Download size={13} /> Скачать</Btn>],
       ]} />
@@ -1342,16 +1363,16 @@ function DocumentsScreen() {
   );
 }
 
-function OffersScreen() {
+function OffersScreen({ openModal }: { openModal: (title: string) => void }) {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
       <Card cls="p-5">
         <SH title="Коммерческие предложения"
           sub="Клиент видит все КП: может открыть, согласовать или задать вопрос." />
         <Table heads={["№ КП", "Тема", "Статус", "Сумма", ""]} rows={[
-          ["КП-74", "Автоматизация отдела продаж", <Badge v="green">согласовано</Badge>, "380 000 ₽", <Btn v="ghost" sz="sm">Открыть КП</Btn>],
-          ["КП-81", "Расширение сервера 1С", <Badge v="blue">отправлено</Badge>, "24 900 ₽", <Btn v="default" sz="sm">Открыть КП</Btn>],
-          ["КП-83", "Резервный канал backup", <Badge v="amber">ожидает решения</Badge>, "12 500 ₽", <Btn v="default" sz="sm">Открыть КП</Btn>],
+          ["КП-74", "Автоматизация отдела продаж", <Badge v="green">согласовано</Badge>, "380 000 ₽", <Btn v="ghost" sz="sm" onClick={() => openModal("Открыть КП")}>Открыть КП</Btn>],
+          ["КП-81", "Расширение сервера 1С", <Badge v="blue">отправлено</Badge>, "24 900 ₽", <Btn v="default" sz="sm" onClick={() => openModal("Открыть КП")}>Открыть КП</Btn>],
+          ["КП-83", "Резервный канал backup", <Badge v="amber">ожидает решения</Badge>, "12 500 ₽", <Btn v="default" sz="sm" onClick={() => openModal("Открыть КП")}>Открыть КП</Btn>],
         ]} />
       </Card>
       <Card cls="p-5">
@@ -1367,9 +1388,9 @@ function OffersScreen() {
           ]} />
         </div>
         <div className="flex gap-2">
-          <Btn v="green">Согласовать КП</Btn>
-          <Btn v="default">Задать вопрос по КП</Btn>
-          <Btn v="ghost" sz="sm"><Download size={13} /> Скачать КП PDF</Btn>
+          <Btn v="green" onClick={() => openModal("Согласовать КП")}>Согласовать КП</Btn>
+          <Btn v="default" onClick={() => openModal("Задать вопрос по КП")}>Задать вопрос по КП</Btn>
+          <Btn v="ghost" sz="sm" onClick={() => openModal("Скачать КП PDF")}><Download size={13} /> Скачать КП PDF</Btn>
         </div>
       </Card>
     </div>
@@ -1395,13 +1416,13 @@ function OrdersScreen({ openDiscussion }: { openDiscussion: (r: string) => void 
             <Btn v="green" sz="sm">Продлить</Btn>],
           [<div><p className="font-semibold text-slate-800">Резервное копирование 1С</p><p className="text-xs text-slate-400">3 базы · ежедневный backup · 30 дней</p></div>,
             "500 GB хранилище", "4 500 ₽/мес", "01.08.2026", <Badge v="green">активно</Badge>,
-            <Btn v="default" sz="sm">Открыть КП</Btn>],
+            <Btn v="default" sz="sm" onClick={() => openModal("Открыть КП")}>Открыть КП</Btn>],
           [<div><p className="font-semibold text-slate-800">Лицензии / доступы 1С</p><p className="text-xs text-slate-400">10 кл. лицензий · 2 конфигурации</p></div>,
             "Бухгалтерия + УНФ", "15 000 ₽/мес", "01.08.2026", <Badge v="green">активно</Badge>,
-            <Btn v="default" sz="sm">Открыть КП</Btn>],
+            <Btn v="default" sz="sm" onClick={() => openModal("Открыть КП")}>Открыть КП</Btn>],
           [<div><p className="font-semibold text-slate-800">Облачное хранилище</p><p className="text-xs text-slate-400">для обмена файлами с поддержкой</p></div>,
             "200 GB", "3 000 ₽/мес", "15.07.2026", <Badge v="blue">активно</Badge>,
-            <Btn v="default" sz="sm">Открыть КП</Btn>],
+            <Btn v="default" sz="sm" onClick={() => openModal("Открыть КП")}>Открыть КП</Btn>],
         ]} />
       </Card>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
@@ -1614,7 +1635,7 @@ function BonusesScreen({ openModal }: { openModal: () => void }) {
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Код сертификата / промокод</span>
             <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Например: BONUS-2026" />
           </label>
-          <Btn v="green" full>Применить код</Btn>
+          <Btn v="green" full onClick={openModal}>Применить код сертификата</Btn>
         </Card>
         <Card cls="p-5">
           <SH title="Списать бонусы" />
@@ -1786,8 +1807,8 @@ function UsersScreen() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[560px]">
-              <thead><tr className="border-b border-slate-100"><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Пользователь</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Email</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Роль</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Базы</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Статус</th></tr></thead>
-              <tbody>{users.map(u => <tr key={u.email} onClick={() => setSelected(u)} className={`border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${selected.email === u.email ? "bg-blue-50" : ""}`}><td className="py-3 pr-4 font-semibold text-slate-800">{u.name}</td><td className="py-3 pr-4"><Mono>{u.email}</Mono></td><td className="py-3 pr-4">{u.role}</td><td className="py-3 pr-4">{u.bases}</td><td className="py-3 pr-4">{u.status}</td></tr>)}</tbody>
+              <thead><tr className="border-b border-slate-100"><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Пользователь</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Email</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Роль</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Базы</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Статус</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2"></th></tr></thead>
+              <tbody>{users.map(u => <tr key={u.email} onClick={() => { setSelected(u); setPassword("EdArt-2026!"); setRepeat("EdArt-2026!"); }} className={`border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${selected.email === u.email ? "bg-blue-50" : ""}`}><td className="py-3 pr-4 font-semibold text-slate-800">{u.name}</td><td className="py-3 pr-4"><Mono>{u.email}</Mono></td><td className="py-3 pr-4">{u.role}</td><td className="py-3 pr-4">{u.bases}</td><td className="py-3 pr-4">{u.status}</td><td className="py-3 pr-4"><Btn v="ghost" sz="sm">Открыть</Btn></td></tr>)}</tbody>
             </table>
           </div>
         </Card>
@@ -1845,6 +1866,7 @@ function KnowledgeScreen() {
     { title: "ЭДО в 1С: первичная настройка", tags: ["1С", "ЭДО"], views: 201, text: "Подготовьте сертификат, данные оператора ЭДО и список организаций, для которых нужен обмен." },
   ];
   const [selected, setSelected] = useState(articles[0]);
+  const [articleOpen, setArticleOpen] = useState(false);
   return (
     <div className="space-y-5">
       <Card cls="p-5">
@@ -1860,7 +1882,7 @@ function KnowledgeScreen() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {articles.map((a, i) => (
-            <button key={i} onClick={() => setSelected(a)} className={`text-left bg-slate-50 rounded-lg border p-4 hover:border-slate-300 transition-colors cursor-pointer ${selected.title === a.title ? "border-slate-900 ring-1 ring-slate-900" : "border-slate-100"}`}>
+            <button key={i} onClick={() => { setSelected(a); setArticleOpen(true); }} className={`text-left bg-slate-50 rounded-lg border p-4 hover:border-slate-300 transition-colors cursor-pointer ${selected.title === a.title ? "border-slate-900 ring-1 ring-slate-900" : "border-slate-100"}`}>
               <h3 className="text-sm font-bold text-slate-800 mb-2">{a.title}</h3>
               <div className="flex items-center justify-between">
                 <div className="flex gap-1 flex-wrap">{a.tags.map(t => <Badge key={t} v="gray" sm>{t}</Badge>)}</div>
@@ -1870,6 +1892,22 @@ function KnowledgeScreen() {
           ))}
         </div>
       </Card>
+      {articleOpen && (
+        <Overlay onClose={() => setArticleOpen(false)}>
+          <Card cls="max-w-2xl w-full p-6">
+            <div className="flex items-start justify-between gap-4 mb-4">
+              <div><h2 className="text-xl font-bold text-slate-900">{selected.title}</h2><p className="text-sm text-slate-500 mt-1">Инструкция для клиента</p></div>
+              <Btn v="ghost" sz="sm" onClick={() => setArticleOpen(false)}><X size={16} /></Btn>
+            </div>
+            <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm leading-relaxed text-slate-700 mb-4">{selected.text}</div>
+            <div className="flex gap-2 flex-wrap justify-end">
+              <CopyButton value={`https://lk.example.ru/kb/${selected.title}`} label="Скопировать ссылку" />
+              <Btn v="default" onClick={() => window.dispatchEvent(new CustomEvent("lk:prototype-action", { detail: { title: "Создать обращение по статье базы знаний" } }))}>Создать обращение</Btn>
+              <Btn v="green" onClick={() => setArticleOpen(false)}>Понятно</Btn>
+            </div>
+          </Card>
+        </Overlay>
+      )}
       <Card cls="p-5">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div><h2 className="text-lg font-bold text-slate-900">{selected.title}</h2><p className="text-sm text-slate-500 mt-1">Инструкция для клиента</p></div>
@@ -1990,19 +2028,22 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
 }) {
   return (
     <aside
-      className={`lk-sidebar-scroll sidebar-scrollbar-hidden w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden fixed lg:sticky top-0 left-0 z-50 transform transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+      className={`lk-sidebar-scroll sidebar-scrollbar-hidden select-none w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden fixed lg:sticky top-0 left-0 z-50 transform transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as any}
     >
       {/* Brand */}
       <div className="px-4 py-4 border-b border-slate-100">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center">
-            <span className="text-white font-extrabold text-sm">LK</span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
+              <span className="text-white font-extrabold text-sm">LK</span>
+            </div>
+            <div className="min-w-0">
+              <p className="text-base font-bold text-slate-900 truncate">GoMark Service</p>
+              <p className="text-xs text-slate-400">Личный кабинет клиента</p>
+            </div>
           </div>
-          <div>
-            <p className="text-base font-bold text-slate-900">GoMark Service</p>
-            <p className="text-xs text-slate-400">Личный кабинет клиента</p>
-          </div>
+          <button type="button" className="lg:hidden w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50" onClick={onClose} aria-label="Закрыть меню"><X size={17} /></button>
         </div>
       </div>
 
@@ -2016,6 +2057,13 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
           </div>
           <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
             <span>Инженер</span><span className="font-semibold text-slate-700">Иван</span>
+          </div>
+          <div className="rounded-md bg-white border border-slate-200 p-2 mb-3">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Текущий пользователь</p>
+            <div className="flex items-center justify-between gap-2">
+              <Mono cls="text-[11px] truncate">maria@edart.local</Mono>
+              <CopyButton value="maria@edart.local" label="" />
+            </div>
           </div>
           <Badge v="green" dot>договор активен</Badge>
         </div>
@@ -2107,7 +2155,7 @@ export default function App() {
       case "contracts": return <ContractsScreen />;
       case "billing": return <BillingScreen openModal={() => { setGenericActionTitle("Оплатить картой"); setModal("generic"); }} />;
       case "documents": return <DocumentsScreen />;
-      case "offers": return <OffersScreen />;
+      case "offers": return <OffersScreen openModal={(title) => { setGenericActionTitle(title); setModal("generic"); }} />;
       case "servers": return <ServersScreen openDiscussion={openDiscussion} />;
       case "bases1c": return <Bases1CScreen openDiscussion={openDiscussion} />;
       case "licenses": return <LicensesScreen openModal={() => { setGenericActionTitle("Изменить количество лицензий 1С"); setModal("generic"); }} />;
