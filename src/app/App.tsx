@@ -231,13 +231,13 @@ function StatBar({ label, v, max, note }: { label: string; v: number; max: numbe
   );
 }
 
-function InfoGrid({ items }: { items: { label: string; value: React.ReactNode }[] }) {
+function InfoGrid({ items, compact = false }: { items: { label: string; value: React.ReactNode }[]; compact?: boolean }) {
   return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+    <div className={compact ? "grid grid-cols-2 gap-x-4 gap-y-2" : "grid grid-cols-2 gap-x-6 gap-y-2"}>
       {items.map((item, i) => (
-        <div key={i}>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{item.label}</p>
-          <p className="text-sm font-semibold text-slate-800 mt-0.5">{item.value}</p>
+        <div key={i} className="min-w-0">
+          <p className={compact ? "text-[9px] font-bold uppercase tracking-wider text-slate-400" : "text-[10px] font-bold uppercase tracking-wider text-slate-400"}>{item.label}</p>
+          <p className={compact ? "text-[11px] leading-snug font-semibold text-slate-700 mt-0.5 break-words" : "text-sm font-semibold text-slate-800 mt-0.5"}>{item.value}</p>
         </div>
       ))}
     </div>
@@ -1923,22 +1923,24 @@ function ShipmentsScreen() {
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
-      <Card cls="xl:col-span-2 p-5">
-        <SH title="Заказы и отгрузки"
-          sub="Нажмите на заказ, чтобы открыть документ, состав товаров/услуг, оплату, доставку и действия." />
-        <div className="space-y-2">
+    <div className="grid grid-cols-1 xl:grid-cols-5 gap-5 xl:h-[calc(100vh-116px)] xl:min-h-0">
+      <Card cls="xl:col-span-2 p-5 xl:h-full xl:min-h-0 flex flex-col overflow-hidden overscroll-contain">
+        <div className="shrink-0">
+          <SH title="Заказы и отгрузки"
+            sub="Нажмите на заказ, чтобы открыть документ, состав товаров/услуг, оплату, доставку и действия." />
+        </div>
+        <div className="space-y-2 xl:flex-1 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pr-1 sidebar-scrollbar-hidden">
           {orders.map(order => (
             <button key={order.id} type="button" onClick={() => setActiveId(order.id)}
               className={`w-full text-left rounded-xl border p-3.5 transition-all cursor-pointer ${active.id === order.id ? "border-slate-900 ring-1 ring-slate-900 bg-white" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-extrabold text-slate-900">{order.id} · {order.title}</p>
-                  <p className="text-xs text-slate-500 mt-1 truncate">{order.counterparty} · {order.amount} · {order.invoice}</p>
+                  <p className="text-[13px] leading-tight font-bold text-slate-900">{order.id} · {order.title}</p>
+                  <p className="text-[11px] leading-tight text-slate-500 mt-1 truncate">{order.counterparty} · {order.amount} · {order.invoice}</p>
                 </div>
                 <Badge v={order.badge}>{order.status}</Badge>
               </div>
-              <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-slate-500">
+              <div className="grid grid-cols-3 gap-2 mt-3 text-[11px] leading-tight text-slate-500">
                 <span><b className="text-slate-700">Оплата:</b> {order.payment}</span>
                 <span><b className="text-slate-700">Доставка:</b> {order.delivery}</span>
                 <span><b className="text-slate-700">Дата:</b> {order.expected}</span>
@@ -1946,18 +1948,18 @@ function ShipmentsScreen() {
             </button>
           ))}
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2 shrink-0">
           <Btn v="green" sz="sm" onClick={() => openAction("Заказать товар")}>Новый заказ</Btn>
           <Btn v="default" sz="sm" onClick={() => openAction("Запросить КП по товарам и услугам")}>Запросить КП</Btn>
         </div>
       </Card>
 
-      <Card cls="xl:col-span-3 overflow-hidden">
-        <div className="p-5 border-b border-slate-100">
+      <Card cls="xl:col-span-3 overflow-hidden xl:h-full xl:min-h-0 flex flex-col overscroll-contain">
+        <div className="p-5 border-b border-slate-100 shrink-0">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h2 className="text-xl font-extrabold text-slate-900">Заказ {active.id}</h2>
-              <p className="text-sm text-slate-500 mt-1">{active.title}</p>
+              <h2 className="text-lg font-extrabold text-slate-900">Заказ {active.id}</h2>
+              <p className="text-xs text-slate-500 mt-1">{active.title}</p>
             </div>
             <div className="flex flex-wrap gap-2 items-center">
               <Badge v={active.badge}>{active.status}</Badge>
@@ -1966,7 +1968,7 @@ function ShipmentsScreen() {
           </div>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-5 space-y-5 xl:flex-1 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pr-6 sidebar-scrollbar-hidden">
           {notice && (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-800 flex items-center gap-2">
               <CheckCircle2 size={16} /> {notice}
@@ -1974,16 +1976,16 @@ function ShipmentsScreen() {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-              <InfoGrid items={[
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+              <InfoGrid compact items={[
                 { label: "Контрагент", value: active.counterparty },
                 { label: "Сумма", value: active.amount },
                 { label: "Счёт", value: active.invoice },
                 { label: "Менеджер", value: active.manager },
               ]} />
             </div>
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-              <InfoGrid items={[
+            <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
+              <InfoGrid compact items={[
                 { label: "Доставка", value: active.delivery },
                 { label: "Трек-номер", value: active.track === "—" ? "Не требуется" : <span className="inline-flex items-center gap-2">{active.track} <CopyButton value={active.track} label="" /></span> },
                 { label: "Ожидаемая дата", value: active.expected },
