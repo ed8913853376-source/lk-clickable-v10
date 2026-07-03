@@ -6,7 +6,7 @@ import {
   Plus, X, Search, AlertCircle, CheckCircle2, Clock, Minus, ArrowUpRight,
   Download, Shield, HardDrive, Cpu, Activity, UserPlus, ChevronRight,
   RefreshCw, Copy, Star, BarChart2, Package, Globe, Zap,
-  Menu, Eye, EyeOff,
+  Menu, Eye, EyeOff, Paperclip,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -432,6 +432,99 @@ function DiscussionModal({ resource, onClose }: { resource: string; onClose: () 
 }
 
 
+function TicketRequestModal({ onClose }: { onClose: () => void }) {
+  const defaultPhone = "+7 (999) 111-22-33";
+  const [sent, setSent] = useState(false);
+  const [phones, setPhones] = useState([defaultPhone]);
+  const [fileName, setFileName] = useState("");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const updatePhone = (index: number, value: string) => {
+    setPhones(prev => prev.map((phone, i) => i === index ? value : phone));
+  };
+  const addPhone = () => setPhones(prev => [...prev, ""]);
+  const removePhone = (index: number) => setPhones(prev => prev.length > 1 ? prev.filter((_, i) => i !== index) : prev);
+
+  return (
+    <Overlay onClose={onClose}>
+      <Card cls="max-w-3xl w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+        <div className="flex items-start justify-between gap-4 p-5 sm:p-6 pb-4 border-b border-slate-100 shrink-0">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Создать обращение</h2>
+            <p className="text-sm text-slate-500 mt-1">Телефон подставляется из профиля текущего пользователя. При необходимости можно добавить несколько номеров.</p>
+          </div>
+          <Btn v="ghost" sz="sm" onClick={onClose}><X size={16} /></Btn>
+        </div>
+
+        <div className="px-5 sm:px-6 py-5 overflow-y-auto lk-modal-scroll">
+          {sent ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
+              <div className="flex items-center gap-2 font-bold"><CheckCircle2 size={18} />Заявка создана</div>
+              <p className="text-sm mt-2">Это прототипное состояние. В рабочей версии обращение будет создано в 1С/CRM и попадет ответственному инженеру.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Контрагент"><select className={inputCls}>{cps.map(cp => <option key={cp}>{cp}</option>)}</select></Field>
+              <Field label="Тип обращения"><select className={inputCls}><option>Ошибка 1С</option><option>Вопрос по работе 1С</option><option>Сервер/RDP</option><option>Лицензии</option><option>Оплата/документы</option><option>Заказ товара</option><option>Доставка</option><option>Другое</option></select></Field>
+              <Field label="Связанный ресурс / объект"><select className={inputCls} defaultValue=""><option value="">Не выбран</option><option>1С Бухгалтерия</option><option>VPS для 1С #SRV-247090</option><option>Заказ #9012</option><option>Счет №237</option><option>Лицензия 1С</option></select></Field>
+              <Field label="Приоритет"><select className={inputCls}><option>Обычный</option><option>Срочный</option><option>Критичный простой</option></select></Field>
+              <Field label="Тема" full><input className={inputCls} placeholder="Например: не открывается база 1С" /></Field>
+
+              <div className="md:col-span-2">
+                <div className="flex items-center justify-between gap-3 mb-1">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Описание / комментарий</span>
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                    title="Прикрепить файл"
+                  >
+                    <Paperclip size={14} /> Прикрепить файл
+                  </button>
+                </div>
+                <textarea className={`${textAreaCls} h-28`} placeholder="Опишите проблему: что произошло, когда, кого затронуло..." />
+                <input
+                  ref={fileRef}
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => setFileName(e.target.files?.[0]?.name || "")}
+                />
+                {fileName && <p className="mt-2 text-xs text-slate-500">Прикреплен файл: <span className="font-semibold text-slate-700">{fileName}</span></p>}
+              </div>
+
+              <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Телефоны для связи</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Первый номер подставлен из профиля авторизованного пользователя.</p>
+                  </div>
+                  <Btn v="default" sz="sm" onClick={addPhone}><Plus size={13} /> Добавить номер</Btn>
+                </div>
+                <div className="space-y-2">
+                  {phones.map((phone, index) => (
+                    <div key={index} className="flex gap-2">
+                      <input className={inputCls} value={phone} onChange={(e) => updatePhone(index, e.target.value)} placeholder="+7 (___) ___-__-__" />
+                      {phones.length > 1 && <Btn v="ghost" sz="sm" onClick={() => removePhone(index)}><X size={14} /></Btn>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Field label="Удобный способ связи"><select className={inputCls}><option>Телефон</option><option>Email</option><option>Telegram</option><option>Через кабинет</option></select></Field>
+              <Field label="Сколько пользователей затронуто"><input className={inputCls} placeholder="Например: 3" /></Field>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2 justify-end border-t border-slate-100 p-4 sm:px-6 bg-white shrink-0">
+          {sent ? <Btn v="default" onClick={onClose}>Закрыть</Btn> : <><Btn v="default" onClick={onClose}>Отмена</Btn><Btn v="green" onClick={() => setSent(true)}><Plus size={14} /> Создать обращение</Btn></>}
+        </div>
+      </Card>
+    </Overlay>
+  );
+}
+
+
 
 function Field({ label, children, full = false }: { label: string; children: React.ReactNode; full?: boolean }) {
   return (
@@ -484,7 +577,7 @@ const FORM_SPECS: Record<ActionKey, FormSpec> = {
     { label: "ФИО" }, { label: "Email" }, { label: "Телефон" }, { label: "Должность" }, { label: "Логин" }, { label: "Пароль" }, { label: "Повтор пароля" }, { label: "Контрагент", type: "select", options: cps }, { label: "Роль", type: "select", options: ["Руководитель", "Бухгалтер", "Сотрудник", "Технический специалист", "Администратор"] }, { label: "Доступ к разделам", type: "checks", options: sectionAccess, full: true }, { label: "Доступ к базам 1С", type: "checks", options: basesList, full: true }, { label: "Комментарий", type: "textarea", full: true }
   ]},
   ticket: { title: "Новое обращение", subtitle: "Заявка в поддержку с корректной категорией и связанным объектом.", result: "Заявка создана", buttons: ["Создать обращение", "Отмена"], fields: [
-    { label: "Контрагент", type: "select", options: cps }, { label: "Тип обращения", type: "select", options: ["Ошибка 1С", "Вопрос по работе 1С", "Сервер/RDP", "Лицензии", "Оплата/документы", "Заказ товара", "Доставка", "Другое"] }, { label: "Связанный объект", type: "select", options: ["1С Бухгалтерия", "VPS для 1С #SRV-247090", "Заказ #9012", "Счет №237", "Не выбран"] }, { label: "Тема", full: true }, { label: "Описание", type: "textarea", full: true }, { label: "Приоритет", type: "select", options: ["Обычный", "Срочный", "Критичный простой"] }, { label: "Сколько пользователей затронуто" }, { label: "Удобный способ связи", type: "select", options: ["Телефон", "Email", "Telegram", "Через кабинет"] }, { label: "Телефон" }, { label: "Файл/скриншот", type: "file" }
+    { label: "Контрагент", type: "select", options: cps }, { label: "Тип обращения", type: "select", options: ["Ошибка 1С", "Вопрос по работе 1С", "Сервер/RDP", "Лицензии", "Оплата/документы", "Заказ товара", "Доставка", "Другое"] }, { label: "Связанный ресурс / объект", type: "select", options: ["Не выбран", "1С Бухгалтерия", "VPS для 1С #SRV-247090", "Заказ #9012", "Счет №237"] }, { label: "Тема", full: true }, { label: "Описание / комментарий", type: "textarea", full: true }, { label: "Приоритет", type: "select", options: ["Обычный", "Срочный", "Критичный простой"] }, { label: "Сколько пользователей затронуто" }, { label: "Удобный способ связи", type: "select", options: ["Телефон", "Email", "Telegram", "Через кабинет"] }, { label: "Телефоны для связи", placeholder: "+7 (999) 111-22-33" }
   ]},
   base1c: { title: "База 1С", subtitle: "Только параметры базы: конфигурация, создание, доступы, публикация. CPU/RAM/SSD/IP относятся к серверу.", result: "Запрос отправлен", buttons: ["Создать базу", "Сохранить настройки", "Отмена"], fields: [
     { label: "Контрагент", type: "select", options: cps }, { label: "Название базы" }, { label: "Конфигурация", type: "select", options: ["Бухгалтерия", "ЗУП", "УНФ", "УТ", "ERP", "Другая"] }, { label: "Способ создания", type: "select", options: ["Новая пустая база", "Загрузить .dt", "Восстановить из backup", "Скопировать существующую базу"] }, { label: "Пользователи с доступом", type: "checks", options: ["Бухгалтерия", "Склад", "Менеджер", "Техспециалист"], full: true }, { label: "Нужна публикация", type: "select", options: ["Да", "Нет", "Нужно обсудить"] }, { label: "Нужно автообновление", type: "select", options: ["Да", "Нет", "Только уведомлять"] }, { label: "Комментарий", type: "textarea", full: true }
@@ -561,9 +654,14 @@ function renderFormField(field: FormField, index: number) {
 
 
 function CounterpartyInnWizard({ onClose }: { onClose: () => void }) {
+  const [type, setType] = useState<"legal" | "person">("legal");
   const [inn, setInn] = useState("0000000000");
   const [filled, setFilled] = useState(false);
   const [sent, setSent] = useState(false);
+  const [personName, setPersonName] = useState("Иванов Иван Иванович");
+  const [personPhone, setPersonPhone] = useState("+7 (999) 000-00-00");
+  const [personEmails, setPersonEmails] = useState(["ivanov@example.ru"]);
+  const [personAddresses, setPersonAddresses] = useState(["г. Москва, ул. Деловая, д. 1, кв. 15"]);
   const demo = inn.trim() === "7700123456" ? {
     short: "Плазма-Сервис",
     full: "ООО \"Плазма-Сервис\"",
@@ -594,60 +692,144 @@ function CounterpartyInnWizard({ onClose }: { onClose: () => void }) {
     email: "docs@ed-art.ru",
   };
 
+  const resetFlow = (nextType: "legal" | "person") => {
+    setType(nextType);
+    setSent(false);
+    if (nextType === "person") {
+      setFilled(true);
+      setPersonName("Иванов Иван Иванович");
+      setPersonPhone("+7 (999) 000-00-00");
+      setPersonEmails(["ivanov@example.ru"]);
+      setPersonAddresses(["г. Москва, ул. Деловая, д. 1, кв. 15"]);
+    } else {
+      setFilled(false);
+    }
+  };
+
+  const updateEmail = (index: number, value: string) => {
+    setPersonEmails(prev => prev.map((item, i) => i === index ? value : item));
+  };
+  const updateAddress = (index: number, value: string) => {
+    setPersonAddresses(prev => prev.map((item, i) => i === index ? value : item));
+  };
+
   return (
     <Overlay onClose={onClose}>
       <Card cls="max-w-3xl w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
         <div className="flex items-start justify-between gap-4 p-5 sm:p-6 pb-4 border-b border-slate-100 shrink-0">
           <div>
             <h2 className="text-xl font-bold text-slate-900">Добавить контрагента</h2>
-            <p className="text-sm text-slate-500 mt-1">Сначала введите ИНН. В реальном кабинете реквизиты будут подтягиваться из 1С/подсказок, здесь показан прототип автозаполнения.</p>
+            <p className="text-sm text-slate-500 mt-1">Выберите тип контрагента. Для юрлица реквизиты заполняются по ИНН, для физлица прототип заполняет ФИО и телефон, а почт и адресов можно добавить несколько.</p>
           </div>
           <Btn v="ghost" sz="sm" onClick={onClose}><X size={16} /></Btn>
         </div>
         <div className="px-5 sm:px-6 py-5 overflow-y-auto lk-modal-scroll">
           {sent ? (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
-              <div className="flex items-center gap-2 font-bold"><CheckCircle2 size={18} />Контрагент отправлен на проверку реквизитов</div>
-              <p className="text-sm mt-2">Это прототипное состояние. Реальная проверка и сохранение будут выполняться через 1С/CRM.</p>
+              <div className="flex items-center gap-2 font-bold"><CheckCircle2 size={18} />Контрагент отправлен на проверку</div>
+              <p className="text-sm mt-2">Это прототипное состояние. Реальное сохранение и проверка данных будут выполняться через 1С/CRM.</p>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4">
-                <p className="font-bold text-slate-900 mb-1">Быстрое добавление по ИНН</p>
-                <p className="text-sm text-slate-600">Клиент вводит только ИНН, система заполняет название, КПП, ОГРН, адрес и банковские реквизиты. После этого данные можно дополнить и отредактировать.</p>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end">
-                <Field label="ИНН">
-                  <input className={inputCls} value={inn} onChange={(e) => setInn(e.target.value.replace(/[^0-9]/g, "").slice(0, 12))} placeholder="Введите ИНН организации или ИП" />
-                </Field>
-                <Btn v="green" onClick={() => setFilled(true)}>Найти / заполнить</Btn>
+              <div className="grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-1">
+                <button type="button" onClick={() => resetFlow("legal")} className={`rounded-lg px-3 py-2 text-sm font-bold transition ${type === "legal" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}>
+                  Юридическое лицо / ИП
+                </button>
+                <button type="button" onClick={() => resetFlow("person")} className={`rounded-lg px-3 py-2 text-sm font-bold transition ${type === "person" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"}`}>
+                  Физическое лицо
+                </button>
               </div>
 
-              {filled && (
+              {type === "legal" ? (
+                <>
+                  <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4">
+                    <p className="font-bold text-slate-900 mb-1">Быстрое добавление по ИНН</p>
+                    <p className="text-sm text-slate-600">Клиент вводит только ИНН, система заполняет название, КПП, ОГРН, адрес и банковские реквизиты. После этого данные можно дополнить и отредактировать.</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end">
+                    <Field label="ИНН">
+                      <input className={inputCls} value={inn} onChange={(e) => setInn(e.target.value.replace(/[^0-9]/g, "").slice(0, 12))} placeholder="Введите ИНН организации или ИП" />
+                    </Field>
+                    <Btn v="green" onClick={() => setFilled(true)}>Найти / заполнить</Btn>
+                  </div>
+
+                  {filled && (
+                    <div className="space-y-4 animate-in fade-in duration-200">
+                      <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                        <div className="flex items-center gap-2 font-bold text-emerald-800"><CheckCircle2 size={18} />Найдена организация</div>
+                        <p className="text-sm text-emerald-700 mt-1">Проверьте автозаполненные реквизиты. Любое поле можно изменить перед сохранением.</p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Field label="Тип контрагента"><select className={inputCls} defaultValue="Юридическое лицо"><option>Юридическое лицо</option><option>ИП</option></select></Field>
+                        <Field label="Краткое название"><input className={inputCls} defaultValue={demo.short} /></Field>
+                        <Field label="Полное юридическое наименование" full><input className={inputCls} defaultValue={demo.full} /></Field>
+                        <Field label="ИНН"><input className={inputCls} value={inn} onChange={(e) => setInn(e.target.value.replace(/[^0-9]/g, "").slice(0, 12))} /></Field>
+                        <Field label="КПП"><input className={inputCls} defaultValue={demo.kpp} /></Field>
+                        <Field label="ОГРН / ОГРНИП"><input className={inputCls} defaultValue={demo.ogrn} /></Field>
+                        <Field label="Налоговая система"><select className={inputCls} defaultValue="ОСНО"><option>ОСНО</option><option>УСН доходы</option><option>УСН доходы-расходы</option><option>Патент</option><option>Не знаю</option></select></Field>
+                        <Field label="Юридический адрес" full><input className={inputCls} defaultValue={demo.address} /></Field>
+                        <Field label="Фактический адрес" full><input className={inputCls} defaultValue={demo.fact} /></Field>
+                        <Field label="Банк"><input className={inputCls} defaultValue={demo.bank} /></Field>
+                        <Field label="БИК"><input className={inputCls} defaultValue={demo.bik} /></Field>
+                        <Field label="Расчётный счёт"><input className={inputCls} defaultValue={demo.rs} /></Field>
+                        <Field label="Корр. счёт"><input className={inputCls} defaultValue={demo.ks} /></Field>
+                        <Field label="Контактное лицо"><input className={inputCls} defaultValue={demo.person} /></Field>
+                        <Field label="Телефон"><input className={inputCls} defaultValue={demo.phone} /></Field>
+                        <Field label="Email для документов"><input className={inputCls} defaultValue={demo.email} /></Field>
+                        <Field label="Email для уведомлений"><input className={inputCls} defaultValue={demo.email} /></Field>
+                        <Field label="Комментарий" full><textarea className={textAreaCls} placeholder="Можно указать особенности документооборота, договора, ЭДО или ответственного сотрудника" /></Field>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
                 <div className="space-y-4 animate-in fade-in duration-200">
                   <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                    <div className="flex items-center gap-2 font-bold text-emerald-800"><CheckCircle2 size={18} />Найдена организация</div>
-                    <p className="text-sm text-emerald-700 mt-1">Проверьте автозаполненные реквизиты. Любое поле можно изменить перед сохранением.</p>
+                    <div className="flex items-center gap-2 font-bold text-emerald-800"><CheckCircle2 size={18} />Данные физического лица заполнены</div>
+                    <p className="text-sm text-emerald-700 mt-1">ФИО и телефон заполнены автоматически для прототипа. Email и адресов может быть несколько — добавьте нужные строки и отредактируйте данные перед сохранением.</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Field label="Тип контрагента"><select className={inputCls} defaultValue="Юридическое лицо"><option>Юридическое лицо</option><option>ИП</option><option>Физическое лицо</option></select></Field>
-                    <Field label="Краткое название"><input className={inputCls} defaultValue={demo.short} /></Field>
-                    <Field label="Полное юридическое наименование" full><input className={inputCls} defaultValue={demo.full} /></Field>
-                    <Field label="ИНН"><input className={inputCls} value={inn} onChange={(e) => setInn(e.target.value.replace(/[^0-9]/g, "").slice(0, 12))} /></Field>
-                    <Field label="КПП"><input className={inputCls} defaultValue={demo.kpp} /></Field>
-                    <Field label="ОГРН / ОГРНИП"><input className={inputCls} defaultValue={demo.ogrn} /></Field>
-                    <Field label="Налоговая система"><select className={inputCls} defaultValue="ОСНО"><option>ОСНО</option><option>УСН доходы</option><option>УСН доходы-расходы</option><option>Патент</option><option>Не знаю</option></select></Field>
-                    <Field label="Юридический адрес" full><input className={inputCls} defaultValue={demo.address} /></Field>
-                    <Field label="Фактический адрес" full><input className={inputCls} defaultValue={demo.fact} /></Field>
-                    <Field label="Банк"><input className={inputCls} defaultValue={demo.bank} /></Field>
-                    <Field label="БИК"><input className={inputCls} defaultValue={demo.bik} /></Field>
-                    <Field label="Расчётный счёт"><input className={inputCls} defaultValue={demo.rs} /></Field>
-                    <Field label="Корр. счёт"><input className={inputCls} defaultValue={demo.ks} /></Field>
-                    <Field label="Контактное лицо"><input className={inputCls} defaultValue={demo.person} /></Field>
-                    <Field label="Телефон"><input className={inputCls} defaultValue={demo.phone} /></Field>
-                    <Field label="Email для документов"><input className={inputCls} defaultValue={demo.email} /></Field>
-                    <Field label="Email для уведомлений"><input className={inputCls} defaultValue={demo.email} /></Field>
-                    <Field label="Комментарий" full><textarea className={textAreaCls} placeholder="Можно указать особенности документооборота, договора, ЭДО или ответственного сотрудника" /></Field>
+                    <Field label="ФИО" full><input className={inputCls} value={personName} onChange={(e) => setPersonName(e.target.value)} /></Field>
+                    <Field label="Телефон"><input className={inputCls} value={personPhone} onChange={(e) => setPersonPhone(e.target.value)} /></Field>
+                    <Field label="Комментарий"><input className={inputCls} placeholder="Например: клиент без организации" /></Field>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-bold text-slate-900">Почта</p>
+                      <Btn v="default" sz="sm" onClick={() => setPersonEmails(prev => [...prev, ""])}><Plus size={14} /> Добавить почту</Btn>
+                    </div>
+                    <div className="space-y-2">
+                      {personEmails.map((email, index) => (
+                        <div key={index} className="grid grid-cols-[1fr_auto] gap-2">
+                          <input className={inputCls} value={email} onChange={(e) => updateEmail(index, e.target.value)} placeholder="email@example.ru" />
+                          <Btn v="ghost" sz="sm" onClick={() => setPersonEmails(prev => prev.length > 1 ? prev.filter((_, i) => i !== index) : prev)}><X size={14} /></Btn>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-bold text-slate-900">Адреса</p>
+                      <Btn v="default" sz="sm" onClick={() => setPersonAddresses(prev => [...prev, ""])}><Plus size={14} /> Добавить адрес</Btn>
+                    </div>
+                    <div className="space-y-2">
+                      {personAddresses.map((address, index) => (
+                        <div key={index} className="grid grid-cols-[1fr_auto] gap-2">
+                          <input className={inputCls} value={address} onChange={(e) => updateAddress(index, e.target.value)} placeholder="Адрес" />
+                          <Btn v="ghost" sz="sm" onClick={() => setPersonAddresses(prev => prev.length > 1 ? prev.filter((_, i) => i !== index) : prev)}><X size={14} /></Btn>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                    <p className="font-bold text-slate-900 mb-2">Что будет сохранено</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-700">
+                      <p><span className="text-slate-400">Тип:</span> Физическое лицо</p>
+                      <p><span className="text-slate-400">ФИО:</span> {personName}</p>
+                      <p><span className="text-slate-400">Телефон:</span> {personPhone}</p>
+                      <p><span className="text-slate-400">Почта:</span> {personEmails.filter(Boolean).join(", ") || "не указана"}</p>
+                      <p className="md:col-span-2"><span className="text-slate-400">Адреса:</span> {personAddresses.filter(Boolean).join("; ") || "не указаны"}</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -657,8 +839,8 @@ function CounterpartyInnWizard({ onClose }: { onClose: () => void }) {
         <div className="flex flex-wrap gap-2 justify-end border-t border-slate-100 p-4 sm:px-6 bg-white shrink-0">
           {sent ? <Btn v="default" onClick={onClose}>Закрыть</Btn> : (
             <>
-              {filled && <Btn v="green" onClick={() => setSent(true)}>Сохранить контрагента</Btn>}
-              {filled && <Btn v="primary" onClick={() => setFilled(true)}>Редактировать данные</Btn>}
+              {(filled || type === "person") && <Btn v="green" onClick={() => setSent(true)}>Сохранить контрагента</Btn>}
+              {type === "legal" && filled && <Btn v="primary" onClick={() => setFilled(true)}>Редактировать данные</Btn>}
               <Btn v="default" onClick={onClose}>Отмена</Btn>
             </>
           )}
@@ -672,6 +854,7 @@ function GenericActionModal({ title, onClose }: { title: string; onClose: () => 
   const [sent, setSent] = useState(false);
   const key = actionFromTitle(title);
   if (key === "counterparty") return <CounterpartyInnWizard onClose={onClose} />;
+  if (key === "ticket") return <TicketRequestModal onClose={onClose} />;
   const spec = key === "unknown" ? { ...FORM_SPECS.unknown, title, fields: [{ label: "Действие", readonly: title }, { label: "Комментарий", type: "textarea" as const, full: true }] } : FORM_SPECS[key];
   return (
     <Overlay onClose={onClose}>
