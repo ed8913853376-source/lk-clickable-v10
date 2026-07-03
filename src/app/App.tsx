@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Home, Building2, MessageSquare, Briefcase, FileText, CreditCard,
   FileCheck, FileSpreadsheet, Server, Database, Key, Monitor,
@@ -6,6 +6,7 @@ import {
   Plus, X, Search, AlertCircle, CheckCircle2, Clock, Minus, ArrowUpRight,
   Download, Shield, HardDrive, Cpu, Activity, UserPlus, ChevronRight,
   RefreshCw, Copy, Star, BarChart2, Package, Globe, Zap,
+  Menu, Eye, EyeOff,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -46,7 +47,7 @@ function getNodeText(node: React.ReactNode): string {
 
 function Btn({ v = "default", sz = "md", children, onClick, full, cls = "" }: {
   v?: "default" | "primary" | "green" | "blue" | "danger" | "ghost";
-  sz?: "sm" | "md"; children: React.ReactNode; onClick?: () => void; full?: boolean; cls?: string;
+  sz?: "sm" | "md"; children: React.ReactNode; onClick?: React.MouseEventHandler<HTMLButtonElement>; full?: boolean; cls?: string;
 }) {
   const base = "inline-flex items-center justify-center gap-1.5 font-semibold rounded-lg transition-all cursor-pointer border select-none shrink-0";
   const sizes = { sm: "px-3 py-1.5 text-xs", md: "px-4 py-2 text-sm" };
@@ -59,7 +60,7 @@ function Btn({ v = "default", sz = "md", children, onClick, full, cls = "" }: {
     ghost: "bg-transparent border-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-700",
   };
   const label = getNodeText(children) || "Действие";
-  const handleClick = onClick ?? (() => {
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = onClick ?? (() => {
     window.dispatchEvent(new CustomEvent("lk:prototype-action", { detail: { title: label } }));
   });
   return (
@@ -166,6 +167,42 @@ function Hint({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 leading-relaxed">
       {children}
+    </div>
+  );
+}
+
+
+function CopyButton({ value, label = "Скопировать" }: { value: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard?.writeText(value).catch(() => undefined);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1200);
+  };
+  return (
+    <button type="button" onClick={copy}
+      className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50 cursor-pointer">
+      <Copy size={12} /> {copied ? "Скопировано" : label}
+    </button>
+  );
+}
+
+function AccessValue({ label, value, secret = false }: { label: string; value: string; secret?: boolean }) {
+  const [visible, setVisible] = useState(!secret);
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-3">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{label}</p>
+      <div className="flex items-center gap-2">
+        <Mono cls="text-sm font-bold text-slate-900 flex-1 truncate">{visible ? value : "••••••••••"}</Mono>
+        {secret && (
+          <button type="button" onClick={() => setVisible(v => !v)}
+            className="w-8 h-8 rounded-md border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 flex items-center justify-center cursor-pointer"
+            aria-label={visible ? "Скрыть" : "Показать"}>
+            {visible ? <EyeOff size={14} /> : <Eye size={14} />}
+          </button>
+        )}
+        <CopyButton value={value} label="" />
+      </div>
     </div>
   );
 }
@@ -411,7 +448,7 @@ const textAreaCls = "w-full border border-slate-200 rounded-lg px-3 py-2 text-sm
 type ActionKey =
   | "counterparty" | "user" | "ticket" | "base1c" | "thinClient" | "licenses" | "server" | "rdp"
   | "service" | "product" | "offer" | "order" | "cardPayment" | "invoice" | "attachCard"
-  | "promisedPayment" | "documents" | "project" | "remoteAccess" | "bonus" | "unknown";
+  | "promisedPayment" | "documents" | "project" | "remoteAccess" | "bonus" | "certificate" | "unknown";
 
 type FormField = { label: string; type?: "input" | "select" | "textarea" | "file" | "checks"; options?: string[]; placeholder?: string; full?: boolean; readonly?: string };
 type FormSpec = { title: string; subtitle: string; fields?: FormField[]; details?: { label: string; value: string }[]; buttons: string[]; result: string; note?: string };
@@ -424,8 +461,8 @@ const FORM_SPECS: Record<ActionKey, FormSpec> = {
   counterparty: { title: "Добавить контрагента", subtitle: "Только реквизиты и контакты организации. Без полей базы 1С, сервера, лицензий или товара.", result: "Изменения отправлены на согласование", buttons: ["Сохранить контрагента", "Отмена"], fields: [
     { label: "Тип контрагента", type: "select", options: ["Юридическое лицо", "ИП", "Физическое лицо"] }, { label: "Название организации", placeholder: "ООО Ромашка" }, { label: "ИНН" }, { label: "КПП" }, { label: "ОГРН/ОГРНИП" }, { label: "Юридический адрес", full: true }, { label: "Фактический адрес", full: true }, { label: "Контактное лицо" }, { label: "Должность контактного лица" }, { label: "Телефон" }, { label: "Email для документов" }, { label: "Email для уведомлений" }, { label: "Комментарий", type: "textarea", full: true }
   ]},
-  user: { title: "Пользователь", subtitle: "Пользователь, роль и доступы к разделам кабинета и базам 1С.", result: "Изменения отправлены на согласование", buttons: ["Сохранить пользователя", "Отправить приглашение", "Отмена"], fields: [
-    { label: "ФИО" }, { label: "Email" }, { label: "Телефон" }, { label: "Должность" }, { label: "Контрагент", type: "select", options: cps }, { label: "Роль", type: "select", options: ["Руководитель", "Бухгалтер", "Сотрудник", "Технический специалист", "Администратор"] }, { label: "Доступ к разделам", type: "checks", options: sectionAccess, full: true }, { label: "Доступ к базам 1С", type: "checks", options: basesList, full: true }, { label: "Комментарий", type: "textarea", full: true }
+  user: { title: "Пользователь", subtitle: "Пользователь, логин, пароль, роль и доступы к разделам кабинета и базам 1С.", result: "Изменения отправлены на согласование", buttons: ["Сохранить пользователя", "Отправить приглашение", "Отмена"], fields: [
+    { label: "ФИО" }, { label: "Email" }, { label: "Телефон" }, { label: "Должность" }, { label: "Логин" }, { label: "Пароль" }, { label: "Повтор пароля" }, { label: "Контрагент", type: "select", options: cps }, { label: "Роль", type: "select", options: ["Руководитель", "Бухгалтер", "Сотрудник", "Технический специалист", "Администратор"] }, { label: "Доступ к разделам", type: "checks", options: sectionAccess, full: true }, { label: "Доступ к базам 1С", type: "checks", options: basesList, full: true }, { label: "Комментарий", type: "textarea", full: true }
   ]},
   ticket: { title: "Новое обращение", subtitle: "Заявка в поддержку с корректной категорией и связанным объектом.", result: "Заявка создана", buttons: ["Создать обращение", "Отмена"], fields: [
     { label: "Контрагент", type: "select", options: cps }, { label: "Тип обращения", type: "select", options: ["Ошибка 1С", "Вопрос по работе 1С", "Сервер/RDP", "Лицензии", "Оплата/документы", "Заказ товара", "Доставка", "Другое"] }, { label: "Связанный объект", type: "select", options: ["1С Бухгалтерия", "VPS для 1С #SRV-247090", "Заказ #9012", "Счет №237", "Не выбран"] }, { label: "Тема", full: true }, { label: "Описание", type: "textarea", full: true }, { label: "Приоритет", type: "select", options: ["Обычный", "Срочный", "Критичный простой"] }, { label: "Сколько пользователей затронуто" }, { label: "Удобный способ связи", type: "select", options: ["Телефон", "Email", "Telegram", "Через кабинет"] }, { label: "Телефон" }, { label: "Файл/скриншот", type: "file" }
@@ -464,7 +501,8 @@ const FORM_SPECS: Record<ActionKey, FormSpec> = {
   documents: { title: "Документы", subtitle: "Скачивание и отправка документов по выбранному контрагенту и периоду.", result: "Запрос отправлен", buttons: ["Скачать", "Отправить на email", "Запросить акт сверки", "Закрыть"], fields: [{ label: "Контрагент", type: "select", options: cps }, { label: "Тип документа", type: "select", options: ["Акт", "Счет", "УПД", "Акт сверки"] }, { label: "Период" }, { label: "Email для отправки" }, { label: "Комментарий", type: "textarea", full: true }]},
   project: { title: "Проект", subtitle: "Карточка проекта или сделки с действиями по этапам.", result: "Изменения отправлены на согласование", buttons: ["Запросить статус", "Добавить комментарий", "Принять этап", "Создать обращение", "Закрыть"], fields: [{ label: "Название проекта" }, { label: "Контрагент", type: "select", options: cps }, { label: "Этап", type: "select", options: ["Обследование", "Проектирование", "Реализация", "Тестирование", "Сдано"] }, { label: "Ответственный менеджер", readonly: "Алексей" }, { label: "Ответственный инженер", readonly: "Иван" }, { label: "Сроки" }, { label: "Описание задачи", type: "textarea", full: true }, { label: "Последний комментарий", type: "textarea", full: true }, { label: "Файл/документ", type: "file" }]},
   remoteAccess: { title: "Удаленный доступ", subtitle: "Для подключения специалиста скачайте программу удаленного доступа.", result: "Запрос отправлен", buttons: ["Скачать AnyDesk", "Скачать RuDesktop", "Инструкция по подключению", "Создать обращение"], details: [{ label: "Важно", value: "Передайте код подключения инженеру только после создания обращения или согласования сеанса." }]},
-  bonus: { title: "Бонусы", subtitle: "Использование бонусов, сертификатов и промокодов.", result: "Запрос отправлен", buttons: ["Применить", "Отмена"], fields: [{ label: "Контрагент", type: "select", options: cps }, { label: "Действие", type: "select", options: ["Использовать бонусы", "Использовать сертификат", "Применить промокод"] }, { label: "Сумма / код" }, { label: "Комментарий", type: "textarea", full: true }]},
+  bonus: { title: "Списать бонусы", subtitle: "Бонусы списываются на счет, заказ или услугу. Сертификаты и промокоды вводятся отдельной строкой.", result: "Запрос отправлен", buttons: ["Списать бонусы", "Отмена"], fields: [{ label: "Контрагент", type: "select", options: cps }, { label: "Куда списать", type: "select", options: ["Счёт №237", "Заказ товара", "Абонентское обслуживание", "Аудит 1С"] }, { label: "Сумма списания" }, { label: "Комментарий", type: "textarea", full: true }]},
+  certificate: { title: "Добавить сертификат или промокод", subtitle: "Здесь нужна только одна строка для ввода кода. Без выбора базы 1С, товара или услуги.", result: "Код отправлен на проверку", buttons: ["Применить код", "Отмена"], details: [{ label: "Подарочный сертификат", value: "Введите код сертификата или промокод — система применит скидку, бонус или акцию после проверки." }], fields: [{ label: "Код сертификата / промокод", placeholder: "Например: BONUS-2026" }]},
   unknown: { title: "Действие требует уточнения", subtitle: "Для этой кнопки не задана бизнес-форма. Вопрос вынесен в TODO_QUESTIONS.md.", result: "Запрос отправлен", buttons: ["Закрыть"], fields: [{ label: "Действие", readonly: "Не сопоставлено" }, { label: "Комментарий", type: "textarea", full: true }]}
 };
 
@@ -488,7 +526,8 @@ function actionFromTitle(title: string): ActionKey {
   if (t.includes("обещан")) return "promisedPayment";
   if (t.includes("документ") || t.includes("акт")) return "documents";
   if (t.includes("проект") || t.includes("сделк") || t.includes("этап") || t.includes("статус")) return "project";
-  if (t.includes("бонус") || t.includes("сертификат") || t.includes("промокод")) return "bonus";
+  if (t.includes("сертификат") || t.includes("промокод") || t.includes("промвода") || t.includes("промкод")) return "certificate";
+  if (t.includes("бонус")) return "bonus";
   return "unknown";
 }
 
@@ -522,7 +561,7 @@ function GenericActionModal({ title, onClose }: { title: string; onClose: () => 
           </div>
         ) : (
           <>
-            {spec.details && <div className="grid grid-cols-2 gap-3 mb-4">{spec.details.map(d => <div key={d.label} className="rounded-lg border border-slate-200 p-3"><p className="text-xs font-bold uppercase tracking-wider text-slate-400">{d.label}</p><p className="text-sm text-slate-800 mt-1">{d.value}</p></div>)}</div>}
+            {spec.details && <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">{spec.details.map(d => <div key={d.label} className="rounded-lg border border-blue-100 bg-blue-50/60 p-3"><p className="text-xs font-bold uppercase tracking-wider text-blue-500">{d.label}</p><p className="text-sm text-slate-800 mt-1">{d.value}</p></div>)}</div>}
             {spec.fields && <div className="grid grid-cols-2 gap-4">{spec.fields.map(renderFormField)}</div>}
           </>
         )}
@@ -589,7 +628,7 @@ function DashboardScreen({ nav, openModal, openDiscussion }: {
             {[
               { label: "Создать обращение", icon: <MessageSquare size={14} />, action: () => openModal("Создать обращение") },
               { label: "Заказать услугу", icon: <Zap size={14} />, action: () => openModal("Заказать услугу") },
-              { label: "Заказать сервер", icon: <Server size={14} />, action: () => openModal("Заказать сервер") },
+              { label: "Заказать товар", icon: <ShoppingCart size={14} />, action: () => openModal("Заказать товар") },
               { label: "Счет на оплату", icon: <CreditCard size={14} />, action: () => openModal("Счет на оплату") },
               { label: "Создать базу 1С", icon: <Database size={14} />, action: () => openModal("Создать базу 1С") },
               { label: "Изменить количество лицензий 1С", icon: <Key size={14} />, action: () => openModal("Изменить количество лицензий 1С") },
@@ -708,7 +747,7 @@ function CounterpartiesScreen({ onSelect }: { onSelect: (name: string, inn: stri
     <Card cls="p-5">
       <SH title="Контрагенты пользователя"
         sub="Один пользователь может работать за несколько компаний с разными ИНН. 1С — главный источник данных."
-        action={<Btn v="green" sz="sm"><Plus size={14} /> Добавить доступ</Btn>} />
+        action={<Btn v="green" sz="sm"><Plus size={14} /> Добавить контрагента</Btn>} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         {cps.map((cp) => {
           const isActive = active === cp.id;
@@ -866,6 +905,20 @@ function Bases1CScreen({ openDiscussion }: { openDiscussion: (r: string) => void
                 ]} />
               </div>
             </div>
+            <div className="bg-slate-50 rounded-lg p-4 border border-slate-100 mb-4">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Доступ текущего пользователя</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Логин и пароль для выбранной базы. В реальном кабинете значения приходят из 1С/хранилища доступов.</p>
+                </div>
+                <Badge v="blue" sm>текущий пользователь</Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <AccessValue label="Логин" value="maria@edart.local" />
+                <AccessValue label="Пароль" value="EdArt-1C-2026!" secret />
+              </div>
+            </div>
+
             <div className="bg-slate-50 rounded-lg p-4 border border-slate-100 mb-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Пользователи и доступы</h3>
               <Table compact heads={["Пользователь", "Роль в базе", "Лицензия", "Доступ"]} rows={[
@@ -1281,7 +1334,7 @@ function DocumentsScreen() {
       <Table heads={["Документ", "Дата", "Контрагент", "Сумма", ""]} rows={[
         ["Акт №188 — аренда VPS", "31.05.2026", "ED ART", "12 900 ₽", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
         ["Акт №177 — сопровождение 1С", "31.05.2026", "ED ART", "15 000 ₽", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
-        ["Приложение к договору", "01.01.2026", "ED ART", "—", <Btn v="ghost" sz="sm">Открыть</Btn>],
+        ["Приложение к договору", "01.01.2026", "ED ART", "—", <Btn v="ghost" sz="sm">Открыть КП</Btn>],
         ["Регламент работ", "01.01.2026", "ED ART", "—", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
         ["Акт сверки за Q2 2026", "30.06.2026", "ED ART", "—", <Btn v="default" sz="sm"><Download size={13} /> Скачать</Btn>],
       ]} />
@@ -1296,9 +1349,9 @@ function OffersScreen() {
         <SH title="Коммерческие предложения"
           sub="Клиент видит все КП: может открыть, согласовать или задать вопрос." />
         <Table heads={["№ КП", "Тема", "Статус", "Сумма", ""]} rows={[
-          ["КП-74", "Автоматизация отдела продаж", <Badge v="green">согласовано</Badge>, "380 000 ₽", <Btn v="ghost" sz="sm">Открыть</Btn>],
-          ["КП-81", "Расширение сервера 1С", <Badge v="blue">отправлено</Badge>, "24 900 ₽", <Btn v="default" sz="sm">Открыть</Btn>],
-          ["КП-83", "Резервный канал backup", <Badge v="amber">ожидает решения</Badge>, "12 500 ₽", <Btn v="default" sz="sm">Открыть</Btn>],
+          ["КП-74", "Автоматизация отдела продаж", <Badge v="green">согласовано</Badge>, "380 000 ₽", <Btn v="ghost" sz="sm">Открыть КП</Btn>],
+          ["КП-81", "Расширение сервера 1С", <Badge v="blue">отправлено</Badge>, "24 900 ₽", <Btn v="default" sz="sm">Открыть КП</Btn>],
+          ["КП-83", "Резервный канал backup", <Badge v="amber">ожидает решения</Badge>, "12 500 ₽", <Btn v="default" sz="sm">Открыть КП</Btn>],
         ]} />
       </Card>
       <Card cls="p-5">
@@ -1315,8 +1368,8 @@ function OffersScreen() {
         </div>
         <div className="flex gap-2">
           <Btn v="green">Согласовать КП</Btn>
-          <Btn v="default">Задать вопрос</Btn>
-          <Btn v="ghost" sz="sm"><Download size={13} /> PDF</Btn>
+          <Btn v="default">Задать вопрос по КП</Btn>
+          <Btn v="ghost" sz="sm"><Download size={13} /> Скачать КП PDF</Btn>
         </div>
       </Card>
     </div>
@@ -1342,13 +1395,13 @@ function OrdersScreen({ openDiscussion }: { openDiscussion: (r: string) => void 
             <Btn v="green" sz="sm">Продлить</Btn>],
           [<div><p className="font-semibold text-slate-800">Резервное копирование 1С</p><p className="text-xs text-slate-400">3 базы · ежедневный backup · 30 дней</p></div>,
             "500 GB хранилище", "4 500 ₽/мес", "01.08.2026", <Badge v="green">активно</Badge>,
-            <Btn v="default" sz="sm">Открыть</Btn>],
+            <Btn v="default" sz="sm">Открыть КП</Btn>],
           [<div><p className="font-semibold text-slate-800">Лицензии / доступы 1С</p><p className="text-xs text-slate-400">10 кл. лицензий · 2 конфигурации</p></div>,
             "Бухгалтерия + УНФ", "15 000 ₽/мес", "01.08.2026", <Badge v="green">активно</Badge>,
-            <Btn v="default" sz="sm">Открыть</Btn>],
+            <Btn v="default" sz="sm">Открыть КП</Btn>],
           [<div><p className="font-semibold text-slate-800">Облачное хранилище</p><p className="text-xs text-slate-400">для обмена файлами с поддержкой</p></div>,
             "200 GB", "3 000 ₽/мес", "15.07.2026", <Badge v="blue">активно</Badge>,
-            <Btn v="default" sz="sm">Открыть</Btn>],
+            <Btn v="default" sz="sm">Открыть КП</Btn>],
         ]} />
       </Card>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
@@ -1475,28 +1528,54 @@ function PurchaseHistoryScreen() {
 
 function NotificationsScreen() {
   const notifs = [
-    { title: "Счёт №237 ожидает оплату", sub: "Аренда VPS · оплатить до 01.07.2026", v: "amber" as BV, label: "важно" },
-    { title: "Проект «Автоматизация отдела продаж» перешёл на тестирование", sub: "Нужно согласовать сценарии и назначить ответственного.", v: "blue" as BV, label: "проект" },
-    { title: "Обращение #1042 обновлено инженером", sub: "Добавлен комментарий и приложены рекомендации.", v: "green" as BV, label: "обращение" },
-    { title: "Заказ #9012 отгружен", sub: "Кассовый принтер отправлен клиенту.", v: "green" as BV, label: "логистика" },
-    { title: "Backup 1С ЗУП требует проверки", sub: "Последний успешный backup: более 3 суток назад.", v: "red" as BV, label: "инфраструктура" },
+    { title: "Счёт №237 ожидает оплату", sub: "Аренда VPS · оплатить до 01.07.2026", v: "amber" as BV, label: "важно", messages: ["Система: счёт выставлен и ожидает оплаты.", "Менеджер: можно оплатить картой или запросить счёт для юрлица."] },
+    { title: "Проект «Автоматизация отдела продаж» перешёл на тестирование", sub: "Нужно согласовать сценарии и назначить ответственного.", v: "blue" as BV, label: "проект", messages: ["Менеджер: этап тестирования открыт.", "Клиент: назначим ответственного сегодня."] },
+    { title: "Обращение #1042 обновлено инженером", sub: "Добавлен комментарий и приложены рекомендации.", v: "green" as BV, label: "обращение", messages: ["Инженер Иван: добавил рекомендации по обмену.", "AI: похожая статья — проверка авторизации API."] },
+    { title: "Заказ #9012 отгружен", sub: "Кассовый принтер отправлен клиенту.", v: "green" as BV, label: "логистика", messages: ["Логистика: заказ передан в CDEK.", "Система: трек-номер CDEK-9012."] },
+    { title: "Backup 1С ЗУП требует проверки", sub: "Последний успешный backup: более 3 суток назад.", v: "red" as BV, label: "инфраструктура", messages: ["Мониторинг: backup не подтвердился.", "Инженер Сергей: запущу ручную проверку и сообщу результат."] },
   ];
+  const [active, setActive] = useState(0);
+  const current = notifs[active];
   return (
-    <Card cls="p-5">
-      <SH title="Уведомления" sub="Обращения, счета, проекты, аренда и отгрузки."
-        action={<Btn v="ghost" sz="sm">Отметить все прочитанными</Btn>} />
-      <div className="space-y-2">
-        {notifs.map((n, i) => (
-          <div key={i} className="flex items-start justify-between gap-4 p-3.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50/50 transition-colors">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-800">{n.title}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{n.sub}</p>
-            </div>
-            <Badge v={n.v} sm>{n.label}</Badge>
+    <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
+      <Card cls="xl:col-span-2 p-5">
+        <SH title="Уведомления" sub="Нажмите на уведомление, чтобы раскрыть его как чат/ленту." action={<Btn v="ghost" sz="sm">Отметить все прочитанными</Btn>} />
+        <div className="space-y-2">
+          {notifs.map((n, i) => (
+            <button key={i} onClick={() => setActive(i)}
+              className={`w-full text-left flex items-start justify-between gap-4 p-3.5 rounded-lg border bg-white transition-colors cursor-pointer ${active === i ? "border-slate-900 ring-1 ring-slate-900" : "border-slate-200 hover:bg-slate-50/50"}`}>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-800">{n.title}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{n.sub}</p>
+              </div>
+              <Badge v={n.v} sm>{n.label}</Badge>
+            </button>
+          ))}
+        </div>
+      </Card>
+      <Card cls="xl:col-span-3 p-5">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">{current.title}</h2>
+            <p className="text-sm text-slate-500 mt-1">{current.sub}</p>
           </div>
-        ))}
-      </div>
-    </Card>
+          <Badge v={current.v}>{current.label}</Badge>
+        </div>
+        <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 mb-4 flex flex-col gap-3 min-h-[220px]">
+          {current.messages.map((m, i) => (
+            <ChatMsg key={i} from={i % 2 === 0 ? "Система / менеджер" : "Клиент"} text={m} me={i % 2 === 1} />
+          ))}
+        </div>
+        <label className="block">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Ответить в уведомлении</span>
+          <textarea className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Напишите комментарий или вопрос менеджеру..." />
+        </label>
+        <div className="flex gap-2 mt-4 justify-end">
+          <Btn v="default">Создать обращение</Btn>
+          <Btn v="green">Отправить ответ</Btn>
+        </div>
+      </Card>
+    </div>
   );
 }
 
@@ -1524,6 +1603,18 @@ function BonusesScreen({ openModal }: { openModal: () => void }) {
               ["01.06.2026", "Оплата абонентки", "+500", <Badge v="green">начислено</Badge>],
             ]} />
           </div>
+        </Card>
+        <Card cls="p-5">
+          <SH title="Сертификат / промокод" sub="Одна строка для ввода кода без лишних полей." />
+          <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 mb-4">
+            <p className="text-sm font-bold text-blue-900">Подарочный сертификат</p>
+            <p className="text-sm text-blue-700 mt-1">Введите код сертификата или промокод, чтобы применить скидку или бонус.</p>
+          </div>
+          <label className="block mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Код сертификата / промокод</span>
+            <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Например: BONUS-2026" />
+          </label>
+          <Btn v="green" full>Применить код</Btn>
         </Card>
         <Card cls="p-5">
           <SH title="Списать бонусы" />
@@ -1663,13 +1754,27 @@ function ServicesScreen({ openModal }: { openModal: () => void }) {
 }
 
 function UsersScreen() {
+  const users = [
+    { name: "Мария Акопян", email: "maria@example.ru", role: "Руководитель", bases: "2", status: <Badge v="green">активен</Badge>, phone: "+7 999 111-22-33", login: "maria@edart.local" },
+    { name: "Бухгалтерия", email: "buh@example.ru", role: "Бухгалтер", bases: "1", status: <Badge v="green">активен</Badge>, phone: "+7 999 222-33-44", login: "buh@edart.local" },
+    { name: "Соболев Василий", email: "tech@example.ru", role: "Техспециалист", bases: "3", status: <Badge v="blue">приглашён</Badge>, phone: "+7 999 333-44-55", login: "tech@edart.local" },
+    { name: "Иван Петров", email: "ivan@example.ru", role: "Пользователь", bases: "1", status: <Badge v="gray">неактивен</Badge>, phone: "+7 999 000-00-00", login: "ivan@edart.local" },
+  ];
+  const [selected, setSelected] = useState(users[0]);
+  const [password, setPassword] = useState("EdArt-2026!");
+  const [repeat, setRepeat] = useState("EdArt-2026!");
+  const passwordOk = password.length >= 8 && password === repeat;
+  const generatePassword = () => {
+    const value = `Ed${Math.random().toString(36).slice(2, 7)}-${Math.floor(1000 + Math.random() * 9000)}!`;
+    setPassword(value);
+    setRepeat(value);
+  };
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <Card cls="p-5">
-          <SH title="Пользователи и роли"
-            sub="Мастер добавления: контакты → роль → контрагенты → базы 1С → подтверждение."
-            action={<Btn v="green" sz="sm"><UserPlus size={14} /> Добавить</Btn>} />
+          <SH title="Пользователи и роли" sub="Клик по строке открывает карточку пользователя."
+            action={<Btn v="green" sz="sm"><UserPlus size={14} /> Добавить пользователя</Btn>} />
           <div className="grid grid-cols-3 lg:grid-cols-5 gap-2 mb-5">
             {[
               { role: "Администратор", desc: "Все разделы" },
@@ -1677,70 +1782,43 @@ function UsersScreen() {
               { role: "Бухгалтер", desc: "Счета, акты, оплаты" },
               { role: "Техспециалист", desc: "Тикеты, серверы, базы" },
               { role: "Пользователь", desc: "Свои обращения" },
-            ].map(r => (
-              <div key={r.role} className="bg-slate-50 rounded-lg border border-slate-100 p-2.5">
-                <p className="text-xs font-bold text-slate-800 mb-0.5">{r.role}</p>
-                <p className="text-[10px] text-slate-500">{r.desc}</p>
-              </div>
-            ))}
+            ].map(r => <div key={r.role} className="bg-slate-50 rounded-lg border border-slate-100 p-2.5"><p className="text-xs font-bold text-slate-800 mb-0.5">{r.role}</p><p className="text-[10px] text-slate-500">{r.desc}</p></div>)}
           </div>
-          <Table compact heads={["Пользователь", "Email", "Роль", "Базы", "Статус"]} rows={[
-            ["Мария Акопян", <Mono>maria@example.ru</Mono>, "Руководитель", "2", <Badge v="green">активен</Badge>],
-            ["Бухгалтерия", <Mono>buh@example.ru</Mono>, "Бухгалтер", "1", <Badge v="green">активен</Badge>],
-            ["Соболев Василий", <Mono>tech@example.ru</Mono>, "Техспециалист", "3", <Badge v="blue">приглашён</Badge>],
-            ["Иван Петров", <Mono>ivan@example.ru</Mono>, "Пользователь", "1", <Badge v="gray">неактивен</Badge>],
-          ]} />
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
+              <thead><tr className="border-b border-slate-100"><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Пользователь</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Email</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Роль</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Базы</th><th className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2">Статус</th></tr></thead>
+              <tbody>{users.map(u => <tr key={u.email} onClick={() => setSelected(u)} className={`border-b border-slate-50 hover:bg-slate-50 cursor-pointer ${selected.email === u.email ? "bg-blue-50" : ""}`}><td className="py-3 pr-4 font-semibold text-slate-800">{u.name}</td><td className="py-3 pr-4"><Mono>{u.email}</Mono></td><td className="py-3 pr-4">{u.role}</td><td className="py-3 pr-4">{u.bases}</td><td className="py-3 pr-4">{u.status}</td></tr>)}</tbody>
+            </table>
+          </div>
         </Card>
+
         <Card cls="p-5">
-          <SH title="Добавить пользователя" />
-          <div className="flex gap-1.5 mb-4 flex-wrap">
-            {["1. Контакты", "2. Роль", "3. Контрагенты", "4. Базы"].map((t, i) => (
-              <button key={t} className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${i === 0 ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-500 border-slate-200"}`}>{t}</button>
-            ))}
+          <SH title="Карточка пользователя" sub="Карточка открывается по клику на строку." />
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <InfoGrid items={[{ label: "ФИО", value: selected.name }, { label: "Email", value: <Mono>{selected.email}</Mono> }, { label: "Телефон", value: selected.phone }, { label: "Роль", value: selected.role }]} />
           </div>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">ФИО</span>
-                <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" defaultValue="Иван Петров" />
-              </label>
-              <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Должность</span>
-                <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" defaultValue="Бухгалтер" />
-              </label>
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 mb-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Доступы</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {sectionAccess.map(s => <label key={s} className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" defaultChecked={s !== "Лицензии"} />{s}</label>)}
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Email</span>
-                <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" defaultValue="ivan@example.ru" />
-              </label>
-              <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Телефон</span>
-                <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" defaultValue="+7 999 000-00-00" />
-              </label>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <AccessValue label="Логин" value={selected.login} />
+            <div className="rounded-lg border border-slate-200 bg-white p-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Пароль</p>
+              <div className="flex gap-2"><input className={inputCls} value={password} onChange={(e) => setPassword(e.target.value)} /><CopyButton value={password} label="" /></div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Роль в кабинете</span>
-                <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-200">
-                  <option>Пользователь</option>
-                  <option>Бухгалтер</option>
-                  <option>Техспециалист</option>
-                  <option>Администратор клиента</option>
-                </select>
-              </label>
-              <label className="block">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Контрагент</span>
-                <select className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-200">
-                  <option>ED ART · ИНН 0000000000</option>
-                  <option>Плазма-Сервис · ИНН 7700123456</option>
-                </select>
-              </label>
-            </div>
-            <div className="flex gap-2">
-              <Btn v="green">Создать пользователя</Btn>
-              <Btn v="default">Сгенерировать доступы</Btn>
-            </div>
+            <label className="block col-span-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Повтор пароля</span>
+              <input className={`${inputCls} ${passwordOk ? "border-emerald-200" : "border-red-200"}`} value={repeat} onChange={(e) => setRepeat(e.target.value)} />
+              <p className={`text-xs mt-1 ${passwordOk ? "text-emerald-600" : "text-red-600"}`}>{passwordOk ? "Пароли совпадают, минимум 8 символов" : "Пароли не совпадают или меньше 8 символов"}</p>
+            </label>
+          </div>
+          <div className="flex gap-2 mt-4 flex-wrap">
+            <Btn v="green">Сохранить пользователя</Btn>
+            <Btn v="default" onClick={generatePassword}>Сгенерировать пароль</Btn>
+            <Btn v="default">Сбросить пароль</Btn>
           </div>
         </Card>
       </div>
@@ -1759,39 +1837,52 @@ function UsersScreen() {
 
 function KnowledgeScreen() {
   const articles = [
-    { title: "Как подключиться к серверу 1С", tags: ["1С", "Доступ"], views: 124 },
-    { title: "Что делать, если не открывается база", tags: ["1С", "База"], views: 287 },
-    { title: "Как передать доступ инженеру", tags: ["Безопасность"], views: 98 },
-    { title: "Настройка backup для баз 1С", tags: ["Backup", "1С"], views: 156 },
-    { title: "Подключение кассового принтера", tags: ["Оборудование", "Кассы"], views: 73 },
-    { title: "ЭДО в 1С: первичная настройка", tags: ["1С", "ЭДО"], views: 201 },
+    { title: "Как подключиться к серверу 1С", tags: ["1С", "Доступ"], views: 124, text: "Скачайте RDP-файл с настройками, откройте его и введите логин/пароль из карточки доступа. Если подключение не проходит, создайте обращение." },
+    { title: "Что делать, если не открывается база", tags: ["1С", "База"], views: 287, text: "Проверьте интернет, доступ к серверу и наличие свободных лицензий. Затем приложите скрин ошибки в обращение." },
+    { title: "Как передать доступ инженеру", tags: ["Безопасность"], views: 98, text: "Передавайте коды удаленного доступа только через обращение в личном кабинете или согласованный канал связи." },
+    { title: "Настройка backup для баз 1С", tags: ["Backup", "1С"], views: 156, text: "Backup должен выполняться ежедневно. В карточке базы смотрите дату последней копии и журнал backup." },
+    { title: "Подключение кассового принтера", tags: ["Оборудование", "Кассы"], views: 73, text: "Уточните модель принтера, драйвер, порт подключения и приложите фото ошибки или чек диагностики." },
+    { title: "ЭДО в 1С: первичная настройка", tags: ["1С", "ЭДО"], views: 201, text: "Подготовьте сертификат, данные оператора ЭДО и список организаций, для которых нужен обмен." },
   ];
+  const [selected, setSelected] = useState(articles[0]);
   return (
-    <Card cls="p-5">
-      <SH title="База знаний" sub="Инструкции, ответы на частые вопросы и материалы по продуктам." />
-      <div className="relative mb-4">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Найти инструкцию или ошибку..." />
-      </div>
-      <div className="flex gap-1.5 mb-5 flex-wrap">
-        {["Все", "1С", "Серверы", "Кассы", "Интеграции", "Backup"].map(t => (
-          <button key={t} className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${t === "Все" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}>{t}</button>
-        ))}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {articles.map((a, i) => (
-          <div key={i} className="bg-slate-50 rounded-lg border border-slate-100 p-4 hover:border-slate-200 transition-colors cursor-pointer">
-            <h3 className="text-sm font-bold text-slate-800 mb-2">{a.title}</h3>
-            <div className="flex items-center justify-between">
-              <div className="flex gap-1 flex-wrap">
-                {a.tags.map(t => <Badge key={t} v="gray" sm>{t}</Badge>)}
+    <div className="space-y-5">
+      <Card cls="p-5">
+        <SH title="База знаний" sub="Карточки кликабельные: открывают статью и действия." />
+        <div className="relative mb-4">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Найти инструкцию или ошибку..." />
+        </div>
+        <div className="flex gap-1.5 mb-5 flex-wrap">
+          {["Все", "1С", "Серверы", "Кассы", "Интеграции", "Backup"].map(t => (
+            <button key={t} className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${t === "Все" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}>{t}</button>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {articles.map((a, i) => (
+            <button key={i} onClick={() => setSelected(a)} className={`text-left bg-slate-50 rounded-lg border p-4 hover:border-slate-300 transition-colors cursor-pointer ${selected.title === a.title ? "border-slate-900 ring-1 ring-slate-900" : "border-slate-100"}`}>
+              <h3 className="text-sm font-bold text-slate-800 mb-2">{a.title}</h3>
+              <div className="flex items-center justify-between">
+                <div className="flex gap-1 flex-wrap">{a.tags.map(t => <Badge key={t} v="gray" sm>{t}</Badge>)}</div>
+                <span className="text-[10px] text-slate-400">{a.views} просмотров</span>
               </div>
-              <span className="text-[10px] text-slate-400">{a.views} просмотров</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
+            </button>
+          ))}
+        </div>
+      </Card>
+      <Card cls="p-5">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div><h2 className="text-lg font-bold text-slate-900">{selected.title}</h2><p className="text-sm text-slate-500 mt-1">Инструкция для клиента</p></div>
+          <CopyButton value={`https://lk.example.ru/kb/${selected.title}`} label="Скопировать ссылку" />
+        </div>
+        <p className="text-sm text-slate-700 leading-relaxed mb-4">{selected.text}</p>
+        <div className="flex gap-2 flex-wrap">
+          <Btn v="green">Создать обращение</Btn>
+          <Btn v="default">Открыть связанную услугу</Btn>
+          <Btn v="ghost"><Copy size={13} /> Скопировать текст</Btn>
+        </div>
+      </Card>
+    </div>
   );
 }
 
@@ -1894,12 +1985,12 @@ const navGroups = [
   },
 ];
 
-function Sidebar({ current, onChange, cpName, cpInn }: {
-  current: Screen; onChange: (s: Screen) => void; cpName: string; cpInn: string;
+function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose }: {
+  current: Screen; onChange: (s: Screen) => void; cpName: string; cpInn: string; mobileOpen?: boolean; onClose?: () => void;
 }) {
   return (
     <aside
-      className="lk-sidebar-scroll sidebar-scrollbar-hidden w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className={`lk-sidebar-scroll sidebar-scrollbar-hidden w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden fixed lg:sticky top-0 left-0 z-50 transform transition-transform duration-200 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as any}
     >
       {/* Brand */}
@@ -1954,7 +2045,7 @@ function Sidebar({ current, onChange, cpName, cpInn }: {
             {group.items.map(item => {
               const isActive = current === item.id;
               return (
-                <button key={item.id} onClick={() => onChange(item.id)}
+                <button key={item.id} onClick={() => { onChange(item.id); onClose?.(); }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer mb-0.5 ${isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"}`}>
                   <span className="shrink-0">{item.icon}</span>
                   <span className="truncate flex-1 text-left">{item.label}</span>
@@ -1993,6 +2084,7 @@ export default function App() {
   const [genericActionTitle, setGenericActionTitle] = useState("Действие");
   const [cpName, setCpName] = useState("ED ART");
   const [cpInn, setCpInn] = useState("0000000000");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -2075,20 +2167,26 @@ export default function App() {
         }
       `}</style>
       <div className="flex h-screen overflow-hidden bg-[#F0F4F8]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
-      <Sidebar current={screen} onChange={setScreen} cpName={cpName} cpInn={cpInn} />
+      {mobileMenuOpen && <div className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" onClick={() => setMobileMenuOpen(false)} />}
+      <Sidebar current={screen} onChange={setScreen} cpName={cpName} cpInn={cpInn} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
         <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3">
           <div className="flex items-center justify-between gap-4">
-            <div>
+            <div className="flex items-start gap-3 min-w-0">
+              <button type="button" onClick={() => setMobileMenuOpen(true)} className="lg:hidden mt-0.5 w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-700 flex items-center justify-center shrink-0 hover:bg-slate-50">
+                <Menu size={18} />
+              </button>
+              <div className="min-w-0">
               <h1 className="text-xl font-bold text-slate-900 leading-tight">{TITLES[screen]}</h1>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">Все системы работают · UTC+3 · SLA под контролем</span>
               </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="hidden md:flex items-center gap-2 shrink-0">
               <Btn v="green" sz="sm" onClick={() => { setGenericActionTitle("Создать обращение"); setModal("generic"); }}><Plus size={13} /> Создать обращение</Btn>
               <Btn v="blue" sz="sm" onClick={() => setScreen("services")}>Каталог услуг и товаров</Btn>
               <Btn v="default" sz="sm" onClick={() => { setGenericActionTitle("Счет на оплату"); setModal("generic"); }}>Запросить счёт</Btn>
