@@ -559,9 +559,119 @@ function renderFormField(field: FormField, index: number) {
   return <Field key={index} label={field.label} full={field.full}><input className={inputCls} placeholder={field.placeholder} /></Field>;
 }
 
+
+function CounterpartyInnWizard({ onClose }: { onClose: () => void }) {
+  const [inn, setInn] = useState("0000000000");
+  const [filled, setFilled] = useState(false);
+  const [sent, setSent] = useState(false);
+  const demo = inn.trim() === "7700123456" ? {
+    short: "Плазма-Сервис",
+    full: "ООО \"Плазма-Сервис\"",
+    kpp: "770001001",
+    ogrn: "1237700001234",
+    address: "г. Москва, ул. Примерная, д. 10, офис 25",
+    fact: "г. Москва, ул. Примерная, д. 10, офис 25",
+    bank: "АО \"Тест Банк\"",
+    bik: "044525000",
+    rs: "40702810000000000001",
+    ks: "30101810000000000000",
+    person: "Петров Петр Петрович",
+    phone: "+7 (495) 000-00-00",
+    email: "docs@plazma-service.ru",
+  } : {
+    short: "ED ART",
+    full: "ООО \"ЭД АРТ\"",
+    kpp: "000001001",
+    ogrn: "1020000000000",
+    address: "г. Москва, ул. Деловая, д. 1, офис 15",
+    fact: "г. Москва, ул. Деловая, д. 1, офис 15",
+    bank: "ПАО \"Демо Банк\"",
+    bik: "044525225",
+    rs: "40702810900000000000",
+    ks: "30101810400000000225",
+    person: "Иванов Иван Иванович",
+    phone: "+7 (999) 000-00-00",
+    email: "docs@ed-art.ru",
+  };
+
+  return (
+    <Overlay onClose={onClose}>
+      <Card cls="max-w-3xl w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+        <div className="flex items-start justify-between gap-4 p-5 sm:p-6 pb-4 border-b border-slate-100 shrink-0">
+          <div>
+            <h2 className="text-xl font-bold text-slate-900">Добавить контрагента</h2>
+            <p className="text-sm text-slate-500 mt-1">Сначала введите ИНН. В реальном кабинете реквизиты будут подтягиваться из 1С/подсказок, здесь показан прототип автозаполнения.</p>
+          </div>
+          <Btn v="ghost" sz="sm" onClick={onClose}><X size={16} /></Btn>
+        </div>
+        <div className="px-5 sm:px-6 py-5 overflow-y-auto lk-modal-scroll">
+          {sent ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
+              <div className="flex items-center gap-2 font-bold"><CheckCircle2 size={18} />Контрагент отправлен на проверку реквизитов</div>
+              <p className="text-sm mt-2">Это прототипное состояние. Реальная проверка и сохранение будут выполняться через 1С/CRM.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-4">
+                <p className="font-bold text-slate-900 mb-1">Быстрое добавление по ИНН</p>
+                <p className="text-sm text-slate-600">Клиент вводит только ИНН, система заполняет название, КПП, ОГРН, адрес и банковские реквизиты. После этого данные можно дополнить и отредактировать.</p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end">
+                <Field label="ИНН">
+                  <input className={inputCls} value={inn} onChange={(e) => setInn(e.target.value.replace(/[^0-9]/g, "").slice(0, 12))} placeholder="Введите ИНН организации или ИП" />
+                </Field>
+                <Btn v="green" onClick={() => setFilled(true)}>Найти / заполнить</Btn>
+              </div>
+
+              {filled && (
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                    <div className="flex items-center gap-2 font-bold text-emerald-800"><CheckCircle2 size={18} />Найдена организация</div>
+                    <p className="text-sm text-emerald-700 mt-1">Проверьте автозаполненные реквизиты. Любое поле можно изменить перед сохранением.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Field label="Тип контрагента"><select className={inputCls} defaultValue="Юридическое лицо"><option>Юридическое лицо</option><option>ИП</option><option>Физическое лицо</option></select></Field>
+                    <Field label="Краткое название"><input className={inputCls} defaultValue={demo.short} /></Field>
+                    <Field label="Полное юридическое наименование" full><input className={inputCls} defaultValue={demo.full} /></Field>
+                    <Field label="ИНН"><input className={inputCls} value={inn} onChange={(e) => setInn(e.target.value.replace(/[^0-9]/g, "").slice(0, 12))} /></Field>
+                    <Field label="КПП"><input className={inputCls} defaultValue={demo.kpp} /></Field>
+                    <Field label="ОГРН / ОГРНИП"><input className={inputCls} defaultValue={demo.ogrn} /></Field>
+                    <Field label="Налоговая система"><select className={inputCls} defaultValue="ОСНО"><option>ОСНО</option><option>УСН доходы</option><option>УСН доходы-расходы</option><option>Патент</option><option>Не знаю</option></select></Field>
+                    <Field label="Юридический адрес" full><input className={inputCls} defaultValue={demo.address} /></Field>
+                    <Field label="Фактический адрес" full><input className={inputCls} defaultValue={demo.fact} /></Field>
+                    <Field label="Банк"><input className={inputCls} defaultValue={demo.bank} /></Field>
+                    <Field label="БИК"><input className={inputCls} defaultValue={demo.bik} /></Field>
+                    <Field label="Расчётный счёт"><input className={inputCls} defaultValue={demo.rs} /></Field>
+                    <Field label="Корр. счёт"><input className={inputCls} defaultValue={demo.ks} /></Field>
+                    <Field label="Контактное лицо"><input className={inputCls} defaultValue={demo.person} /></Field>
+                    <Field label="Телефон"><input className={inputCls} defaultValue={demo.phone} /></Field>
+                    <Field label="Email для документов"><input className={inputCls} defaultValue={demo.email} /></Field>
+                    <Field label="Email для уведомлений"><input className={inputCls} defaultValue={demo.email} /></Field>
+                    <Field label="Комментарий" full><textarea className={textAreaCls} placeholder="Можно указать особенности документооборота, договора, ЭДО или ответственного сотрудника" /></Field>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 justify-end border-t border-slate-100 p-4 sm:px-6 bg-white shrink-0">
+          {sent ? <Btn v="default" onClick={onClose}>Закрыть</Btn> : (
+            <>
+              {filled && <Btn v="green" onClick={() => setSent(true)}>Сохранить контрагента</Btn>}
+              {filled && <Btn v="primary" onClick={() => setFilled(true)}>Редактировать данные</Btn>}
+              <Btn v="default" onClick={onClose}>Отмена</Btn>
+            </>
+          )}
+        </div>
+      </Card>
+    </Overlay>
+  );
+}
+
 function GenericActionModal({ title, onClose }: { title: string; onClose: () => void }) {
   const [sent, setSent] = useState(false);
   const key = actionFromTitle(title);
+  if (key === "counterparty") return <CounterpartyInnWizard onClose={onClose} />;
   const spec = key === "unknown" ? { ...FORM_SPECS.unknown, title, fields: [{ label: "Действие", readonly: title }, { label: "Комментарий", type: "textarea" as const, full: true }] } : FORM_SPECS[key];
   return (
     <Overlay onClose={onClose}>
@@ -757,7 +867,7 @@ function DashboardScreen({ nav, openModal, openDiscussion }: {
   );
 }
 
-function CounterpartiesScreen({ onSelect }: { onSelect: (name: string, inn: string) => void }) {
+function CounterpartiesScreen({ onSelect, openModal }: { onSelect: (name: string, inn: string) => void; openModal: (title: string) => void }) {
   const [active, setActive] = useState("ED ART");
   const cps = [
     { id: "ED ART", inn: "0000000000", form: "ООО", desc: "Основной контрагент. 3 договора, 4 обращения, 2 счёта.", deals: 4 },
@@ -768,12 +878,12 @@ function CounterpartiesScreen({ onSelect }: { onSelect: (name: string, inn: stri
     <Card cls="p-5">
       <SH title="Контрагенты пользователя"
         sub="Один пользователь может работать за несколько компаний с разными ИНН. 1С — главный источник данных."
-        action={<Btn v="green" sz="sm"><Plus size={14} /> Добавить контрагента</Btn>} />
+        action={<Btn v="green" sz="sm" onClick={() => openModal("Добавить контрагента")}><Plus size={14} /> Добавить контрагента</Btn>} />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         {cps.map((cp) => {
           const isActive = active === cp.id;
           return (
-            <div key={cp.id} className={`rounded-xl border p-4 transition-all ${isActive ? "border-blue-300 bg-blue-50/50 ring-1 ring-blue-200" : "border-slate-200 bg-white"}`}>
+            <div key={cp.id} className={`rounded-xl border p-4 transition-all min-h-[185px] flex flex-col ${isActive ? "border-blue-300 bg-blue-50/50 ring-1 ring-blue-200" : "border-slate-200 bg-white"}`}>
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <p className="font-bold text-slate-900">{cp.id}</p>
@@ -781,11 +891,12 @@ function CounterpartiesScreen({ onSelect }: { onSelect: (name: string, inn: stri
                 </div>
                 {isActive && <Badge v="blue" dot>активный</Badge>}
               </div>
-              <p className="text-xs text-slate-500 mb-3">{cp.desc}</p>
-              <div className="flex gap-2">
-                <Btn v={isActive ? "blue" : "default"} sz="sm" full onClick={() => { setActive(cp.id); onSelect(cp.id, cp.inn); }}>
+              <p className="text-xs text-slate-500 mb-3 min-h-[32px]">{cp.desc}</p>
+              <div className="mt-auto grid grid-cols-2 gap-2 items-stretch">
+                <Btn v={isActive ? "blue" : "default"} sz="sm" full cls="h-full" onClick={() => { setActive(cp.id); onSelect(cp.id, cp.inn); }}>
                   {isActive ? "Выбран" : "Выбрать"}
                 </Btn>
+                <Btn v="default" sz="sm" full cls="h-full" onClick={() => openModal("Изменить реквизиты контрагента")}>Реквизиты</Btn>
               </div>
             </div>
           );
@@ -2258,7 +2369,7 @@ export default function App() {
   const renderScreen = () => {
     switch (screen) {
       case "dashboard": return <DashboardScreen nav={setScreen} openModal={(title) => { setGenericActionTitle(title); setModal("generic"); }} openDiscussion={openDiscussion} />;
-      case "counterparties": return <CounterpartiesScreen onSelect={(n, i) => { setCpName(n); setCpInn(i); }} />;
+      case "counterparties": return <CounterpartiesScreen onSelect={(n, i) => { setCpName(n); setCpInn(i); }} openModal={(title) => { setGenericActionTitle(title); setModal("generic"); }} />;
       case "tickets": return <TicketsScreen openModal={() => { setGenericActionTitle("Создать обращение"); setModal("generic"); }} openDiscussion={openDiscussion} />;
       case "deals": return <DealsScreen />;
       case "contracts": return <ContractsScreen />;
