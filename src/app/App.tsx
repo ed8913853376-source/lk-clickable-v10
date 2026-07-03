@@ -1782,37 +1782,296 @@ function OrdersScreen({ openDiscussion }: { openDiscussion: (r: string) => void 
 }
 
 function ShipmentsScreen() {
+  type OrderLine = {
+    type: "Товар" | "Услуга";
+    name: string;
+    code: string;
+    qty: string;
+    price: string;
+    sum: string;
+    status: string;
+  };
+  type OrderRecord = {
+    id: string;
+    title: string;
+    counterparty: string;
+    status: string;
+    badge: BV;
+    expected: string;
+    amount: string;
+    payment: string;
+    invoice: string;
+    delivery: string;
+    address: string;
+    track: string;
+    manager: string;
+    lines: OrderLine[];
+    timeline: { date: string; text: string }[];
+  };
+
+  const orders: OrderRecord[] = [
+    {
+      id: "#9012",
+      title: "Кассовый принтер и настройка",
+      counterparty: "ED ART",
+      status: "В пути",
+      badge: "blue",
+      expected: "29.06.2026",
+      amount: "22 900 ₽",
+      payment: "Оплачен картой",
+      invoice: "Счёт №8997 от 24.06.2026",
+      delivery: "CDEK",
+      address: "Москва, ул. Примерная, 12, офис 4",
+      track: "CDEK-9012-4477",
+      manager: "Алексей Петров",
+      lines: [
+        { type: "Товар", name: "Кассовый принтер АТОЛ RP-326", code: "ATOL-RP326", qty: "1 шт.", price: "18 500 ₽", sum: "18 500 ₽", status: "Отгружен" },
+        { type: "Услуга", name: "Настройка печати чеков и тестовая печать", code: "SERVICE-SETUP", qty: "1 усл.", price: "3 500 ₽", sum: "3 500 ₽", status: "Запланирована" },
+        { type: "Товар", name: "Кабель USB и расходная лента", code: "KIT-USB-TAPE", qty: "1 компл.", price: "900 ₽", sum: "900 ₽", status: "Отгружен" },
+      ],
+      timeline: [
+        { date: "24.06.2026 — Заказ оформлен", text: "Заказ принят в обработку, счет сформирован автоматически." },
+        { date: "24.06.2026 — Оплата получена", text: "Платеж привязан к заказу и счету №8997." },
+        { date: "25.06.2026 — Сборка", text: "Оборудование подготовлено и проверено инженером." },
+        { date: "26.06.2026 — Отгрузка", text: "Передан в CDEK, присвоен трек-номер." },
+      ],
+    },
+    {
+      id: "#9008",
+      title: "Сканеры штрихкода для склада",
+      counterparty: "ED ART",
+      status: "Готов к выдаче",
+      badge: "green",
+      expected: "сегодня",
+      amount: "16 800 ₽",
+      payment: "Оплачен по счету",
+      invoice: "Счёт №8988 от 22.06.2026",
+      delivery: "Самовывоз",
+      address: "Пункт выдачи: офис компании",
+      track: "—",
+      manager: "Алексей Петров",
+      lines: [
+        { type: "Товар", name: "Сканер штрихкода Mertech CL-2210", code: "MERTECH-CL2210", qty: "2 шт.", price: "7 900 ₽", sum: "15 800 ₽", status: "Готово" },
+        { type: "Услуга", name: "Проверка подключения к 1С Розница", code: "SERVICE-1C-CHECK", qty: "1 усл.", price: "1 000 ₽", sum: "1 000 ₽", status: "Готово" },
+      ],
+      timeline: [
+        { date: "22.06.2026 — Заказ создан", text: "Сформирован по заявке клиента." },
+        { date: "23.06.2026 — Оплачен", text: "Платеж поступил на расчетный счет." },
+        { date: "24.06.2026 — Готов к выдаче", text: "Оборудование ожидает клиента в офисе." },
+      ],
+    },
+    {
+      id: "#8997",
+      title: "Расходные материалы",
+      counterparty: "Retail Group",
+      status: "Ожидает оплаты",
+      badge: "amber",
+      expected: "после оплаты",
+      amount: "6 800 ₽",
+      payment: "Ожидает оплаты",
+      invoice: "Счёт №8977 от 20.06.2026",
+      delivery: "Доставка курьером",
+      address: "Новосибирск, ул. Логистическая, 8",
+      track: "будет после оплаты",
+      manager: "Мария Иванова",
+      lines: [
+        { type: "Товар", name: "Чековая лента 57 мм", code: "TAPE-57", qty: "20 шт.", price: "140 ₽", sum: "2 800 ₽", status: "Резерв" },
+        { type: "Товар", name: "Картридж для принтера этикеток", code: "LABEL-CART", qty: "4 шт.", price: "1 000 ₽", sum: "4 000 ₽", status: "Резерв" },
+      ],
+      timeline: [
+        { date: "20.06.2026 — Заказ создан", text: "Товары зарезервированы на складе." },
+        { date: "20.06.2026 — Счет выставлен", text: "Ожидаем оплату для передачи в сборку." },
+      ],
+    },
+    {
+      id: "#8985",
+      title: "Серверная память и работы",
+      counterparty: "Плазма-Сервис",
+      status: "Доставлен",
+      badge: "gray",
+      expected: "10.06.2026",
+      amount: "41 500 ₽",
+      payment: "Оплачен",
+      invoice: "Счёт №8920 от 06.06.2026",
+      delivery: "Деловые линии",
+      address: "Санкт-Петербург, пр. Технический, 4",
+      track: "DL-8985-01",
+      manager: "Алексей Петров",
+      lines: [
+        { type: "Товар", name: "Серверная память DDR4 ECC 32 GB", code: "RAM-ECC-32", qty: "2 шт.", price: "18 500 ₽", sum: "37 000 ₽", status: "Доставлено" },
+        { type: "Услуга", name: "Диагностика сервера перед заменой", code: "SERVICE-DIAG", qty: "1 усл.", price: "4 500 ₽", sum: "4 500 ₽", status: "Выполнено" },
+      ],
+      timeline: [
+        { date: "06.06.2026 — Заказ создан", text: "Подготовлена спецификация и счет." },
+        { date: "07.06.2026 — Оплата", text: "Оплата поступила." },
+        { date: "10.06.2026 — Доставлен", text: "Закрывающие документы доступны в кабинете." },
+      ],
+    },
+  ];
+
+  const [activeId, setActiveId] = useState(orders[0].id);
+  const [notice, setNotice] = useState("");
+  const active = orders.find(o => o.id === activeId) || orders[0];
+  const rowsTotal = active.lines.reduce((acc, line) => acc + Number(line.sum.replace(/[^0-9]/g, "")), 0).toLocaleString("ru-RU") + " ₽";
+
+  const openAction = (title: string) => {
+    window.dispatchEvent(new CustomEvent("lk:prototype-action", { detail: { title } }));
+  };
+  const mark = (text: string) => {
+    setNotice(text);
+    window.setTimeout(() => setNotice(""), 2600);
+  };
+
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-      <Card cls="p-5">
+    <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
+      <Card cls="xl:col-span-2 p-5">
         <SH title="Заказы и отгрузки"
-          sub="Оборудование, расходники — со статусами заказа, оплаты, сборки, отгрузки и доставки." />
-        <Table heads={["Заказ", "Состав", "Статус", "Ожидаемая дата"]} rows={[
-          ["#9012", "Кассовый принтер · 1 шт.", <Badge v="blue">в пути</Badge>, "29.06.2026"],
-          ["#9008", "Сканер штрихкода · 2 шт.", <Badge v="green">готов к выдаче</Badge>, "сегодня"],
-          ["#8997", "Расходники (лента, картриджи)", <Badge v="amber">ожидает оплаты</Badge>, "после оплаты"],
-          ["#8985", "Серверная память 32 GB", <Badge v="gray">доставлен</Badge>, "10.06.2026"],
-        ]} />
+          sub="Нажмите на заказ, чтобы открыть документ, состав товаров/услуг, оплату, доставку и действия." />
+        <div className="space-y-2">
+          {orders.map(order => (
+            <button key={order.id} type="button" onClick={() => setActiveId(order.id)}
+              className={`w-full text-left rounded-xl border p-3.5 transition-all cursor-pointer ${active.id === order.id ? "border-slate-900 ring-1 ring-slate-900 bg-white" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-extrabold text-slate-900">{order.id} · {order.title}</p>
+                  <p className="text-xs text-slate-500 mt-1 truncate">{order.counterparty} · {order.amount} · {order.invoice}</p>
+                </div>
+                <Badge v={order.badge}>{order.status}</Badge>
+              </div>
+              <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-slate-500">
+                <span><b className="text-slate-700">Оплата:</b> {order.payment}</span>
+                <span><b className="text-slate-700">Доставка:</b> {order.delivery}</span>
+                <span><b className="text-slate-700">Дата:</b> {order.expected}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Btn v="green" sz="sm" onClick={() => openAction("Заказать товар")}>Новый заказ</Btn>
+          <Btn v="default" sz="sm" onClick={() => openAction("Запросить КП по товарам и услугам")}>Запросить КП</Btn>
+        </div>
       </Card>
-      <Card cls="p-5">
-        <SH title="Заказ #9012 — Кассовый принтер" />
-        <div className="flex gap-2 mb-4"><Badge v="blue">В пути</Badge></div>
-        <div className="bg-slate-50 rounded-lg p-4 border border-slate-100 mb-4">
-          <InfoGrid items={[
-            { label: "Заказ", value: "#9012" },
-            { label: "Состав", value: "Кассовый принтер · 1 шт." },
-            { label: "Сумма", value: "18 500 ₽" },
-            { label: "Контрагент", value: "ED ART" },
-          ]} />
+
+      <Card cls="xl:col-span-3 overflow-hidden">
+        <div className="p-5 border-b border-slate-100">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-900">Заказ {active.id}</h2>
+              <p className="text-sm text-slate-500 mt-1">{active.title}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 items-center">
+              <Badge v={active.badge}>{active.status}</Badge>
+              <Badge v={active.payment.includes("Ожидает") ? "amber" : "green"}>{active.payment}</Badge>
+            </div>
+          </div>
         </div>
-        <div className="mb-4">
-          <TEvent date="24.06.2026 — Заказ оформлен" text="Принят в обработку" />
-          <TEvent date="25.06.2026 — Передан поставщику" text="Заявка направлена на склад" />
-          <TEvent date="26.06.2026 — Отгружен" text="Передан в службу доставки" last />
-        </div>
-        <div className="flex gap-2">
-          <Btn v="default" sz="sm"><Download size={13} /> Документы</Btn>
-          <Btn v="ghost" sz="sm">Связаться с менеджером</Btn>
+
+        <div className="p-5 space-y-5">
+          {notice && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-800 flex items-center gap-2">
+              <CheckCircle2 size={16} /> {notice}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <InfoGrid items={[
+                { label: "Контрагент", value: active.counterparty },
+                { label: "Сумма", value: active.amount },
+                { label: "Счёт", value: active.invoice },
+                { label: "Менеджер", value: active.manager },
+              ]} />
+            </div>
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+              <InfoGrid items={[
+                { label: "Доставка", value: active.delivery },
+                { label: "Трек-номер", value: active.track === "—" ? "Не требуется" : <span className="inline-flex items-center gap-2">{active.track} <CopyButton value={active.track} label="" /></span> },
+                { label: "Ожидаемая дата", value: active.expected },
+                { label: "Адрес", value: active.address },
+              ]} />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900">Состав документа</h3>
+                <p className="text-xs text-slate-500">Полный список товаров и услуг внутри заказа.</p>
+              </div>
+              <Badge v="gray">Итого по строкам: {rowsTotal}</Badge>
+            </div>
+            <div className="overflow-x-auto rounded-xl border border-slate-200">
+              <table className="w-full text-sm min-w-[760px]">
+                <thead className="bg-slate-50">
+                  <tr className="border-b border-slate-200">
+                    {["Тип", "Номенклатура", "Код", "Кол-во", "Цена", "Сумма", "Статус"].map(h => (
+                      <th key={h} className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 py-2.5 px-3">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {active.lines.map((line, i) => (
+                    <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
+                      <td className="py-3 px-3"><Badge v={line.type === "Товар" ? "blue" : "purple"}>{line.type}</Badge></td>
+                      <td className="py-3 px-3 font-semibold text-slate-800">{line.name}</td>
+                      <td className="py-3 px-3"><Mono>{line.code}</Mono></td>
+                      <td className="py-3 px-3 text-slate-600">{line.qty}</td>
+                      <td className="py-3 px-3 text-slate-600">{line.price}</td>
+                      <td className="py-3 px-3 font-bold text-slate-900">{line.sum}</td>
+                      <td className="py-3 px-3 text-slate-600">{line.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 mb-3">История заказа</h3>
+              <div className="rounded-xl border border-slate-200 p-4 bg-white">
+                {active.timeline.map((event, i) => (
+                  <TEvent key={i} date={event.date} text={event.text} last={i === active.timeline.length - 1} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 mb-3">Действия по заказу</h3>
+              <div className="rounded-xl border border-slate-200 p-4 bg-white space-y-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Счёт и оплата</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Btn v="green" sz="sm" onClick={() => openAction(`Оплатить заказ ${active.id}`)}><CreditCard size={13} /> Оплатить</Btn>
+                    <Btn v="default" sz="sm" onClick={() => mark(`Счёт по заказу ${active.id} скачан`) }><Download size={13} /> Скачать счёт</Btn>
+                    <Btn v="default" sz="sm" onClick={() => openAction(`Счет на оплату по заказу ${active.id}`)}>Сформировать счёт</Btn>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Документы</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Btn v="default" sz="sm" onClick={() => mark(`УПД по заказу ${active.id} скачан`) }><Download size={13} /> Скачать УПД</Btn>
+                    <Btn v="default" sz="sm" onClick={() => mark(`Накладная по заказу ${active.id} скачана`) }><Download size={13} /> Накладная</Btn>
+                    <Btn v="default" sz="sm" onClick={() => openAction(`Отправить документы по заказу ${active.id}`)}>На email</Btn>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Логистика</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Btn v="blue" sz="sm" onClick={() => active.track === "будет после оплаты" || active.track === "—" ? mark("Трек-номер пока не назначен") : mark(`Открыт трек ${active.track}`)}>Отследить отгрузку</Btn>
+                    <Btn v="default" sz="sm" onClick={() => openAction(`Изменить адрес доставки по заказу ${active.id}`)}>Изменить адрес</Btn>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Управление</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Btn v="default" sz="sm" onClick={() => openAction(`Повторить заказ ${active.id}`)}><RefreshCw size={13} /> Повторить заказ</Btn>
+                    <Btn v="danger" sz="sm" onClick={() => mark(`Запрос на отмену заказа ${active.id} отправлен менеджеру`) }><X size={13} /> Отменить заказ</Btn>
+                    <Btn v="default" sz="sm" onClick={() => openAction(`Создать обращение по заказу ${active.id}`)}><MessageSquare size={13} /> Создать обращение</Btn>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </Card>
     </div>
