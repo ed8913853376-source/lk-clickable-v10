@@ -1794,6 +1794,7 @@ function ShipmentsScreen() {
   type OrderRecord = {
     id: string;
     title: string;
+    note: string;
     counterparty: string;
     status: string;
     badge: BV;
@@ -1801,6 +1802,8 @@ function ShipmentsScreen() {
     amount: string;
     payment: string;
     invoice: string;
+    invoiceNo: string;
+    invoiceDate: string;
     delivery: string;
     address: string;
     track: string;
@@ -1813,6 +1816,7 @@ function ShipmentsScreen() {
     {
       id: "#9012",
       title: "Кассовый принтер и настройка",
+      note: "Доставка оборудования + настройка на месте",
       counterparty: "ED ART",
       status: "В пути",
       badge: "blue",
@@ -1820,6 +1824,8 @@ function ShipmentsScreen() {
       amount: "22 900 ₽",
       payment: "Оплачен картой",
       invoice: "Счёт №8997 от 24.06.2026",
+      invoiceNo: "Счёт №8997",
+      invoiceDate: "24.06.2026",
       delivery: "CDEK",
       address: "Москва, ул. Примерная, 12, офис 4",
       track: "CDEK-9012-4477",
@@ -1839,6 +1845,7 @@ function ShipmentsScreen() {
     {
       id: "#9008",
       title: "Сканеры штрихкода для склада",
+      note: "Готов к выдаче в офисе, документы доступны",
       counterparty: "ED ART",
       status: "Готов к выдаче",
       badge: "green",
@@ -1846,6 +1853,8 @@ function ShipmentsScreen() {
       amount: "16 800 ₽",
       payment: "Оплачен по счету",
       invoice: "Счёт №8988 от 22.06.2026",
+      invoiceNo: "Счёт №8988",
+      invoiceDate: "22.06.2026",
       delivery: "Самовывоз",
       address: "Пункт выдачи: офис компании",
       track: "—",
@@ -1863,6 +1872,7 @@ function ShipmentsScreen() {
     {
       id: "#8997",
       title: "Расходные материалы",
+      note: "Ожидаем оплату, товары зарезервированы",
       counterparty: "Retail Group",
       status: "Ожидает оплаты",
       badge: "amber",
@@ -1870,6 +1880,8 @@ function ShipmentsScreen() {
       amount: "6 800 ₽",
       payment: "Ожидает оплаты",
       invoice: "Счёт №8977 от 20.06.2026",
+      invoiceNo: "Счёт №8977",
+      invoiceDate: "20.06.2026",
       delivery: "Доставка курьером",
       address: "Новосибирск, ул. Логистическая, 8",
       track: "будет после оплаты",
@@ -1886,6 +1898,7 @@ function ShipmentsScreen() {
     {
       id: "#8985",
       title: "Серверная память и работы",
+      note: "Заказ закрыт, документы доступны в кабинете",
       counterparty: "Плазма-Сервис",
       status: "Доставлен",
       badge: "gray",
@@ -1893,6 +1906,8 @@ function ShipmentsScreen() {
       amount: "41 500 ₽",
       payment: "Оплачен",
       invoice: "Счёт №8920 от 06.06.2026",
+      invoiceNo: "Счёт №8920",
+      invoiceDate: "06.06.2026",
       delivery: "Деловые линии",
       address: "Санкт-Петербург, пр. Технический, 4",
       track: "DL-8985-01",
@@ -1935,8 +1950,16 @@ function ShipmentsScreen() {
               className={`w-full text-left rounded-xl border p-3.5 transition-all cursor-pointer ${active.id === order.id ? "border-slate-900 ring-1 ring-slate-900 bg-white" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[13px] leading-tight font-bold text-slate-900">{order.id} · {order.title}</p>
-                  <p className="text-[11px] leading-tight text-slate-500 mt-1 truncate">{order.counterparty} · {order.amount} · {order.invoice}</p>
+                  <p className="text-[13px] leading-tight font-bold text-slate-900">{order.id}</p>
+                  <p className="text-[11px] leading-tight text-slate-500 mt-1 truncate">{order.note}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] leading-none text-slate-500">
+                    <span>{order.counterparty}</span>
+                    <span>·</span>
+                    <span>{order.amount}</span>
+                    <span>·</span>
+                    <span className="whitespace-nowrap">{order.invoiceNo}</span>
+                    <span className="whitespace-nowrap text-slate-400">от {order.invoiceDate}</span>
+                  </div>
                 </div>
                 <Badge v={order.badge}>{order.status}</Badge>
               </div>
@@ -1980,7 +2003,7 @@ function ShipmentsScreen() {
               <InfoGrid compact items={[
                 { label: "Контрагент", value: active.counterparty },
                 { label: "Сумма", value: active.amount },
-                { label: "Счёт", value: active.invoice },
+                { label: "Счёт", value: <span className="inline-flex flex-wrap items-baseline gap-x-1.5 text-[10.5px] leading-tight"><span className="whitespace-nowrap">{active.invoiceNo}</span><span className="whitespace-nowrap text-slate-500">от {active.invoiceDate}</span></span> },
                 { label: "Менеджер", value: active.manager },
               ]} />
             </div>
@@ -2003,10 +2026,10 @@ function ShipmentsScreen() {
               <Badge v="gray">Итого по строкам: {rowsTotal}</Badge>
             </div>
             <div className="overflow-x-auto rounded-xl border border-slate-200">
-              <table className="w-full text-sm min-w-[760px]">
+              <table className="w-full text-sm min-w-[680px]">
                 <thead className="bg-slate-50">
                   <tr className="border-b border-slate-200">
-                    {["Тип", "Номенклатура", "Код", "Кол-во", "Цена", "Сумма", "Статус"].map(h => (
+                    {["Номенклатура", "Код", "Кол-во", "Цена", "Сумма", "Статус"].map(h => (
                       <th key={h} className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 py-2.5 px-3">{h}</th>
                     ))}
                   </tr>
@@ -2014,7 +2037,6 @@ function ShipmentsScreen() {
                 <tbody>
                   {active.lines.map((line, i) => (
                     <tr key={i} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60">
-                      <td className="py-3 px-3"><Badge v={line.type === "Товар" ? "blue" : "purple"}>{line.type}</Badge></td>
                       <td className="py-3 px-3 font-semibold text-slate-800">{line.name}</td>
                       <td className="py-3 px-3"><Mono>{line.code}</Mono></td>
                       <td className="py-3 px-3 text-slate-600">{line.qty}</td>
