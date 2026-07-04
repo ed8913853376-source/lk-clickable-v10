@@ -50,7 +50,24 @@
 </head>
   <body>
     <div id="root"></div>
-    <script type="module">(function(){const o=document.createElement("link").relList;if(o&&o.supports&&o.supports("modulepreload"))return;for(const j of document.querySelectorAll('link[rel="modulepreload"]'))h(j);new MutationObserver(j=>{for(const m of j)if(m.type==="childList")for(const C of m.addedNodes)C.tagName==="LINK"&&C.rel==="modulepreload"&&h(C)}).observe(document,{childList:!0,subtree:!0});function d(j){const m={};return j.integrity&&(m.integrity=j.integrity),j.referrerPolicy&&(m.referrerPolicy=j.referrerPolicy),j.crossOrigin==="use-credentials"?m.credentials="include":j.crossOrigin==="anonymous"?m.credentials="omit":m.credentials="same-origin",m}function h(j){if(j.ep)return;j.ep=!0;const m=d(j);fetch(j.href,m)}})();var Gi={exports:{}},On={},Ki={exports:{}},ne={};/**
+    
+<style id="chatgpt-v10-23-payment-toggle-compact">
+/* v10.23: компактные переключатели бонусов/баланса и редактирование суммы прямо в карточке */
+.payment-source-compact{min-height:auto!important;}
+.payment-source-compact .payment-toggle-switch{width:38px!important;height:22px!important;min-width:38px!important;flex:0 0 38px!important;box-sizing:border-box!important;padding:0!important;overflow:hidden!important;margin:0!important;}
+.payment-source-compact .payment-toggle-switch:before{width:16px!important;height:16px!important;left:3px!important;top:3px!important;}
+.payment-source-compact .payment-toggle-switch:checked:before{transform:translateX(16px)!important;}
+.payment-source-compact input[disabled]{opacity:1!important;cursor:default!important;}
+@media (max-width:767px){
+  .payment-source-compact{padding:9px!important;border-radius:12px!important;}
+  .payment-source-compact .payment-toggle-switch{width:36px!important;height:20px!important;min-width:36px!important;flex-basis:36px!important;}
+  .payment-source-compact .payment-toggle-switch:before{width:14px!important;height:14px!important;left:3px!important;top:3px!important;}
+  .payment-source-compact .payment-toggle-switch:checked:before{transform:translateX(16px)!important;}
+  .payment-source-compact input[type="text"],
+  .payment-source-compact input:not([type]){font-size:13px!important;padding:7px 9px!important;}
+}
+</style>
+<script type="module">(function(){const o=document.createElement("link").relList;if(o&&o.supports&&o.supports("modulepreload"))return;for(const j of document.querySelectorAll('link[rel="modulepreload"]'))h(j);new MutationObserver(j=>{for(const m of j)if(m.type==="childList")for(const C of m.addedNodes)C.tagName==="LINK"&&C.rel==="modulepreload"&&h(C)}).observe(document,{childList:!0,subtree:!0});function d(j){const m={};return j.integrity&&(m.integrity=j.integrity),j.referrerPolicy&&(m.referrerPolicy=j.referrerPolicy),j.crossOrigin==="use-credentials"?m.credentials="include":j.crossOrigin==="anonymous"?m.credentials="omit":m.credentials="same-origin",m}function h(j){if(j.ep)return;j.ep=!0;const m=d(j);fetch(j.href,m)}})();var Gi={exports:{}},On={},Ki={exports:{}},ne={};/**
  * @license React
  * react.production.min.js
  *
@@ -350,12 +367,26 @@ Error generating stack: `+i.message+`
           l.jsxs("label",{className:"block",children:[l.jsx("span",{className:"text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 block",children:"Сумма к оплате"}),l.jsx("input",{className:"w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200",value:h,onChange:Pe=>j(Pe.target.value)})]}),
           l.jsxs("label",{className:"block",children:[l.jsx("span",{className:"text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 block",children:"Основание"}),l.jsx("input",{className:"w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200",value:m,onChange:Pe=>C(Pe.target.value),placeholder:"Например: Заказ №9012 / Счёт №237"})]})
         ]}),
-        l.jsxs("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3",children:[
-          l.jsxs("div",{className:"payment-source-card rounded-xl border border-slate-200 bg-white p-2.5 md:p-3",children:[
-            l.jsxs("label",{className:"flex items-center gap-2.5 cursor-pointer",children:[l.jsx("input",{type:"checkbox",className:"payment-toggle-switch",checked:N,onChange:Pe=>{X(Pe.target.checked);Pe.target.checked&&ce===""&&U(String(Math.min(de,fe)||de))}}),l.jsxs("span",{className:"flex-1",children:[l.jsxs("div",{className:"flex items-center justify-between gap-2",children:[l.jsx("b",{className:"text-sm text-slate-900",children:"Списать бонусы"}),l.jsx("span",{className:"text-xs font-semibold text-blue-700",children:Je(de)})]}),l.jsxs("p",{className:"hidden md:block text-[11px] text-slate-500",children:["Если бонусов меньше суммы, остаток можно доплатить."]})]})]}),N&&l.jsxs("div",{className:"grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 mt-3",children:[l.jsx("input",{className:"w-full border border-slate-200 rounded-lg px-3 py-2 text-sm",value:ce,onChange:Pe=>U(Pe.target.value),placeholder:`Максимум ${Je(Math.min(de,fe))}`}),l.jsx("div",{className:"text-xs text-slate-500 flex items-center",children:st?`Будет списано не больше ${Je(de)}`:`Спишется: ${Je(Ce)}`})]})
+        l.jsxs("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-2.5 mb-3",children:[
+          l.jsxs("div",{className:"payment-source-card payment-source-compact rounded-xl border border-slate-200 bg-white p-2.5",children:[
+            l.jsxs("div",{className:"flex items-center gap-3",children:[
+              l.jsx("input",{type:"checkbox",className:"payment-toggle-switch shrink-0",checked:N,onChange:Pe=>{X(Pe.target.checked);Pe.target.checked&&ce===""&&U(String(Math.min(de,fe)||de))}}),
+              l.jsxs("div",{className:"min-w-0 flex-1",children:[
+                l.jsxs("div",{className:"flex items-center justify-between gap-2 mb-1",children:[l.jsx("p",{className:"text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-slate-500 leading-tight",children:"Списать бонусы"}),l.jsxs("span",{className:"text-[10px] md:text-[11px] font-semibold text-blue-700 whitespace-nowrap",children:["доступно ",Je(de)]})]}),
+                l.jsx("input",{disabled:!N,className:`w-full border rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${N?"border-blue-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100":"border-slate-200 bg-slate-50 text-slate-400"}`,value:N?ce:Je(de).replace(" ₽",""),onChange:Pe=>U(Pe.target.value),placeholder:`Максимум ${Je(Math.min(de,fe))}`})
+              ]})
+            ]}),
+            N&&st&&l.jsx("p",{className:"text-[11px] text-amber-700 mt-1.5",children:`Можно списать не больше ${Je(de)}`})
           ]}),
-          l.jsxs("div",{className:"payment-source-card rounded-xl border border-slate-200 bg-white p-2.5 md:p-3",children:[
-            l.jsxs("label",{className:"flex items-center gap-2.5 cursor-pointer",children:[l.jsx("input",{type:"checkbox",className:"payment-toggle-switch",checked:q,onChange:Pe=>{V(Pe.target.checked);Pe.target.checked&&me===""&&Ve(String(Math.min(ze,Math.max(0,fe-Ce))||ze))}}),l.jsxs("span",{className:"flex-1",children:[l.jsxs("div",{className:"flex items-center justify-between gap-2",children:[l.jsx("b",{className:"text-sm text-slate-900",children:"Списать с баланса"}),l.jsx("span",{className:"text-xs font-semibold text-emerald-700",children:Je(ze)})]}),l.jsxs("p",{className:"hidden md:block text-[11px] text-slate-500",children:["Если баланса недостаточно, остаток можно доплатить."]})]})]}),q&&l.jsxs("div",{className:"grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 mt-3",children:[l.jsx("input",{className:"w-full border border-slate-200 rounded-lg px-3 py-2 text-sm",value:me,onChange:Pe=>Ve(Pe.target.value),placeholder:`Максимум ${Je(Math.min(ze,Math.max(0,fe-Ce)))}`}),l.jsx("div",{className:"text-xs text-slate-500 flex items-center",children:rt?`Будет списано не больше ${Je(ze)}`:`Спишется: ${Je(Ae)}`})]})
+          l.jsxs("div",{className:"payment-source-card payment-source-compact rounded-xl border border-slate-200 bg-white p-2.5",children:[
+            l.jsxs("div",{className:"flex items-center gap-3",children:[
+              l.jsx("input",{type:"checkbox",className:"payment-toggle-switch shrink-0",checked:q,onChange:Pe=>{V(Pe.target.checked);Pe.target.checked&&me===""&&Ve(String(Math.min(ze,Math.max(0,fe-Ce))||ze))}}),
+              l.jsxs("div",{className:"min-w-0 flex-1",children:[
+                l.jsxs("div",{className:"flex items-center justify-between gap-2 mb-1",children:[l.jsx("p",{className:"text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-slate-500 leading-tight",children:"Списать с баланса"}),l.jsxs("span",{className:"text-[10px] md:text-[11px] font-semibold text-emerald-700 whitespace-nowrap",children:["доступно ",Je(ze)]})]}),
+                l.jsx("input",{disabled:!q,className:`w-full border rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${q?"border-emerald-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-100":"border-slate-200 bg-slate-50 text-slate-400"}`,value:q?me:Je(ze).replace(" ₽",""),onChange:Pe=>Ve(Pe.target.value),placeholder:`Максимум ${Je(Math.min(ze,Math.max(0,fe-Ce)))}`})
+              ]})
+            ]}),
+            q&&rt&&l.jsx("p",{className:"text-[11px] text-amber-700 mt-1.5",children:`Можно списать не больше ${Je(ze)}`})
           ]})
         ]}),
         l.jsxs("div",{className:"payment-calc-card rounded-xl border border-slate-200 bg-slate-50 p-2.5 mb-3",children:[
