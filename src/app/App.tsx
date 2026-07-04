@@ -1565,18 +1565,31 @@ function SessionsScreen({ nav }: { nav: (s: Screen) => void }) {
 function BillingScreen({ openModal }: { openModal: () => void }) {
   const [tab, setTab] = useState("Счета");
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-4 md:space-y-5">
+      <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Metric label="Баланс" value="23 791 ₽" extra={<Badge v="green">доступно</Badge>} />
         <Metric label="К оплате" value="57 900 ₽" extra={<Badge v="amber">2 счёта</Badge>} />
         <Metric label="Привязанные карты" value="3" extra={<p className="text-xs text-slate-500">1 основная</p>} />
         <Metric label="Бонусы" value="4 800" extra={<Badge v="blue">можно списать</Badge>} />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <Card cls="p-5">
+      <div className="grid grid-cols-2 gap-2 md:hidden">
+        <Card cls="p-3 min-h-[76px]">
+          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Баланс</p>
+          <p className="text-xl font-extrabold text-slate-900 leading-none mb-1">23 791 ₽</p>
+          <Badge v="green" sm>доступно</Badge>
+        </Card>
+        <Card cls="p-3 min-h-[76px]">
+          <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Бонусы</p>
+          <p className="text-xl font-extrabold text-slate-900 leading-none mb-1">4 800</p>
+          <Badge v="blue" sm>можно списать</Badge>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-5">
+        <Card cls="p-4 md:p-5">
           <SH title="Платёжный дашборд" />
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
             <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Пополнить баланс</h3>
               <input className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-200" defaultValue="10 000" />
@@ -1593,13 +1606,13 @@ function BillingScreen({ openModal }: { openModal: () => void }) {
               <Btn v="default" sz="sm">Сменить карту</Btn>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Btn v="green" onClick={openModal}><CreditCard size={14} /> Оплатить картой</Btn>
-            <Btn v="primary">Счёт на оплату</Btn>
-            <Btn v="default">Обещанный платёж</Btn>
+          <div className="grid grid-cols-1 sm:flex sm:flex-wrap gap-2">
+            <Btn v="green" onClick={openModal} full><CreditCard size={14} /> Оплатить картой</Btn>
+            <Btn v="primary" full>Счёт на оплату</Btn>
+            <Btn v="default" full>Обещанный платёж</Btn>
           </div>
         </Card>
-        <Card cls="p-5">
+        <Card cls="p-5 hidden md:block">
           <SH title="Привязанные карты" action={<Btn v="green" sz="sm"><Plus size={14} /> Привязать</Btn>} />
           <DocRow title="Visa •••• 4589" sub="Основная карта для оплаты услуг и аренды"
             action={<Badge v="blue">основная</Badge>} />
