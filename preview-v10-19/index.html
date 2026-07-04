@@ -47,6 +47,32 @@
   .payment-toggle-switch:checked:before{transform:translateX(18px);}
 }
 </style>
+
+<style id="chatgpt-v10-24-payment-layout-fix">
+/* v10.24: компактная оплата, переключатели по центру, выбор основания из документов */
+.payment-source-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;white-space:nowrap;}
+.payment-source-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#475569;line-height:1;}
+.payment-source-available{font-size:11px;font-weight:700;line-height:1;white-space:nowrap;}
+.payment-source-row{display:grid;grid-template-columns:minmax(0,1fr) 48px;align-items:center;gap:10px;}
+.payment-toggle-switch-centered{justify-self:center;align-self:center;margin:0!important;}
+.payment-amount-input{width:100%;border-radius:10px;border:1px solid #e2e8f0;padding:9px 10px;font-size:14px;font-weight:700;line-height:1.2;transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease;color:#0f172a;}
+.payment-amount-input-active{background:#fff;}
+.payment-amount-input-disabled{background:#f8fafc;color:#64748b;}
+.payment-amount-input-blue:focus{outline:none;border-color:#bfdbfe;box-shadow:0 0 0 3px rgba(191,219,254,.55);}
+.payment-amount-input-green:focus{outline:none;border-color:#bbf7d0;box-shadow:0 0 0 3px rgba(187,247,208,.55);}
+.lk-mobile-billing-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+.lk-mobile-billing-cards>*{min-width:0!important;}
+@media (max-width:767px){
+  .payment-source-card{padding:10px!important;}
+  .payment-source-head{margin-bottom:7px;}
+  .payment-source-title,.payment-source-available{font-size:10px;letter-spacing:.04em;}
+  .payment-source-row{grid-template-columns:minmax(0,1fr) 44px;gap:8px;}
+  .payment-toggle-switch{width:38px!important;height:22px!important;flex-basis:38px!important;}
+  .payment-toggle-switch:before{width:16px!important;height:16px!important;left:3px!important;top:3px!important;}
+  .payment-toggle-switch:checked:before{transform:translateX(16px)!important;}
+  .payment-amount-input{padding:8px 9px;font-size:13px;}
+}
+</style>
 </head>
   <body>
     <div id="root"></div>
@@ -357,11 +383,15 @@ Error generating stack: `+i.message+`
     ]}),
     l.jsxs("div",{className:"grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-5",children:[
       l.jsxs(F,{cls:"p-4 md:p-5",children:[
-        l.jsx(te,{title:"Платёжный дашборд",sub:"Сумма и основание заполняются из выбранного счета, но клиент может изменить сумму перед оплатой."}),
+        l.jsx(te,{title:"Оплата",sub:"Выберите основание из документов — остаток подставится автоматически, сумму можно скорректировать."}),
         l.jsxs("div",{className:"payment-context-card rounded-xl border border-blue-100 bg-blue-50/40 px-3 py-2 mb-3",children:[
           l.jsx("p",{className:"text-[10px] font-bold uppercase tracking-wider text-blue-700 mb-1",children:"Выбранное основание"}),
           l.jsx("p",{className:"text-sm font-bold text-slate-900",children:P||"Документ не выбран"}),
           l.jsx("p",{className:"hidden md:block text-xs text-slate-600 mt-1",children:"Нажмите “Оплатить” у счета в таблице ниже — сумма и номер заказа подставятся автоматически."})
+        ]}),
+        l.jsxs("label",{className:"block mb-3",children:[
+          l.jsx("span",{className:"text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 block",children:"Основание из документов"}),
+          l.jsxs("select",{className:"w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-200",value:P,onChange:Pe=>{const Ze=Fe.find(Qe=>`${Qe.order} / ${Qe.name}`===Pe.target.value);Ze?Ke(Ze):(R(""),C("Пополнение баланса"),j("10000"))},children:[l.jsx("option",{value:"",children:"Выберите документ или заказ"}),...Fe.map(Ze=>l.jsx("option",{value:`${Ze.order} / ${Ze.name}`,children:`${Ze.order} / ${Ze.name} · остаток ${Je(Ze.sum)}`},Ze.name))]})
         ]}),
         l.jsxs("div",{className:"grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3",children:[
           l.jsxs("label",{className:"block",children:[l.jsx("span",{className:"text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 block",children:"Сумма к оплате"}),l.jsx("input",{className:"w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200",value:h,onChange:Pe=>j(Pe.target.value)})]}),
@@ -369,27 +399,29 @@ Error generating stack: `+i.message+`
         ]}),
         l.jsxs("div",{className:"grid grid-cols-1 lg:grid-cols-2 gap-2.5 mb-3",children:[
           l.jsxs("div",{className:"payment-source-card payment-source-compact rounded-xl border border-slate-200 bg-white p-2.5",children:[
-            l.jsxs("div",{className:"flex items-center gap-3",children:[
-              l.jsx("input",{type:"checkbox",className:"payment-toggle-switch shrink-0",checked:N,onChange:Pe=>{X(Pe.target.checked);Pe.target.checked&&ce===""&&U(String(Math.min(de,fe)||de))}}),
-              l.jsxs("div",{className:"min-w-0 flex-1",children:[
-                l.jsxs("div",{className:"flex items-center justify-between gap-2 mb-1",children:[l.jsx("p",{className:"text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-slate-500 leading-tight",children:"Списать бонусы"}),l.jsxs("span",{className:"text-[10px] md:text-[11px] font-semibold text-blue-700 whitespace-nowrap",children:["доступно ",Je(de)]})]}),
-                l.jsx("input",{disabled:!N,className:`w-full border rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${N?"border-blue-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-100":"border-slate-200 bg-slate-50 text-slate-400"}`,value:N?ce:Je(de).replace(" ₽",""),onChange:Pe=>U(Pe.target.value),placeholder:`Максимум ${Je(Math.min(de,fe))}`})
-              ]})
+            l.jsxs("div",{className:"payment-source-head",children:[
+              l.jsx("p",{className:"payment-source-title",children:"Бонусы"}),
+              l.jsxs("span",{className:"payment-source-available text-blue-700",children:["Доступно ",Je(de)]})
+            ]}),
+            l.jsxs("div",{className:"payment-source-row",children:[
+              l.jsx("input",{disabled:!N,className:`payment-amount-input ${N?"payment-amount-input-active payment-amount-input-blue":"payment-amount-input-disabled"}`,value:N?ce:Je(de).replace(" ₽",""),onChange:Pe=>U(Pe.target.value),placeholder:`Максимум ${Je(Math.min(de,fe))}`}),
+              l.jsx("input",{type:"checkbox",className:"payment-toggle-switch payment-toggle-switch-centered",checked:N,onChange:Pe=>{X(Pe.target.checked);Pe.target.checked&&ce===""&&U(String(Math.min(de,fe)||de))}})
             ]}),
             N&&st&&l.jsx("p",{className:"text-[11px] text-amber-700 mt-1.5",children:`Можно списать не больше ${Je(de)}`})
           ]}),
           l.jsxs("div",{className:"payment-source-card payment-source-compact rounded-xl border border-slate-200 bg-white p-2.5",children:[
-            l.jsxs("div",{className:"flex items-center gap-3",children:[
-              l.jsx("input",{type:"checkbox",className:"payment-toggle-switch shrink-0",checked:q,onChange:Pe=>{V(Pe.target.checked);Pe.target.checked&&me===""&&Ve(String(Math.min(ze,Math.max(0,fe-Ce))||ze))}}),
-              l.jsxs("div",{className:"min-w-0 flex-1",children:[
-                l.jsxs("div",{className:"flex items-center justify-between gap-2 mb-1",children:[l.jsx("p",{className:"text-[10px] md:text-[11px] font-bold uppercase tracking-wider text-slate-500 leading-tight",children:"Списать с баланса"}),l.jsxs("span",{className:"text-[10px] md:text-[11px] font-semibold text-emerald-700 whitespace-nowrap",children:["доступно ",Je(ze)]})]}),
-                l.jsx("input",{disabled:!q,className:`w-full border rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${q?"border-emerald-200 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-100":"border-slate-200 bg-slate-50 text-slate-400"}`,value:q?me:Je(ze).replace(" ₽",""),onChange:Pe=>Ve(Pe.target.value),placeholder:`Максимум ${Je(Math.min(ze,Math.max(0,fe-Ce)))}`})
-              ]})
+            l.jsxs("div",{className:"payment-source-head",children:[
+              l.jsx("p",{className:"payment-source-title",children:"Баланс"}),
+              l.jsxs("span",{className:"payment-source-available text-emerald-700",children:["Доступно ",Je(ze)]})
+            ]}),
+            l.jsxs("div",{className:"payment-source-row",children:[
+              l.jsx("input",{disabled:!q,className:`payment-amount-input ${q?"payment-amount-input-active payment-amount-input-green":"payment-amount-input-disabled"}`,value:q?me:Je(ze).replace(" ₽",""),onChange:Pe=>Ve(Pe.target.value),placeholder:`Максимум ${Je(Math.min(ze,Math.max(0,fe-Ce)))}`}),
+              l.jsx("input",{type:"checkbox",className:"payment-toggle-switch payment-toggle-switch-centered",checked:q,onChange:Pe=>{V(Pe.target.checked);Pe.target.checked&&me===""&&Ve(String(Math.min(ze,Math.max(0,fe-Ce))||ze))}})
             ]}),
             q&&rt&&l.jsx("p",{className:"text-[11px] text-amber-700 mt-1.5",children:`Можно списать не больше ${Je(ze)}`})
           ]})
         ]}),
-        l.jsxs("div",{className:"payment-calc-card rounded-xl border border-slate-200 bg-slate-50 p-2.5 mb-3",children:[
+                l.jsxs("div",{className:"payment-calc-card rounded-xl border border-slate-200 bg-slate-50 p-2.5 mb-3",children:[
           l.jsx("p",{className:"text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2",children:"Расчет оплаты"}),
           l.jsx(dt,{items:[{label:"Сумма документа",value:Je(fe)},{label:"Бонусы",value:`− ${Je(Ce)}`},{label:"Баланс",value:`− ${Je(Ae)}`},{label:"Остаток к доплате",value:Je(it)}]}),
           it>0&&l.jsxs("div",{className:"grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3",children:[l.jsxs("label",{className:"block",children:[l.jsx("span",{className:"text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 block",children:"Чем доплатить остаток"}),l.jsxs("select",{className:"w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white",value:G,onChange:Pe=>ae(Pe.target.value),children:[l.jsx("option",{children:"Картой"}),l.jsx("option",{children:"Счет для юрлица"}),l.jsx("option",{children:"СБП"}),l.jsx("option",{children:"Новой картой"})]})]}),l.jsx("div",{className:"text-xs text-slate-600 flex items-end",children:`После бонусов и баланса нужно доплатить ${Je(it)}.`})]})
