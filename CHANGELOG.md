@@ -202,3 +202,9 @@
 - Kept the section title and description.
 - The section now goes directly to service cards and product cards.
 - Order buttons and prototype logic are preserved.
+
+
+## v10.23 — compact payment source toggles
+- Исправлены переключатели бонусов и баланса на мобильной версии.
+- Убраны дополнительные поля ввода; сумма редактируется в самой карточке источника списания.
+- Убраны лишние пояснения, уменьшены подписи и уплотнена компоновка.
