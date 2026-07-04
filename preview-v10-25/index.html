@@ -665,5 +665,39 @@ Error generating stack: `+i.message+`
         }
       `}),l.jsxs("div",{className:"lk-app-shell flex h-screen overflow-hidden bg-[#F0F4F8]",style:{fontFamily:"'Inter', system-ui, sans-serif"},children:[V&&l.jsx("div",{className:"fixed inset-0 bg-slate-900/40 z-40 lg:hidden",onClick:()=>G(!1)}),l.jsx(p0,{current:u,onChange:o,cpName:R,cpInn:X,mobileOpen:V,onClose:()=>G(!1),onPaymentOpen:()=>{o("billing");window.setTimeout(()=>{const U=document.querySelector('[data-payment-dashboard="true"]');U&&U.scrollIntoView({behavior:"smooth",block:"start"})},80)}}),l.jsxs("div",{className:"flex-1 flex flex-col min-w-0 overflow-hidden",children:[l.jsx("header",{className:"sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200 px-6 py-3",children:l.jsxs("div",{className:"flex items-center justify-between gap-4",children:[l.jsxs("div",{className:"flex items-start gap-3 min-w-0",children:[l.jsx("button",{type:"button",onClick:()=>G(!0),className:"lg:hidden mt-0.5 w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-700 flex items-center justify-center shrink-0 hover:bg-slate-50",children:l.jsx(fp,{size:18})}),l.jsxs("div",{className:"min-w-0",children:[l.jsx("h1",{className:"text-xl font-bold text-slate-900 leading-tight",children:x0[u]}),l.jsxs("div",{className:"flex items-center gap-1.5 mt-0.5",children:[l.jsx("span",{className:"w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"}),l.jsx("span",{className:"text-[10px] font-semibold text-emerald-600 uppercase tracking-wider",children:"Все системы работают · UTC+3 · SLA под контролем"})]})]})]}),l.jsxs("div",{className:"hidden md:flex items-center gap-2 shrink-0",children:[l.jsxs(p,{v:"green",sz:"sm",onClick:()=>{P("Создать обращение"),h("generic")},children:[l.jsx(Dt,{size:13})," Создать обращение"]}),l.jsx(p,{v:"blue",sz:"sm",onClick:()=>o("services"),children:"Каталог услуг и товаров"}),l.jsx(p,{v:"default",sz:"sm",onClick:()=>{P("Счет на оплату"),h("generic")},children:"Запросить счёт"})]})]})}),l.jsx("main",{className:"lk-main-content flex-1 p-6 overflow-y-auto text-[15px]",children:ce()})]}),d==="ticket"&&l.jsx(Zi,{title:"Создать обращение",onClose:()=>h(null)}),d==="payment"&&l.jsx(Zi,{title:"Счет на оплату",onClose:()=>h(null)}),d==="discussion"&&l.jsx($p,{resource:j,onClose:()=>h(null)}),d==="generic"&&l.jsx(Zi,{title:C,onClose:()=>h(null)})]})]})}Ef.createRoot(document.getElementById("root")).render(l.jsx(m0,{}));
 </script>
-  </body>
+  
+<style id="chatgpt-v10-25-payment-toggle-left-fix">
+/* v10.25: compact payment toggles and mobile billing cards */
+.payment-source-card{padding:10px 12px!important;}
+.payment-source-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-bottom:7px!important;white-space:nowrap!important;}
+.payment-source-title{font-size:10px!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.05em!important;color:#334155!important;line-height:1!important;white-space:nowrap!important;}
+.payment-source-available{font-size:10px!important;font-weight:800!important;color:#334155!important;line-height:1!important;white-space:nowrap!important;text-align:right!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+.payment-source-row{display:grid!important;grid-template-columns:46px minmax(0,1fr)!important;align-items:center!important;gap:9px!important;}
+.payment-source-row .payment-toggle-switch{grid-column:1!important;grid-row:1!important;justify-self:center!important;align-self:center!important;}
+.payment-source-row .payment-amount-input{grid-column:2!important;grid-row:1!important;min-width:0!important;}
+.payment-toggle-switch{appearance:none!important;-webkit-appearance:none!important;width:42px!important;height:24px!important;min-width:42px!important;flex:0 0 42px!important;border-radius:9999px!important;border:1px solid #cbd5e1!important;background:#cbd5e1!important;position:relative!important;display:inline-block!important;box-sizing:border-box!important;padding:0!important;margin:0!important;overflow:hidden!important;vertical-align:middle!important;cursor:pointer!important;transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease!important;}
+.payment-toggle-switch:before{content:""!important;position:absolute!important;width:18px!important;height:18px!important;left:3px!important;top:50%!important;border-radius:9999px!important;background:#fff!important;box-shadow:0 1px 3px rgba(15,23,42,.24)!important;transform:translateY(-50%)!important;transition:transform .18s ease!important;}
+.payment-toggle-switch:checked{background:#22c55e!important;border-color:#16a34a!important;box-shadow:inset 0 0 0 1px rgba(22,163,74,.18)!important;}
+.payment-toggle-switch:checked:before{transform:translate(18px,-50%)!important;}
+.payment-amount-input{height:38px!important;border-radius:10px!important;font-size:13px!important;font-weight:800!important;}
+.lk-mobile-billing-cards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;align-items:stretch!important;}
+.lk-mobile-billing-cards>*{min-width:0!important;min-height:54px!important;padding:8px!important;border-radius:14px!important;}
+.lk-mobile-billing-cards p:first-child{font-size:9px!important;line-height:1!important;margin-bottom:4px!important;color:#475569!important;}
+.lk-mobile-billing-cards p:nth-child(2){font-size:16px!important;line-height:1.05!important;color:#0f172a!important;}
+.lk-mobile-billing-cards span{font-size:10px!important;}
+.lk-mobile-billing-cards .text-blue-700,.lk-mobile-billing-cards .text-blue-600{color:#1e3a8a!important;}
+@media (max-width:767px){
+  .payment-source-card{padding:9px 10px!important;border-radius:13px!important;}
+  .payment-source-head{gap:6px!important;margin-bottom:6px!important;}
+  .payment-source-title,.payment-source-available{font-size:9px!important;letter-spacing:.03em!important;}
+  .payment-source-row{grid-template-columns:42px minmax(0,1fr)!important;gap:7px!important;}
+  .payment-toggle-switch{width:40px!important;height:22px!important;min-width:40px!important;}
+  .payment-toggle-switch:before{width:16px!important;height:16px!important;left:3px!important;top:50%!important;transform:translateY(-50%)!important;}
+  .payment-toggle-switch:checked:before{transform:translate(18px,-50%)!important;}
+  .payment-amount-input{height:34px!important;font-size:12px!important;padding:7px 8px!important;}
+  .lk-mobile-billing-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;margin-bottom:8px!important;}
+  .lk-mobile-billing-cards>*{min-height:50px!important;padding:7px 8px!important;}
+}
+</style>
+</body>
 </html>
