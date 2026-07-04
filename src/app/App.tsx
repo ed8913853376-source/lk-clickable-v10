@@ -1840,19 +1840,221 @@ function ContractsScreen() {
 }
 
 function DocumentsScreen({ openModal }: { openModal: (title: string) => void }) {
+  const [reconcileOpen, setReconcileOpen] = useState(false);
+  const [reconcileGenerated, setReconcileGenerated] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState("0 ₽");
+  const [paymentBase, setPaymentBase] = useState("Документ не выбран");
+  const [paymentReady, setPaymentReady] = useState(false);
+
+  const startPay = (amount: string, base: string) => {
+    setPaymentAmount(amount);
+    setPaymentBase(base);
+    setPaymentReady(true);
+  };
+
+  const documents = [
+    {
+      type: "invoice",
+      name: "Счёт на оплату №237",
+      date: "09.05.2026",
+      cp: "ED ART",
+      period: "Май 2026",
+      amount: "45 000 ₽",
+      status: <Badge v="amber">ожидает оплату</Badge>,
+      comment: "Сопровождение 1С и серверная аренда",
+      actions: <div className="flex flex-wrap gap-2">
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать счёт</Btn>
+        <Btn v="green" sz="sm" onClick={() => startPay("45 000 ₽", "Счёт на оплату №237 от 09.05.2026")}>Оплатить</Btn>
+      </div>
+    },
+    {
+      type: "act",
+      name: "Акт выполненных работ №188",
+      date: "31.05.2026",
+      cp: "ED ART",
+      period: "Май 2026",
+      amount: "12 900 ₽",
+      status: <Badge v="green">подписан</Badge>,
+      comment: "Аренда VPS для 1С",
+      actions: <div className="flex flex-wrap gap-2">
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать акт</Btn>
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать УПД</Btn>
+        <Btn v="default" sz="sm">Счёт-основание</Btn>
+      </div>
+    },
+    {
+      type: "act",
+      name: "Акт выполненных работ №177",
+      date: "31.05.2026",
+      cp: "ED ART",
+      period: "Май 2026",
+      amount: "15 000 ₽",
+      status: <Badge v="green">подписан</Badge>,
+      comment: "Абонентское сопровождение 1С",
+      actions: <div className="flex flex-wrap gap-2">
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать акт</Btn>
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать УПД</Btn>
+        <Btn v="default" sz="sm">Счёт-основание</Btn>
+      </div>
+    },
+    {
+      type: "upd",
+      name: "УПД №94",
+      date: "12.06.2026",
+      cp: "ED ART",
+      period: "Июнь 2026",
+      amount: "28 900 ₽",
+      status: <Badge v="blue">по заказу</Badge>,
+      comment: "Поставка оборудования",
+      actions: <div className="flex flex-wrap gap-2">
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать УПД</Btn>
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать накладную</Btn>
+        <Btn v="default" sz="sm" onClick={() => openModal("Создать обращение по документу УПД №94")}>Вопрос</Btn>
+      </div>
+    },
+    {
+      type: "reconciliation",
+      name: "Акт сверки за Q2 2026",
+      date: "30.06.2026",
+      cp: "ED ART",
+      period: "01.04.2026 — 30.06.2026",
+      amount: "—",
+      status: <Badge v="green">сформирован</Badge>,
+      comment: "Сверка взаиморасчетов",
+      actions: <div className="flex flex-wrap gap-2">
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать акт сверки</Btn>
+        <Btn v="default" sz="sm" onClick={() => setReconcileOpen(true)}>Заказать новый</Btn>
+      </div>
+    },
+    {
+      type: "contract",
+      name: "Приложение к договору №45/1С",
+      date: "01.01.2026",
+      cp: "ED ART",
+      period: "2026",
+      amount: "—",
+      status: <Badge v="gray">договор</Badge>,
+      comment: "Условия сопровождения и SLA",
+      actions: <div className="flex flex-wrap gap-2">
+        <Btn v="ghost" sz="sm"><Download size={13} /> Скачать приложение</Btn>
+        <Btn v="default" sz="sm">Открыть договор</Btn>
+      </div>
+    },
+  ];
+
   return (
-    <Card cls="p-5">
-      <SH title="Акты и документы"
-        sub="Закрывающие документы, договоры, приложения, регламенты."
-        action={<div className="flex gap-2 flex-wrap"><Btn v="green" sz="sm" onClick={() => openModal("Заказать документ")}>Заказать документ</Btn><Btn v="default" sz="sm"><Download size={13} /> Скачать все</Btn></div>} />
-      <Table heads={["Документ", "Дата", "Контрагент", "Сумма", ""]} rows={[
-        ["Акт №188 — аренда VPS", "31.05.2026", "ED ART", "12 900 ₽", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
-        ["Акт №177 — сопровождение 1С", "31.05.2026", "ED ART", "15 000 ₽", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
-        ["Приложение к договору", "01.01.2026", "ED ART", "—", <Btn v="ghost" sz="sm" onClick={() => openModal("Открыть КП")}>Открыть КП</Btn>],
-        ["Регламент работ", "01.01.2026", "ED ART", "—", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
-        ["Акт сверки за Q2 2026", "30.06.2026", "ED ART", "—", <Btn v="default" sz="sm"><Download size={13} /> Скачать</Btn>],
-      ]} />
-    </Card>
+    <div className="space-y-5">
+      <Card cls="p-5">
+        <SH title="Акты и документы"
+          sub="Документы с разной логикой: счет можно оплатить, акт и УПД скачать, акт сверки заказать за период."
+          action={<div className="flex gap-2 flex-wrap"><Btn v="green" sz="sm" onClick={() => { setReconcileGenerated(false); setReconcileOpen(true); }}>Заказать акт сверки</Btn><Btn v="default" sz="sm" onClick={() => openModal("Заказать документ")}>Заказать документ</Btn><Btn v="default" sz="sm"><Download size={13} /> Скачать все</Btn></div>} />
+
+        <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_.85fr] gap-4 mb-5">
+          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 shrink-0"><FileCheck size={18} /></div>
+              <div>
+                <p className="font-extrabold text-slate-900">Заказать акт сверки</p>
+                <p className="text-sm text-slate-600 mt-1">Выберите организацию и период. После формирования документ можно скачать из этого же окна или из списка документов.</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-4">
+              <Btn v="green" sz="sm" onClick={() => { setReconcileGenerated(false); setReconcileOpen(true); }}>Сформировать акт сверки</Btn>
+              <Btn v="default" sz="sm"><Download size={13} /> Последний акт сверки</Btn>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/60 p-4">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-2">Оплата выбранного документа</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="block">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 block">Сумма</span>
+                <input className={inputCls} value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} />
+              </label>
+              <label className="block">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1 block">Способ оплаты</span>
+                <select className={inputCls}><option>Картой</option><option>С баланса</option><option>Счет для юрлица</option><option>Бонусами частично</option></select>
+              </label>
+            </div>
+            <p className="text-xs text-slate-600 mt-2">Основание: <b>{paymentBase}</b></p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Btn v="green" sz="sm" onClick={() => setPaymentReady(true)}><CreditCard size={13} /> Оплатить</Btn>
+              <Btn v="default" sz="sm"><Download size={13} /> Скачать счёт</Btn>
+              <Btn v="ghost" sz="sm"><Download size={13} /> Скачать документ</Btn>
+            </div>
+            {paymentReady && <p className="text-xs text-emerald-700 font-semibold mt-2">Сумма подставлена. Клиент может выбрать способ оплаты и продолжить.</p>}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[860px]">
+            <thead>
+              <tr className="border-b border-slate-100">
+                {['Документ', 'Дата', 'Организация', 'Период', 'Сумма', 'Статус', 'Действия'].map((h) => <th key={h} className="text-left text-[10px] font-bold uppercase tracking-wider text-slate-400 pb-2 pr-4">{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {documents.map((doc, index) => (
+                <tr key={index} className="border-b border-slate-50 hover:bg-slate-50/70">
+                  <td className="py-3 pr-4">
+                    <p className="font-bold text-slate-800">{doc.name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{doc.comment}</p>
+                  </td>
+                  <td className="py-3 pr-4 whitespace-nowrap">{doc.date}</td>
+                  <td className="py-3 pr-4 whitespace-nowrap">{doc.cp}</td>
+                  <td className="py-3 pr-4 whitespace-nowrap">{doc.period}</td>
+                  <td className="py-3 pr-4 whitespace-nowrap font-bold text-slate-900">{doc.amount}</td>
+                  <td className="py-3 pr-4">{doc.status}</td>
+                  <td className="py-3 pr-4 min-w-[240px]">{doc.actions}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {reconcileOpen && (
+        <Overlay onClose={() => setReconcileOpen(false)}>
+          <Card cls="max-w-2xl w-full max-h-[calc(100vh-2rem)] overflow-hidden flex flex-col">
+            <div className="flex items-start justify-between gap-4 p-5 border-b border-slate-100 shrink-0">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Заказать акт сверки</h2>
+                <p className="text-sm text-slate-500 mt-1">Выберите организацию и период сверки. После формирования документ можно скачать.</p>
+              </div>
+              <Btn v="ghost" sz="sm" onClick={() => setReconcileOpen(false)}><X size={16} /></Btn>
+            </div>
+            <div className="p-5 overflow-y-auto lk-modal-scroll">
+              {reconcileGenerated ? (
+                <div className="space-y-4">
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
+                    <div className="font-bold flex items-center gap-2"><CheckCircle2 size={18} />Акт сверки сформирован</div>
+                    <p className="text-sm mt-2">Акт сверки по ED ART за период 01.04.2026 — 30.06.2026 готов к скачиванию.</p>
+                  </div>
+                  <InfoGrid items={[
+                    { label: 'Организация', value: 'ED ART · ИНН 0000000000' },
+                    { label: 'Период', value: '01.04.2026 — 30.06.2026' },
+                    { label: 'Итог', value: 'Расхождений нет' },
+                    { label: 'Формат', value: 'PDF / XLSX' },
+                  ]} />
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Организация"><select className={inputCls}>{cps.map(cp => <option key={cp}>{cp}</option>)}</select></Field>
+                  <Field label="Тип документа"><select className={inputCls}><option>Акт сверки</option></select></Field>
+                  <Field label="Период с"><input className={inputCls} defaultValue="01.04.2026" /></Field>
+                  <Field label="Период по"><input className={inputCls} defaultValue="30.06.2026" /></Field>
+                  <Field label="Email для отправки" full><input className={inputCls} defaultValue="docs@ed-art.ru" /></Field>
+                  <div className="md:col-span-2"><TextareaWithAttach placeholder="Комментарий для бухгалтера или менеджера по документам" /></div>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-wrap justify-end gap-2 p-4 border-t border-slate-100 shrink-0 bg-white">
+              {reconcileGenerated ? <><Btn v="default" onClick={() => setReconcileOpen(false)}>Закрыть</Btn><Btn v="green"><Download size={14} /> Скачать акт сверки</Btn></> : <><Btn v="default" onClick={() => setReconcileOpen(false)}>Отмена</Btn><Btn v="green" onClick={() => setReconcileGenerated(true)}>Сформировать документ</Btn></>}
+            </div>
+          </Card>
+        </Overlay>
+      )}
+    </div>
   );
 }
 
