@@ -960,7 +960,7 @@ function DashboardScreen({ nav, openModal, openDiscussion }: {
 }) {
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="mobile-dashboard-metrics grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Metric label="Открытые обращения" value="4" extra={<Badge v="amber">1 срочное</Badge>} />
         <Metric label="Остаток часов" value="12 ч" extra={
           <div>
@@ -976,7 +976,7 @@ function DashboardScreen({ nav, openModal, openDiscussion }: {
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
         <Card cls="xl:col-span-3 p-5">
           <SH title="Сводка обслуживания" />
-          <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="mobile-dashboard-metrics grid grid-cols-3 gap-3 mb-5">
             {[
               { title: "Договор № 45/1С", sub: "Абонентское обслуживание 1С", badge: <Badge v="green" dot>активен</Badge> },
               { title: "SLA: 2 часа", sub: "Время реакции по критичным обращениям", badge: <Badge v="blue">контроль</Badge> },
@@ -1033,7 +1033,7 @@ function DashboardScreen({ nav, openModal, openDiscussion }: {
           </div>
           <Btn v="primary" sz="sm" onClick={() => nav("bases1c")}>Все базы 1С <ChevronRight size={14} /></Btn>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div className="mobile-dashboard-metrics grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {[
             { label: "Активные базы", value: "3", sub: "фактически" },
             { label: "Конфигурации", value: "3", sub: "Бухгалтерия, УНФ, ЗУП" },
@@ -1084,7 +1084,7 @@ function DashboardScreen({ nav, openModal, openDiscussion }: {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div className="mobile-dashboard-metrics grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
           {[
             { label: "Активные заказы", value: "3", badge: <Badge v="blue">в работе</Badge> },
             { label: "Ожидают оплаты", value: "1", badge: <Badge v="amber">счет №8997</Badge> },
@@ -1631,54 +1631,139 @@ function BillingScreen({ openModal }: { openModal: () => void }) {
 }
 
 function DealsScreen() {
+  const projects = [
+    {
+      title: "Автоматизация отдела продаж",
+      type: "Внедрение / CRM",
+      statusLabel: "в работе",
+      statusV: "amber" as BV,
+      deadline: "15.08.2026",
+      progress: 65,
+      manager: "Алексей",
+      lead: "Иван",
+      stage: "Настройка бизнес-процессов",
+      next: "Тестирование клиентом",
+      wait: "Подтвердить сценарии",
+      deal: "PR-2026-018",
+      desc: "Настройка воронки продаж, обмена с 1С и регламентов работы отдела продаж.",
+      steps: [
+        ["Этап 1. Обследование", "Завершён · собраны требования, согласована схема работ."],
+        ["Этап 2. Проектирование", "Завершён · согласован прототип, составлено ТЗ."],
+        ["Этап 3. Реализация", "В работе · выполняется настройка и доработка."],
+        ["Этап 4. Тестирование", "Не начат."],
+      ],
+    },
+    {
+      title: "Интеграция 1С с сайтом",
+      type: "Интеграция",
+      statusLabel: "согласование",
+      statusV: "blue" as BV,
+      deadline: "07.07.2026",
+      progress: 40,
+      manager: "Алексей",
+      lead: "Сергей",
+      stage: "Согласование схемы обмена",
+      next: "Подписание ТЗ",
+      wait: "Проверить список сущностей",
+      deal: "PR-2026-021",
+      desc: "Обмен заказами, оплатами, контрагентами, документами и статусами между сайтом и 1С.",
+      steps: [
+        ["Этап 1. Анализ обмена", "Завершён · определены сущности и направления синхронизации."],
+        ["Этап 2. ТЗ", "В работе · согласовывается состав данных."],
+        ["Этап 3. Реализация API", "Не начат."],
+        ["Этап 4. Тестовый обмен", "Не начат."],
+      ],
+    },
+    {
+      title: "Перенос баз 1С на сервер",
+      type: "Инфраструктура",
+      statusLabel: "по плану",
+      statusV: "green" as BV,
+      deadline: "30.06.2026",
+      progress: 80,
+      manager: "Мария",
+      lead: "Иван",
+      stage: "Проверка резервных копий",
+      next: "Финальное переключение пользователей",
+      wait: "Согласовать окно работ",
+      deal: "PR-2026-014",
+      desc: "Перенос рабочих баз на выделенный сервер, настройка backup, RDP и прав доступа.",
+      steps: [
+        ["Этап 1. Подготовка сервера", "Завершён · ресурсы выделены."],
+        ["Этап 2. Перенос тестовой копии", "Завершён · база проверена."],
+        ["Этап 3. Финальная миграция", "В работе · согласуется окно переключения."],
+        ["Этап 4. Контроль после запуска", "Не начат."],
+      ],
+    },
+  ];
+  const [activeTitle, setActiveTitle] = useState(projects[0].title);
+  const active = projects.find(p => p.title === activeTitle) || projects[0];
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <Card cls="p-5">
-          <SH title="Сделки и проекты"
-            sub="Автоматизация, внедрение, интеграции, переносы, доработки, инфраструктура."
-            action={<Btn v="blue" sz="sm">Запросить статус</Btn>} />
-          <div className="flex gap-1.5 mb-4 flex-wrap">
-            {["Все", "Активные", "Согласование", "В работе", "Завершённые"].map(t => (
-              <button key={t} className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${t === "Все" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}>{t}</button>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 xl:h-[calc(100vh-116px)] xl:min-h-0">
+        <Card cls="p-5 xl:h-full xl:min-h-0 flex flex-col overflow-hidden">
+          <div className="shrink-0">
+            <SH title="Сделки и проекты"
+              sub="Выберите проект в списке — справа откроется карточка, этапы, ответственные и сообщения."
+              action={<Btn v="blue" sz="sm" onClick={() => window.dispatchEvent(new CustomEvent("lk:prototype-action", { detail: { title: `Запросить статус по проекту ${active.title}` } }))}>Запросить статус</Btn>} />
+            <div className="flex gap-1.5 mb-4 flex-wrap">
+              {["Все", "Активные", "Согласование", "В работе", "Завершённые"].map(t => (
+                <button key={t} className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${t === "Все" ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}>{t}</button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2 xl:flex-1 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pr-1 sidebar-scrollbar-hidden">
+            {projects.map(p => (
+              <button key={p.title} type="button" onClick={() => setActiveTitle(p.title)}
+                className={`w-full text-left rounded-xl border p-3.5 transition-all cursor-pointer ${active.title === p.title ? "border-slate-900 ring-1 ring-slate-900 bg-white" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-900 truncate">{p.title}</p>
+                    <p className="text-xs text-slate-500 mt-1">{p.type} · сделка {p.deal}</p>
+                  </div>
+                  <Badge v={p.statusV}>{p.statusLabel}</Badge>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <span className="text-xs text-slate-500">Срок: {p.deadline}</span>
+                  <span className="text-xs font-semibold text-slate-600">{p.progress}%</span>
+                </div>
+                <Progress v={p.progress} color={p.statusV === "blue" ? "blue" : "green"} />
+              </button>
             ))}
           </div>
-          <Table heads={["Проект", "Тип", "Статус", "Срок", "Прогресс"]} rows={[
-            ["Автоматизация отдела продаж", "Внедрение / CRM", <Badge v="amber">в работе</Badge>, "15.08.2026", <div className="w-24"><Progress v={65} /><p className="text-[10px] text-slate-400 mt-0.5">65%</p></div>],
-            ["Интеграция 1С с сайтом", "Интеграция", <Badge v="blue">согласование</Badge>, "07.07.2026", <div className="w-24"><Progress v={40} color="blue" /><p className="text-[10px] text-slate-400 mt-0.5">40%</p></div>],
-            ["Перенос баз 1С на сервер", "Инфраструктура", <Badge v="green">по плану</Badge>, "30.06.2026", <div className="w-24"><Progress v={80} /><p className="text-[10px] text-slate-400 mt-0.5">80%</p></div>],
-          ]} />
         </Card>
-        <Card cls="p-5">
-          <h2 className="text-lg font-bold text-slate-900 mb-1">Автоматизация отдела продаж</h2>
-          <div className="flex gap-2 mb-4"><Badge v="amber">В работе</Badge><span className="text-xs text-slate-500">Сделка № PR-2026-018</span></div>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-              <InfoGrid items={[
-                { label: "Руководитель проекта", value: "Алексей" },
-                { label: "Технический лидер", value: "Иван" },
-                { label: "Срок", value: "15.08.2026" },
-              ]} />
-            </div>
-            <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
-              <InfoGrid items={[
-                { label: "Текущий этап", value: "Настройка бизнес-процессов" },
-                { label: "Следующий шаг", value: "Тестирование клиентом" },
-                { label: "Ожидается от клиента", value: "Подтвердить сценарии" },
-              ]} />
+        <Card cls="p-5 xl:h-full xl:min-h-0 flex flex-col overflow-hidden">
+          <div className="shrink-0">
+            <h2 className="text-lg font-bold text-slate-900 mb-1">{active.title}</h2>
+            <div className="flex gap-2 mb-4 flex-wrap"><Badge v={active.statusV}>{active.statusLabel}</Badge><span className="text-xs text-slate-500">Сделка № {active.deal}</span></div>
+            <p className="text-sm text-slate-600 mb-4">{active.desc}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                <InfoGrid items={[
+                  { label: "Руководитель проекта", value: active.manager },
+                  { label: "Технический лидер", value: active.lead },
+                  { label: "Срок", value: active.deadline },
+                ]} />
+              </div>
+              <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
+                <InfoGrid items={[
+                  { label: "Текущий этап", value: active.stage },
+                  { label: "Следующий шаг", value: active.next },
+                  { label: "Ожидается от клиента", value: active.wait },
+                ]} />
+              </div>
             </div>
           </div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Этапы проекта</h3>
-          <div>
-            <TEvent date="Этап 1. Обследование" text="Завершён · собраны требования, согласована схема работ." />
-            <TEvent date="Этап 2. Проектирование" text="Завершён · согласован прототип, составлено ТЗ." />
-            <TEvent date="Этап 3. Реализация" text="В работе · выполняется настройка и доработка." />
-            <TEvent date="Этап 4. Тестирование" text="Не начат." last />
-          </div>
-          <div className="mt-5 border-t border-slate-100 pt-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Сообщение по проекту</h3>
-            <TextareaWithAttach rowsCls="h-20" placeholder="Напишите комментарий, вопрос по этапу или приложите файл..." />
-            <div className="flex justify-end gap-2 mt-3"><Btn v="default" sz="sm">Сохранить черновик</Btn><Btn v="blue" sz="sm">Отправить</Btn></div>
+          <div className="xl:flex-1 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pr-1 sidebar-scrollbar-hidden">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Этапы проекта</h3>
+            <div>
+              {active.steps.map((step, idx) => <TEvent key={step[0]} date={step[0]} text={step[1]} last={idx === active.steps.length - 1} />)}
+            </div>
+            <div className="mt-5 border-t border-slate-100 pt-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Сообщение по проекту</h3>
+              <TextareaWithAttach rowsCls="h-20" placeholder="Напишите комментарий, вопрос по этапу или приложите файл..." />
+              <div className="flex justify-end gap-2 mt-3"><Btn v="default" sz="sm">Сохранить черновик</Btn><Btn v="blue" sz="sm">Отправить</Btn></div>
+            </div>
           </div>
         </Card>
       </div>
@@ -2836,13 +2921,6 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
             <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
               <span>Инженер</span><span className="font-semibold text-slate-700">Иван</span>
             </div>
-            <div className="rounded-md bg-white border border-slate-200 p-2 mb-3">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Текущий пользователь</p>
-              <div className="flex items-center justify-between gap-2">
-                <Mono cls="text-[11px] truncate">maria@edart.local</Mono>
-                <CopyButton value="maria@edart.local" label="" />
-              </div>
-            </div>
             <Badge v="green" dot>договор активен</Badge>
           </div>
         </div>
@@ -2880,7 +2958,12 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
             {group.items.map(item => {
               const isActive = current === item.id;
               return (
-                <button key={item.id} onClick={() => { onChange(item.id); onClose?.(); if (item.id === "billing") window.setTimeout(() => onPaymentOpen?.(), 80); }}
+                <button key={item.id} onClick={() => {
+                    onChange(item.id);
+                    onClose?.();
+                    const isMobileNav = typeof window !== "undefined" && window.innerWidth < 1024;
+                    if (item.id === "billing" && isMobileNav) window.setTimeout(() => onPaymentOpen?.(), 120);
+                  }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer mb-0.5 ${isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"}`}>
                   <span className="shrink-0">{item.icon}</span>
                   <span className="truncate flex-1 text-left">{item.label}</span>
@@ -3003,6 +3086,7 @@ export default function App() {
         @media (max-width: 767px) {
           .lk-main-content { padding: 16px !important; }
           .lk-main-content .grid { grid-template-columns: 1fr !important; }
+          .mobile-dashboard-metrics { display: none !important; }
           .lk-main-content table { min-width: 640px; }
           .lk-main-content .text-3xl { font-size: 24px !important; }
           .lk-main-content .text-2xl { font-size: 22px !important; }
