@@ -465,31 +465,14 @@ function TicketRequestModal({ onClose }: { onClose: () => void }) {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Контрагент"><select className={inputCls}>{cps.map(cp => <option key={cp}>{cp}</option>)}</select></Field>
-              <Field label="Тип обращения"><select className={inputCls}><option>Ошибка 1С</option><option>Вопрос по работе 1С</option><option>Сервер/RDP</option><option>Лицензии</option><option>Оплата/документы</option><option>Заказ товара</option><option>Доставка</option><option>Другое</option></select></Field>
-              <Field label="Связанный ресурс / объект"><select className={inputCls} defaultValue=""><option value="">Не выбран</option><option>1С Бухгалтерия</option><option>VPS для 1С #SRV-247090</option><option>Заказ #9012</option><option>Счет №237</option><option>Лицензия 1С</option></select></Field>
-              <Field label="Приоритет"><select className={inputCls}><option>Обычный</option><option>Срочный</option><option>Критичный простой</option></select></Field>
-              <Field label="Тема" full><input className={inputCls} placeholder="Например: не открывается база 1С" /></Field>
-
+              <Field label="Тема"><input className={inputCls} placeholder="Например: не открывается база 1С" /></Field>
+              <div className="md:col-span-2 flex flex-wrap gap-2">
+                <Badge v="gray">Категорию определит поддержка</Badge>
+                <Badge v="gray">Приоритет назначит инженер</Badge>
+                <Badge v="blue">Связанный объект: не выбран</Badge>
+              </div>
               <div className="md:col-span-2">
-                <div className="flex items-center justify-between gap-3 mb-1">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Описание / комментарий</span>
-                  <button
-                    type="button"
-                    onClick={() => fileRef.current?.click()}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                    title="Прикрепить файл"
-                  >
-                    <Paperclip size={14} /> Прикрепить файл
-                  </button>
-                </div>
-                <textarea className={`${textAreaCls} h-28`} placeholder="Опишите проблему: что произошло, когда, кого затронуло..." />
-                <input
-                  ref={fileRef}
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => setFileName(e.target.files?.[0]?.name || "")}
-                />
-                {fileName && <p className="mt-2 text-xs text-slate-500">Прикреплен файл: <span className="font-semibold text-slate-700">{fileName}</span></p>}
+                <TextareaWithAttach rowsCls="h-28" placeholder="Опишите проблему: что произошло, когда, кого затронуло..." />
               </div>
 
               <div className="md:col-span-2 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
@@ -535,6 +518,25 @@ function Field({ label, children, full = false }: { label: string; children: Rea
   );
 }
 
+function TextareaWithAttach({ placeholder = "", rowsCls = "h-24" }: { placeholder?: string; rowsCls?: string }) {
+  const [fileName, setFileName] = useState("");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-3 mb-1">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Описание / комментарий</span>
+        <button type="button" onClick={() => fileRef.current?.click()}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+          <Paperclip size={14} /> Прикрепить файл
+        </button>
+      </div>
+      <textarea className={`${textAreaCls} ${rowsCls}`} placeholder={placeholder} />
+      <input ref={fileRef} type="file" className="hidden" onChange={(e) => setFileName(e.target.files?.[0]?.name || "")} />
+      {fileName && <p className="mt-2 text-xs text-slate-500">Прикреплен файл: <span className="font-semibold text-slate-700">{fileName}</span></p>}
+    </div>
+  );
+}
+
 const inputCls = "w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-200";
 const textAreaCls = "w-full border border-slate-200 rounded-lg px-3 py-2 text-sm h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200";
 
@@ -576,8 +578,12 @@ const FORM_SPECS: Record<ActionKey, FormSpec> = {
   user: { title: "Пользователь", subtitle: "Пользователь, логин, пароль, роль и доступы к разделам кабинета и базам 1С.", result: "Изменения отправлены на согласование", buttons: ["Сохранить пользователя", "Отправить приглашение", "Отмена"], fields: [
     { label: "ФИО" }, { label: "Email" }, { label: "Телефон" }, { label: "Должность" }, { label: "Логин" }, { label: "Пароль" }, { label: "Повтор пароля" }, { label: "Контрагент", type: "select", options: cps }, { label: "Роль", type: "select", options: ["Руководитель", "Бухгалтер", "Сотрудник", "Технический специалист", "Администратор"] }, { label: "Доступ к разделам", type: "checks", options: sectionAccess, full: true }, { label: "Доступ к базам 1С", type: "checks", options: basesList, full: true }, { label: "Комментарий", type: "textarea", full: true }
   ]},
-  ticket: { title: "Новое обращение", subtitle: "Заявка в поддержку с корректной категорией и связанным объектом.", result: "Заявка создана", buttons: ["Создать обращение", "Отмена"], fields: [
-    { label: "Контрагент", type: "select", options: cps }, { label: "Тип обращения", type: "select", options: ["Ошибка 1С", "Вопрос по работе 1С", "Сервер/RDP", "Лицензии", "Оплата/документы", "Заказ товара", "Доставка", "Другое"] }, { label: "Связанный ресурс / объект", type: "select", options: ["Не выбран", "1С Бухгалтерия", "VPS для 1С #SRV-247090", "Заказ #9012", "Счет №237"] }, { label: "Тема", full: true }, { label: "Описание / комментарий", type: "textarea", full: true }, { label: "Приоритет", type: "select", options: ["Обычный", "Срочный", "Критичный простой"] }, { label: "Сколько пользователей затронуто" }, { label: "Удобный способ связи", type: "select", options: ["Телефон", "Email", "Telegram", "Через кабинет"] }, { label: "Телефоны для связи", placeholder: "+7 (999) 111-22-33" }
+  ticket: { title: "Новое обращение", subtitle: "Клиент описывает проблему. Категорию и приоритет определяет поддержка.", result: "Заявка создана", buttons: ["Создать обращение", "Отмена"], details: [
+    { label: "Категория", value: "Определит поддержка после анализа обращения" },
+    { label: "Приоритет", value: "Назначит инженер или менеджер по SLA" },
+    { label: "Связанный объект", value: "Не выбран по умолчанию" }
+  ], fields: [
+    { label: "Контрагент", type: "select", options: cps }, { label: "Тема" }, { label: "Описание / комментарий", type: "textarea", full: true }, { label: "Сколько пользователей затронуто" }, { label: "Удобный способ связи", type: "select", options: ["Телефон", "Email", "Telegram", "Через кабинет"] }, { label: "Телефоны для связи", placeholder: "+7 (999) 111-22-33" }
   ]},
   base1c: { title: "База 1С", subtitle: "Только параметры базы: конфигурация, создание, доступы, публикация. CPU/RAM/SSD/IP относятся к серверу.", result: "Запрос отправлен", buttons: ["Создать базу", "Сохранить настройки", "Отмена"], fields: [
     { label: "Контрагент", type: "select", options: cps }, { label: "Название базы" }, { label: "Конфигурация", type: "select", options: ["Бухгалтерия", "ЗУП", "УНФ", "УТ", "ERP", "Другая"] }, { label: "Способ создания", type: "select", options: ["Новая пустая база", "Загрузить .dt", "Восстановить из backup", "Скопировать существующую базу"] }, { label: "Пользователи с доступом", type: "checks", options: ["Бухгалтерия", "Склад", "Менеджер", "Техспециалист"], full: true }, { label: "Нужна публикация", type: "select", options: ["Да", "Нет", "Нужно обсудить"] }, { label: "Нужно автообновление", type: "select", options: ["Да", "Нет", "Только уведомлять"] }, { label: "Комментарий", type: "textarea", full: true }
@@ -606,7 +612,9 @@ const FORM_SPECS: Record<ActionKey, FormSpec> = {
   order: { title: "Заказ", subtitle: "Карточка заказа, оплаты, доставки и документов.", result: "Запрос отправлен", buttons: ["Оплатить", "Скачать счет", "Скачать УПД", "Отследить доставку", "Повторить заказ", "Создать обращение", "Закрыть"], fields: [
     { label: "Номер заказа", readonly: "#9012" }, { label: "Контрагент", type: "select", options: cps }, { label: "Состав заказа", readonly: "Кассовый принтер · 1 шт." }, { label: "Статус", type: "select", options: ["Новый", "Ожидает оплаты", "В сборке", "Готов к отгрузке", "В пути", "Доставлен", "Закрыт"] }, { label: "Сумма", readonly: "28 900 ₽" }, { label: "Счет", readonly: "№8997" }, { label: "Оплата", type: "select", options: ["Ожидает оплаты", "Оплачено", "Частично оплачено"] }, { label: "Адрес доставки", full: true }, { label: "Транспортная компания" }, { label: "Трек-номер" }, { label: "Документы", readonly: "Счет, УПД" }, { label: "Комментарий", type: "textarea", full: true }
   ]},
-  cardPayment: { title: "Оплатить картой", subtitle: "Прототип оплаты без реального платежного шлюза.", result: "Запрос отправлен", buttons: ["Перейти к оплате", "Отмена"], fields: [{ label: "Контрагент", type: "select", options: cps }, { label: "Сумма" }, { label: "Назначение платежа", type: "select", options: ["Пополнение баланса", "Оплата заказа", "Оплата услуг", "Оплата лицензий", "Оплата аренды"] }, { label: "Комментарий", type: "textarea", full: true }]},
+  cardPayment: { title: "Оплатить", subtitle: "Выберите способ оплаты. Можно скачать счет или документ перед оплатой.", result: "Запрос отправлен", buttons: ["Перейти к оплате", "Скачать счет", "Скачать документ", "Отмена"], details: [
+    { label: "Сумма к оплате", value: "6 800 ₽" }, { label: "Основание", value: "Заказ / счет выбранного документа" }
+  ], fields: [{ label: "Контрагент", type: "select", options: cps }, { label: "Сумма", placeholder: "6 800 ₽" }, { label: "Способ оплаты", type: "select", options: ["Картой", "Счет для юрлица", "С баланса", "Бонусами частично"] }, { label: "Назначение платежа", type: "select", options: ["Пополнение баланса", "Оплата заказа", "Оплата услуг", "Оплата лицензий", "Оплата аренды"] }, { label: "Комментарий", type: "textarea", full: true }]},
   invoice: { title: "Счет на оплату", subtitle: "Формирование счета для юрлица в прототипном режиме.", result: "Запрос отправлен", buttons: ["Сформировать счет", "Отмена"], fields: [{ label: "Контрагент", type: "select", options: cps }, { label: "Основание", type: "select", options: ["Пополнение баланса", "Оплата заказа", "Оплата услуг", "Оплата лицензий", "Оплата аренды"] }, { label: "Сумма" }, { label: "Email для отправки счета" }, { label: "Комментарий", type: "textarea", full: true }]},
   attachCard: { title: "Привязать карту", subtitle: "Прототип привязки карты без сохранения платежных данных.", result: "Запрос отправлен", buttons: ["Привязать карту", "Отмена"], fields: [{ label: "Контрагент", type: "select", options: cps }, { label: "Название карты" }, { label: "Email для чеков" }, { label: "Согласие на автосписание", type: "select", options: ["Да", "Нет"] }]},
   promisedPayment: { title: "Обещанный платеж", subtitle: "Запрос отсрочки платежа для менеджера.", result: "Запрос отправлен", buttons: ["Отправить запрос", "Отмена"], fields: [{ label: "Контрагент", type: "select", options: cps }, { label: "Сумма" }, { label: "Причина", type: "textarea", full: true }, { label: "Дата планируемой оплаты" }]},
@@ -630,6 +638,7 @@ function actionFromTitle(title: string): ActionKey {
   if (t.includes("сервер") || t.includes("ресурс") || t.includes("ram") || t.includes("ssd") || t.includes("тариф")) return "server";
   if (t.includes("баз") || t.includes(".dt") || t.includes("backup") || t.includes("публикац")) return "base1c";
   if (t.includes("услуг") || t.includes("консультац") || t.includes("аудит") || t.includes("доработ")) return "service";
+  if (t.includes("оплат")) return "cardPayment";
   if (t.includes("товар") || t.includes("налич")) return "product";
   if (t.includes("кп") || t.includes("коммерчес")) return "offer";
   if (t.includes("заказ") || t.includes("отгруз") || t.includes("достав") || t.includes("трек") || t.includes("упд")) return "order";
@@ -646,7 +655,10 @@ function actionFromTitle(title: string): ActionKey {
 function renderFormField(field: FormField, index: number) {
   if (field.readonly) return <Field key={index} label={field.label} full={field.full}><input className={`${inputCls} bg-slate-50 text-slate-600`} value={field.readonly} readOnly /></Field>;
   if (field.type === "select") return <Field key={index} label={field.label} full={field.full}><select className={inputCls}>{field.options?.map(o => <option key={o}>{o}</option>)}</select></Field>;
-  if (field.type === "textarea") return <Field key={index} label={field.label} full={field.full}><textarea className={textAreaCls} placeholder={field.placeholder} /></Field>;
+  if (field.type === "textarea") {
+    const isDescription = field.label.toLowerCase().includes("опис") || field.label.toLowerCase().includes("комментар");
+    return <div key={index} className={field.full ? "md:col-span-2" : ""}>{isDescription ? <TextareaWithAttach placeholder={field.placeholder} /> : <Field label={field.label} full={field.full}><textarea className={textAreaCls} placeholder={field.placeholder} /></Field>}</div>;
+  }
   if (field.type === "file") return <Field key={index} label={field.label} full={field.full}><input type="file" className="w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:border file:border-slate-200 file:rounded-lg file:text-xs file:font-semibold file:bg-white file:text-slate-700" /></Field>;
   if (field.type === "checks") return <Field key={index} label={field.label} full={field.full}><div className="grid grid-cols-2 gap-2 rounded-lg border border-slate-200 p-3">{field.options?.map(o => <label key={o} className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" className="rounded border-slate-300" />{o}</label>)}</div></Field>;
   return <Field key={index} label={field.label} full={field.full}><input className={inputCls} placeholder={field.placeholder} /></Field>;
@@ -850,11 +862,61 @@ function CounterpartyInnWizard({ onClose }: { onClose: () => void }) {
   );
 }
 
+
+function LicenseChangeModal({ onClose }: { onClose: () => void }) {
+  const used = 7;
+  const [qty, setQty] = useState(10);
+  const [sent, setSent] = useState(false);
+  const fmt = (n: number) => new Intl.NumberFormat("ru-RU").format(n) + " ₽";
+  const price = qty * 1500;
+  const delta = qty - 10;
+  return (
+    <Overlay onClose={onClose}>
+      <Card cls="max-w-2xl w-full max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-hidden flex flex-col">
+        <div className="flex items-start justify-between gap-4 p-5 sm:p-6 pb-4 border-b border-slate-100 shrink-0">
+          <div><h2 className="text-xl font-bold text-slate-900">Изменить количество лицензий 1С</h2><p className="text-sm text-slate-500 mt-1">Количество нельзя уменьшить ниже используемых лицензий.</p></div>
+          <Btn v="ghost" sz="sm" onClick={onClose}><X size={16} /></Btn>
+        </div>
+        <div className="px-5 sm:px-6 py-5 overflow-y-auto lk-modal-scroll">
+          {sent ? <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800"><div className="flex items-center gap-2 font-bold"><CheckCircle2 size={18} />Изменения отправлены на согласование</div></div> : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="rounded-lg border border-slate-200 p-3"><p className="text-xs text-slate-400 font-bold uppercase">Текущий пакет</p><p className="text-xl font-extrabold">10</p></div>
+                <div className="rounded-lg border border-slate-200 p-3"><p className="text-xs text-slate-400 font-bold uppercase">Используется</p><p className="text-xl font-extrabold">{used}</p></div>
+                <div className="rounded-lg border border-slate-200 p-3"><p className="text-xs text-slate-400 font-bold uppercase">Свободно</p><p className="text-xl font-extrabold">{Math.max(0, qty - used)}</p></div>
+              </div>
+              <div className="rounded-xl border border-slate-200 p-4">
+                <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Новое количество лицензий</p>
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => setQty(q => Math.max(used, q - 1))} className="w-11 h-11 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center"><Minus size={17} /></button>
+                  <input className={`${inputCls} text-center text-xl font-extrabold`} value={qty} onChange={(e) => setQty(Math.max(used, Number(e.target.value.replace(/\D/g, "")) || used))} />
+                  <button type="button" onClick={() => setQty(q => q + 1)} className="w-11 h-11 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 flex items-center justify-center"><Plus size={17} /></button>
+                </div>
+                <div className="flex gap-2 mt-3 flex-wrap">{[7,10,15,20].map(n => <Btn key={n} v={qty===n ? "primary" : "default"} sz="sm" onClick={() => setQty(Math.max(used, n))}>{n}</Btn>)}</div>
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
+                <div className="flex justify-between"><span>Текущая стоимость</span><b>{fmt(15000)} / мес</b></div>
+                <div className="flex justify-between"><span>Новая стоимость</span><b>{fmt(price)} / мес</b></div>
+                <div className="flex justify-between"><span>Разница</span><b>{delta === 0 ? "без изменений" : `${delta > 0 ? "+" : ""}${fmt(delta * 1500)} / мес`}</b></div>
+              </div>
+              <TextareaWithAttach placeholder="Комментарий к изменению лицензий..." />
+            </div>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2 justify-end border-t border-slate-100 p-4 sm:px-6 bg-white shrink-0">
+          {sent ? <Btn v="default" onClick={onClose}>Закрыть</Btn> : <><Btn v="default" onClick={onClose}>Отмена</Btn><Btn v="primary" onClick={() => setSent(true)}>Получить счет</Btn><Btn v="green" onClick={() => setSent(true)}>Запросить изменение</Btn></>}
+        </div>
+      </Card>
+    </Overlay>
+  );
+}
+
 function GenericActionModal({ title, onClose }: { title: string; onClose: () => void }) {
   const [sent, setSent] = useState(false);
   const key = actionFromTitle(title);
   if (key === "counterparty") return <CounterpartyInnWizard onClose={onClose} />;
   if (key === "ticket") return <TicketRequestModal onClose={onClose} />;
+  if (key === "licenses") return <LicenseChangeModal onClose={onClose} />;
   const spec = key === "unknown" ? { ...FORM_SPECS.unknown, title, fields: [{ label: "Действие", readonly: title }, { label: "Комментарий", type: "textarea" as const, full: true }] } : FORM_SPECS[key];
   return (
     <Overlay onClose={onClose}>
@@ -1037,13 +1099,13 @@ function DashboardScreen({ nav, openModal, openDiscussion }: {
           ))}
         </div>
 
-        <Table heads={["Заказ", "Товар", "Сумма", "Статус", "Доставка", ""]} rows={[
-          ["#9012", "Кассовый принтер", "28 900 ₽", <Badge v="blue">в пути</Badge>, "Трек: CDEK-9012",
-            <Btn v="ghost" sz="sm" onClick={() => nav("shipments")}>Отследить</Btn>],
-          ["#9008", "Сканер штрихкода", "9 500 ₽", <Badge v="green">готов к выдаче</Badge>, "Самовывоз",
+        <Table heads={["Заказ", "Тег", "Сумма", "Оплата", "Доставка", ""]} rows={[
+          ["#9012", <Badge v="blue">товары + услуги</Badge>, "28 900 ₽", <Badge v="green">оплачено</Badge>, "Трек: CDEK-9012",
             <Btn v="ghost" sz="sm" onClick={() => nav("shipments")}>Открыть</Btn>],
-          ["#8997", "Расходные материалы", "4 700 ₽", <Badge v="amber">ожидает оплаты</Badge>, "После оплаты",
-            <Btn v="ghost" sz="sm" onClick={() => openModal("Оплатить заказ")}>Оплатить</Btn>],
+          ["#9008", <Badge v="purple">склад</Badge>, "9 500 ₽", <Badge v="green">оплачено</Badge>, "Самовывоз",
+            <Btn v="ghost" sz="sm" onClick={() => nav("shipments")}>Открыть</Btn>],
+          ["#8997", <Badge v="amber">резерв</Badge>, "4 700 ₽", <Badge v="amber">ожидает оплаты</Badge>, "После оплаты",
+            <Btn v="green" sz="sm" onClick={() => openModal("Оплатить заказ")}>Оплатить</Btn>],
         ]} />
       </Card>
     </div>
@@ -1095,52 +1157,59 @@ function TicketsScreen({ openModal, openDiscussion }: {
   const [tab, setTab] = useState("Все");
   const tabs = ["Все", "Новые", "В работе", "Ожидают клиента", "Закрытые"];
   const tickets = [
-    { n: "#1042", topic: "Ошибка обмена 1С с сайтом", type: "1С / интеграция", status: <Badge v="amber">в работе</Badge>, resp: "Иван", sla: "01:20 осталось" },
-    { n: "#1041", topic: "Не открывается база бухгалтерии", type: "Сервер / база 1С", status: <Badge v="red">критично</Badge>, resp: "Сергей", sla: "Нарушен" },
-    { n: "#1038", topic: "Добавить пользователя в базу", type: "Доступы", status: <Badge v="blue">ожидает клиента</Badge>, resp: "Иван", sla: "В срок" },
-    { n: "#1035", topic: "Настройка отчетности по зарплате", type: "1С / ЗУП", status: <Badge v="gray">закрыто</Badge>, resp: "Алексей", sla: "В срок" },
+    { n: "#1042", topic: "Ошибка обмена 1С с сайтом", type: "1С / интеграция", statusLabel: "в работе", statusV: "amber" as BV, resp: "Иван", sla: "01:20 осталось" },
+    { n: "#1041", topic: "Не открывается база бухгалтерии", type: "Сервер / база 1С", statusLabel: "критично", statusV: "red" as BV, resp: "Сергей", sla: "Нарушен" },
+    { n: "#1038", topic: "Добавить пользователя в базу", type: "Доступы", statusLabel: "ожидает клиента", statusV: "blue" as BV, resp: "Иван", sla: "В срок" },
+    { n: "#1035", topic: "Настройка отчетности по зарплате", type: "1С / ЗУП", statusLabel: "закрыто", statusV: "gray" as BV, resp: "Алексей", sla: "В срок" },
   ];
+  const [activeN, setActiveN] = useState(tickets[0].n);
+  const active = tickets.find(t => t.n === activeN) || tickets[0];
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
-      <Card cls="xl:col-span-3 p-5">
-        <SH title="Обращения" action={<Btn v="green" sz="sm" onClick={openModal}><Plus size={14} /> Создать обращение</Btn>} />
-        <div className="relative mb-4">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Поиск по теме, номеру, базе 1С, серверу..." />
+    <div className="grid grid-cols-1 xl:grid-cols-5 gap-5 xl:h-[calc(100vh-116px)] xl:min-h-0">
+      <Card cls="xl:col-span-3 p-5 xl:h-full xl:min-h-0 flex flex-col overflow-hidden">
+        <div className="shrink-0">
+          <SH title="Обращения" action={<Btn v="green" sz="sm" onClick={openModal}><Plus size={14} /> Создать обращение</Btn>} />
+          <div className="relative mb-4">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-200" placeholder="Поиск по теме, номеру, базе 1С, серверу..." />
+          </div>
+          <div className="flex gap-1.5 mb-4 flex-wrap">
+            {tabs.map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${tab === t ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}>
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex gap-1.5 mb-4 flex-wrap">
-          {tabs.map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer ${tab === t ? "bg-slate-900 text-white border-slate-900" : "bg-white text-slate-600 border-slate-200 hover:border-slate-300"}`}>
-              {t}
+        <div className="space-y-2 xl:flex-1 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain xl:pr-1 sidebar-scrollbar-hidden">
+          {tickets.map(t => (
+            <button key={t.n} type="button" onClick={() => setActiveN(t.n)}
+              className={`w-full text-left rounded-xl border p-3.5 transition-all cursor-pointer ${active.n === t.n ? "border-slate-900 ring-1 ring-slate-900 bg-white" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0"><p className="font-mono text-xs font-bold text-slate-600">{t.n}</p><p className="font-semibold text-slate-900 mt-1 truncate">{t.topic}</p><p className="text-xs text-slate-500 mt-1">{t.type} · ответственный: {t.resp}</p></div>
+                <Badge v={t.statusV}>{t.statusLabel}</Badge>
+              </div>
+              <p className="text-xs text-slate-500 mt-2">SLA: {t.sla}</p>
             </button>
           ))}
         </div>
-        <Table heads={["№", "Тема", "Тип", "Статус", "Ответственный", ""]} rows={
-          tickets.map(t => [
-            <span className="font-mono text-xs font-semibold text-slate-600">{t.n}</span>,
-            <span className="font-medium">{t.topic}</span>,
-            <span className="text-slate-500">{t.type}</span>,
-            t.status,
-            t.resp,
-            <Btn v="ghost" sz="sm" onClick={() => openDiscussion(t.topic)}><MessageSquare size={13} /></Btn>,
-          ])
-        } />
       </Card>
 
-      <Card cls="xl:col-span-2 p-5">
-        <h2 className="text-lg font-bold text-slate-900 mb-1">Обращение #1042</h2>
-        <div className="flex gap-2 mb-3"><Badge v="amber">В работе</Badge><Badge v="blue">SLA 01:20</Badge></div>
-        <p className="text-xs text-slate-500 mb-4">Проблема: не проходит обмен заказами между сайтом и 1С. После обновления не выгружаются заказы.</p>
-        <div className="flex flex-col gap-3 mb-4">
-          <ChatMsg from="Клиент" text="После обновления не выгружаются заказы. Скрин приложил." />
-          <ChatMsg from="Инженер Иван" text="Проверяю регламентные задания и доступ к API." me />
-          <ChatMsg from="AI-помощник" text="Предварительная категория: интеграция 1С ↔ сайт. Возможная причина: ошибка авторизации или изменение формата обмена." />
+      <Card cls="xl:col-span-2 p-5 xl:h-full xl:min-h-0 flex flex-col overflow-hidden">
+        <div className="shrink-0">
+          <h2 className="text-lg font-bold text-slate-900 mb-1">Обращение {active.n}</h2>
+          <div className="flex gap-2 mb-3"><Badge v={active.statusV}>{active.statusLabel}</Badge><Badge v="blue">SLA {active.sla}</Badge></div>
+          <p className="text-xs text-slate-500 mb-4">{active.topic}. Категорию и приоритет уточняет поддержка по содержанию обращения.</p>
         </div>
-        <div className="border-t border-slate-100 pt-4 flex gap-2 flex-wrap">
-          <Btn v="default" sz="sm">Приложить файл</Btn>
-          <Btn v="blue" sz="sm">Добавить комментарий</Btn>
-          <Btn v="danger" sz="sm">Закрыть</Btn>
+        <div className="flex-1 min-h-0 overflow-y-auto sidebar-scrollbar-hidden pr-1 flex flex-col gap-3 mb-4">
+          <ChatMsg from="Клиент" text="После обновления проблема повторяется. Скрин приложил." />
+          <ChatMsg from={`Инженер ${active.resp}`} text="Проверяю регламентные задания и доступы. Отпишусь в этом обращении." me />
+          <ChatMsg from="AI-помощник" text="Предварительно: возможно потребуется проверить права и журнал ошибок. Категория будет назначена автоматически." />
+        </div>
+        <div className="border-t border-slate-100 pt-4 shrink-0">
+          <TextareaWithAttach rowsCls="h-20" placeholder="Напишите сообщение по обращению..." />
+          <div className="flex gap-2 mt-3 justify-end"><Btn v="default" sz="sm">Сохранить</Btn><Btn v="blue" sz="sm">Отправить</Btn><Btn v="danger" sz="sm">Закрыть</Btn></div>
         </div>
       </Card>
     </div>
@@ -1164,11 +1233,14 @@ function Bases1CScreen({ openDiscussion }: { openDiscussion: (r: string) => void
         <Metric label="Свободно" value="3" extra={<Badge v="green">доступно</Badge>} />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-5">
-        <Card cls="xl:col-span-2 p-5">
-          <SH title="Базы 1С"
-            sub="Только данные баз 1С. Информация о серверах — в разделе «Серверы и ресурсы»." />
-          <div className="space-y-2">
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-5 xl:h-[calc(100vh-220px)] xl:min-h-0">
+        <Card cls="xl:col-span-2 p-5 xl:h-full xl:min-h-0 flex flex-col overflow-hidden">
+          <div className="shrink-0">
+            <SH title="Базы 1С"
+              sub="Только данные баз 1С. Информация о серверах — в разделе «Серверы и ресурсы»."
+              action={<Btn v="green" sz="sm" onClick={() => window.dispatchEvent(new CustomEvent("lk:prototype-action", { detail: { title: "Заказать базу 1С" } }))}>Заказать базу</Btn>} />
+          </div>
+          <div className="space-y-2 xl:flex-1 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain sidebar-scrollbar-hidden pr-1">
             {(["buh", "unf", "zup"] as const).map(id => {
               const b = bases[id];
               const isWarn = id === "zup";
@@ -1197,9 +1269,13 @@ function Bases1CScreen({ openDiscussion }: { openDiscussion: (r: string) => void
         </Card>
 
         {cur && (
-          <Card cls="xl:col-span-3 p-5">
-            <SH title={`Карточка базы: ${cur.name}`}
-              sub="Информация только по базе 1С — без IP, CPU/RAM/SSD и тарифа сервера" />
+          <Card cls="xl:col-span-3 xl:h-full xl:min-h-0 flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-slate-100 shrink-0">
+              <SH title={`Карточка базы: ${cur.name}`}
+                sub="Информация только по базе 1С — без IP, CPU/RAM/SSD и тарифа сервера"
+                action={<div className="flex gap-2 flex-wrap"><Btn v="green" sz="sm" onClick={() => window.dispatchEvent(new CustomEvent("lk:prototype-action", { detail: { title: "Заказать базу 1С" } }))}>Заказать базу</Btn><Btn v="default" sz="sm" onClick={() => window.dispatchEvent(new CustomEvent("lk:prototype-action", { detail: { title: "Добавить лицензии 1С" } }))}>Добавить лицензии</Btn></div>} />
+            </div>
+            <div className="p-5 space-y-4 xl:flex-1 xl:min-h-0 xl:overflow-y-auto xl:overscroll-contain sidebar-scrollbar-hidden">
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Основное</h3>
@@ -1255,6 +1331,7 @@ function Bases1CScreen({ openDiscussion }: { openDiscussion: (r: string) => void
               <Btn v="default" sz="sm" onClick={() => openDiscussion(cur.name)}><MessageSquare size={13} /> Создать обращение по базе</Btn>
               <Btn v="ghost" sz="sm">История изменений</Btn>
               <Btn v="ghost" sz="sm">Журнал backup</Btn>
+            </div>
             </div>
           </Card>
         )}
@@ -1598,6 +1675,11 @@ function DealsScreen() {
             <TEvent date="Этап 3. Реализация" text="В работе · выполняется настройка и доработка." />
             <TEvent date="Этап 4. Тестирование" text="Не начат." last />
           </div>
+          <div className="mt-5 border-t border-slate-100 pt-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Сообщение по проекту</h3>
+            <TextareaWithAttach rowsCls="h-20" placeholder="Напишите комментарий, вопрос по этапу или приложите файл..." />
+            <div className="flex justify-end gap-2 mt-3"><Btn v="default" sz="sm">Сохранить черновик</Btn><Btn v="blue" sz="sm">Отправить</Btn></div>
+          </div>
         </Card>
       </div>
     </div>
@@ -1605,47 +1687,66 @@ function DealsScreen() {
 }
 
 function ContractsScreen() {
+  const contracts = [
+    { title: "Договор №45/1С", sub: "Абонентское обслуживание 1С · активен до 01.07.2026", status: "активен", file: "dogovor-45-1c.pdf" },
+    { title: "SLA обслуживания", sub: "Критичные — 2 часа, обычные — 8 часов", status: "регламент", file: "sla-obsluzhivaniya.pdf" },
+    { title: "Регламент работ", sub: "Что входит и что не входит в абонентку", status: "документ", file: "reglament-rabot.pdf" },
+    { title: "Договор аренды АР-15/2026", sub: "Серверное сопровождение · до 01.08.2026", status: "активен", file: "arenda-ar-15-2026.pdf" },
+  ];
+  const [active, setActive] = useState(contracts[0]);
+  const [notice, setNotice] = useState("");
+  const mark = (text: string) => { setNotice(text); window.setTimeout(() => setNotice(""), 1800); };
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
       <Card cls="p-5">
-        <SH title="Договоры и SLA" />
-        <DocRow title="Договор №45/1С" sub="Абонентское обслуживание 1С · активен до 01.07.2026"
-          action={<><Badge v="green" dot>активен</Badge><Btn v="ghost" sz="sm"><Download size={13} /></Btn></>} />
-        <DocRow title="SLA обслуживания" sub="Критичные — 2 часа, обычные — 8 часов"
-          action={<Btn v="default" sz="sm">Открыть</Btn>} />
-        <DocRow title="Регламент работ" sub="Что входит и что не входит в абонентку"
-          action={<Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>} />
-        <DocRow title="Договор аренды АР-15/2026" sub="Серверное сопровождение · до 01.08.2026"
-          action={<><Badge v="green" dot>активен</Badge><Btn v="ghost" sz="sm"><Download size={13} /></Btn></>} />
+        <SH title="Договоры и SLA" sub="Договоры кликабельные: можно открыть карточку и скачать файл." />
+        <div className="space-y-2">
+          {contracts.map(c => (
+            <button key={c.title} type="button" onClick={() => setActive(c)}
+              className={`w-full text-left rounded-xl border p-3.5 transition-all cursor-pointer ${active.title === c.title ? "border-slate-900 ring-1 ring-slate-900 bg-white" : "border-slate-200 bg-white hover:bg-slate-50"}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0"><p className="font-bold text-slate-900">{c.title}</p><p className="text-xs text-slate-500 mt-1">{c.sub}</p></div>
+                <Badge v={c.status === "активен" ? "green" : "blue"}>{c.status}</Badge>
+              </div>
+            </button>
+          ))}
+        </div>
       </Card>
       <Card cls="p-5">
-        <SH title="Лимит часов" />
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="font-bold text-slate-900">12 / 20 часов</span>
-            <span className="text-slate-500">остаток на июль</span>
-          </div>
-          <Progress v={12} max={20} color="blue" />
+        <SH title={active.title} sub="Карточка договора и действия клиента" />
+        {notice && <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-semibold text-emerald-800 mb-4"><CheckCircle2 size={16} className="inline mr-1" />{notice}</div>}
+        <div className="bg-slate-50 rounded-lg p-4 border border-slate-100 mb-4">
+          <InfoGrid items={[
+            { label: "Контрагент", value: "ED ART · ИНН 0000000000" },
+            { label: "Статус", value: active.status },
+            { label: "Файл", value: <Mono>{active.file}</Mono> },
+            { label: "Срок", value: active.title.includes("аренды") ? "до 01.08.2026" : "до 01.07.2026" },
+          ]} />
         </div>
+        <div className="flex flex-wrap gap-2 mb-5">
+          <Btn v="green" sz="sm" onClick={() => mark(`${active.title} скачан`)}><Download size={13} /> Скачать договор</Btn>
+          <Btn v="default" sz="sm" onClick={() => mark("Запрос на отправку договора на email создан")}>Отправить на email</Btn>
+          <Btn v="default" sz="sm" onClick={() => window.dispatchEvent(new CustomEvent("lk:prototype-action", { detail: { title: `Создать обращение по ${active.title}` } }))}>Создать обращение</Btn>
+        </div>
+        <SH title="Лимит часов" />
+        <div className="mb-4"><div className="flex justify-between text-sm mb-2"><span className="font-bold text-slate-900">12 / 20 часов</span><span className="text-slate-500">остаток на июль</span></div><Progress v={12} max={20} color="blue" /></div>
         <Table compact heads={["Работа", "Дата", "Часы"]} rows={[
           ["Обновление 1С Бухгалтерия", "15.06.2026", "2.5 ч"],
           ["Консультация бухгалтера", "18.06.2026", "1.0 ч"],
           ["Интеграция с сайтом", "20.06.2026", "4.5 ч"],
-          ["Диагностика сервера", "22.06.2026", "0.5 ч"],
           ["Итого использовано", "", "8 ч"],
         ]} />
-        <Hint>При необходимости можно заказать дополнительные часы вне тарифа или перейти на более высокий тариф.</Hint>
       </Card>
     </div>
   );
 }
 
-function DocumentsScreen() {
+function DocumentsScreen({ openModal }: { openModal: (title: string) => void }) {
   return (
     <Card cls="p-5">
       <SH title="Акты и документы"
         sub="Закрывающие документы, договоры, приложения, регламенты."
-        action={<Btn v="default" sz="sm"><Download size={13} /> Скачать все</Btn>} />
+        action={<div className="flex gap-2 flex-wrap"><Btn v="green" sz="sm" onClick={() => openModal("Заказать документ")}>Заказать документ</Btn><Btn v="default" sz="sm"><Download size={13} /> Скачать все</Btn></div>} />
       <Table heads={["Документ", "Дата", "Контрагент", "Сумма", ""]} rows={[
         ["Акт №188 — аренда VPS", "31.05.2026", "ED ART", "12 900 ₽", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
         ["Акт №177 — сопровождение 1С", "31.05.2026", "ED ART", "15 000 ₽", <Btn v="ghost" sz="sm"><Download size={13} /> Скачать</Btn>],
@@ -1963,8 +2064,8 @@ function ShipmentsScreen() {
                 </div>
                 <Badge v={order.badge}>{order.status}</Badge>
               </div>
-              <div className="grid grid-cols-3 gap-2 mt-3 text-[11px] leading-tight text-slate-500">
-                <span><b className="text-slate-700">Оплата:</b> {order.payment}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3 text-[11px] leading-tight text-slate-500">
+                <span className="flex items-center gap-1 flex-wrap"><b className="text-slate-700">Оплата:</b> {order.payment} {order.payment.includes("Ожидает") && <span className="ml-1 text-[10px] font-bold text-emerald-700">Оплатить</span>}</span>
                 <span><b className="text-slate-700">Доставка:</b> {order.delivery}</span>
                 <span><b className="text-slate-700">Дата:</b> {order.expected}</span>
               </div>
@@ -2600,8 +2701,8 @@ const navGroups = [
   },
 ];
 
-function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose }: {
-  current: Screen; onChange: (s: Screen) => void; cpName: string; cpInn: string; mobileOpen?: boolean; onClose?: () => void;
+function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose, onPaymentOpen }: {
+  current: Screen; onChange: (s: Screen) => void; cpName: string; cpInn: string; mobileOpen?: boolean; onClose?: () => void; onPaymentOpen?: () => void;
 }) {
   const [sidebarProgress, setSidebarProgress] = useState(0);
   const sidebarRef = useRef<HTMLElement | null>(null);
@@ -2701,15 +2802,15 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
       {/* Brand */}
       <div className="px-4 py-4 border-b border-slate-100 shrink-0">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+          <button type="button" onClick={() => { onChange("dashboard"); onClose?.(); }} className="flex items-center gap-3 min-w-0 text-left rounded-lg hover:bg-slate-50 transition-colors p-1 -m-1 cursor-pointer">
             <div className="w-10 h-10 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
               <span className="text-white font-extrabold text-sm">LK</span>
             </div>
             <div className="min-w-0">
-              <p className="text-base font-bold text-slate-900 truncate">GoMark Service</p>
-              <p className="text-xs text-slate-400">Личный кабинет клиента</p>
+              <p className="text-base font-bold text-slate-900 truncate">maria@edart.local</p>
+              <p className="text-xs text-slate-400">авторизованный пользователь</p>
             </div>
-          </div>
+          </button>
           <button type="button" className="lg:hidden w-9 h-9 rounded-lg border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50" onClick={onClose} aria-label="Закрыть меню"><X size={17} /></button>
         </div>
       </div>
@@ -2719,7 +2820,7 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
         <div className="bg-slate-50 rounded-lg border border-slate-200 transition-all duration-300 ease-out overflow-hidden" style={{ padding: compactPad }}>
           <div className="flex items-center justify-between gap-2" style={{ marginBottom: compact ? 0 : compactGap, transition: "margin 260ms ease" }}>
             <div className="min-w-0">
-              <p className="text-base font-bold text-slate-900 truncate">{cpName}</p>
+              <p className="text-base font-bold text-slate-900 truncate">maria@edart.local</p>
               <p className="text-[11px] text-slate-400 truncate" style={{ opacity: compact ? 1 : 0, maxHeight: compact ? 18 : 0, overflow: "hidden", transition: "opacity 220ms ease, max-height 260ms ease" }}>
                 текущий клиент
               </p>
@@ -2728,7 +2829,7 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
           </div>
 
           <div style={hideStyle} aria-hidden={compact}>
-            <p className="text-xs text-slate-500 mb-3">ООО · ИНН <Mono>{cpInn}</Mono></p>
+            <p className="text-xs text-slate-500 mb-3">Контрагент: {cpName} · ИНН <Mono>{cpInn}</Mono></p>
             <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
               <span>Менеджер</span><span className="font-semibold text-slate-700">Алексей</span>
             </div>
@@ -2779,7 +2880,7 @@ function Sidebar({ current, onChange, cpName, cpInn, mobileOpen = false, onClose
             {group.items.map(item => {
               const isActive = current === item.id;
               return (
-                <button key={item.id} onClick={() => { onChange(item.id); onClose?.(); }}
+                <button key={item.id} onClick={() => { onChange(item.id); onClose?.(); if (item.id === "billing") window.setTimeout(() => onPaymentOpen?.(), 80); }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all cursor-pointer mb-0.5 ${isActive ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"}`}>
                   <span className="shrink-0">{item.icon}</span>
                   <span className="truncate flex-1 text-left">{item.label}</span>
@@ -2840,7 +2941,7 @@ export default function App() {
       case "deals": return <DealsScreen />;
       case "contracts": return <ContractsScreen />;
       case "billing": return <BillingScreen openModal={() => { setGenericActionTitle("Оплатить картой"); setModal("generic"); }} />;
-      case "documents": return <DocumentsScreen />;
+      case "documents": return <DocumentsScreen openModal={(title) => { setGenericActionTitle(title); setModal("generic"); }} />;
       case "offers": return <OffersScreen openModal={(title) => { setGenericActionTitle(title); setModal("generic"); }} />;
       case "servers": return <ServersScreen openDiscussion={openDiscussion} />;
       case "bases1c": return <Bases1CScreen openDiscussion={openDiscussion} />;
@@ -2899,10 +3000,22 @@ export default function App() {
           font-size: 15px;
           line-height: 1.5;
         }
+        @media (max-width: 767px) {
+          .lk-main-content { padding: 16px !important; }
+          .lk-main-content .grid { grid-template-columns: 1fr !important; }
+          .lk-main-content table { min-width: 640px; }
+          .lk-main-content .text-3xl { font-size: 24px !important; }
+          .lk-main-content .text-2xl { font-size: 22px !important; }
+          .lk-main-content .text-xl { font-size: 18px !important; }
+          .lk-main-content .text-lg { font-size: 17px !important; }
+          header { padding-left: 16px !important; padding-right: 16px !important; }
+          .lk-modal-scroll .grid { grid-template-columns: 1fr !important; }
+          .lk-modal-scroll .col-span-2, .lk-modal-scroll .md\:col-span-2 { grid-column: span 1 / span 1 !important; }
+        }
       `}</style>
       <div className="flex h-screen overflow-hidden bg-[#F0F4F8]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
       {mobileMenuOpen && <div className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" onClick={() => setMobileMenuOpen(false)} />}
-      <Sidebar current={screen} onChange={setScreen} cpName={cpName} cpInn={cpInn} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <Sidebar current={screen} onChange={setScreen} cpName={cpName} cpInn={cpInn} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} onPaymentOpen={() => { setGenericActionTitle("Оплатить картой"); setModal("generic"); }} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Topbar */}
