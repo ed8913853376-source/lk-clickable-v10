@@ -3084,20 +3084,108 @@ export default function App() {
           line-height: 1.5;
         }
         @media (max-width: 767px) {
-          .lk-main-content { padding: 16px !important; }
-          .lk-main-content .grid { grid-template-columns: 1fr !important; }
+          html, body, #root { min-height: 100%; height: auto !important; overflow-x: hidden !important; }
+          .lk-app-shell {
+            min-height: 100dvh !important;
+            height: auto !important;
+            overflow-x: hidden !important;
+            overflow-y: auto !important;
+            display: block !important;
+          }
+          aside.lk-sidebar-scroll {
+            width: min(86vw, 20rem) !important;
+            max-width: 86vw !important;
+            height: 100dvh !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+          }
+          .lk-app-shell > .flex-1 {
+            width: 100% !important;
+            min-width: 0 !important;
+            overflow: visible !important;
+          }
+          header {
+            position: sticky !important;
+            top: 0 !important;
+            padding: 12px 14px !important;
+          }
+          header h1 {
+            font-size: 18px !important;
+            line-height: 1.2 !important;
+            max-width: calc(100vw - 72px) !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+          }
+          header .uppercase {
+            max-width: calc(100vw - 72px) !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+            display: inline-block !important;
+          }
+          .lk-main-content {
+            width: 100% !important;
+            max-width: 100vw !important;
+            min-height: calc(100dvh - 64px) !important;
+            overflow: visible !important;
+            overflow-x: hidden !important;
+            padding: 14px !important;
+          }
+          .lk-main-content > div,
+          .lk-main-content section,
+          .lk-main-content article {
+            max-width: 100% !important;
+            min-width: 0 !important;
+          }
           .mobile-dashboard-metrics { display: none !important; }
-          .lk-main-content table { min-width: 640px; }
+          .lk-main-content .grid {
+            grid-template-columns: minmax(0, 1fr) !important;
+            max-width: 100% !important;
+          }
+          .lk-main-content .flex {
+            min-width: 0 !important;
+          }
+          .lk-main-content .flex.items-start.justify-between,
+          .lk-main-content .flex.items-center.justify-between {
+            gap: 10px !important;
+            flex-wrap: wrap !important;
+          }
+          .lk-main-content button {
+            max-width: 100% !important;
+            white-space: normal !important;
+          }
+          .lk-main-content table {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
+          .lk-main-content thead,
+          .lk-main-content tbody,
+          .lk-main-content tr {
+            min-width: 620px !important;
+          }
           .lk-main-content .text-3xl { font-size: 24px !important; }
           .lk-main-content .text-2xl { font-size: 22px !important; }
           .lk-main-content .text-xl { font-size: 18px !important; }
           .lk-main-content .text-lg { font-size: 17px !important; }
-          header { padding-left: 16px !important; padding-right: 16px !important; }
-          .lk-modal-scroll .grid { grid-template-columns: 1fr !important; }
-          .lk-modal-scroll .col-span-2, .lk-modal-scroll .md\:col-span-2 { grid-column: span 1 / span 1 !important; }
+          .lk-modal-scroll {
+            max-height: calc(100dvh - 136px) !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
+          .lk-modal-scroll .grid { grid-template-columns: minmax(0, 1fr) !important; }
+          .lk-modal-scroll .col-span-2,
+          .lk-modal-scroll .md\:col-span-2 {
+            grid-column: span 1 / span 1 !important;
+          }
         }
       `}</style>
-      <div className="flex h-screen overflow-hidden bg-[#F0F4F8]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+      <div className="lk-app-shell flex h-screen overflow-hidden bg-[#F0F4F8]" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
       {mobileMenuOpen && <div className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" onClick={() => setMobileMenuOpen(false)} />}
       <Sidebar current={screen} onChange={setScreen} cpName={cpName} cpInn={cpInn} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} onPaymentOpen={() => { setGenericActionTitle("Оплатить картой"); setModal("generic"); }} />
 
