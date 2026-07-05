@@ -505,3 +505,41 @@ button.lk-pay-green-btn{
 .lk-pay-actions #lkDownloadDoc{order:4;}
 .lk-pay-actions #lkPaySubmit{order:1;}
 @media(min-width:641px){.lk-pay-actions #lkPaySubmit,.lk-pay-actions #lkPaySbpButton{flex:1 1 220px;}.lk-pay-actions #lkDownloadInvoice,.lk-pay-actions #lkDownloadDoc{flex:0 1 auto;}}
+
+/* v11.1: фиксация оплаты и заметное выделение выбранных строк/карточек */
+button[class*="border-slate-900"][class*="ring-slate-900"],
+button[data-lk-selected="true"]{
+  border-color:#10b981!important;
+  box-shadow:0 0 0 2px rgba(16,185,129,.24),0 12px 24px rgba(15,23,42,.06)!important;
+  background:#f8fffb!important;
+  position:relative;
+}
+button[class*="border-slate-900"][class*="ring-slate-900"]:before,
+button[data-lk-selected="true"]:before{
+  content:"";
+  position:absolute;
+  left:-1px;
+  top:10px;
+  bottom:10px;
+  width:4px;
+  border-radius:0 999px 999px 0;
+  background:#10b981;
+}
+button[class*="border-slate-200"].cursor-pointer:hover,
+tr.cursor-pointer:hover{
+  border-color:#cbd5e1!important;
+  background:#f8fafc!important;
+}
+.lk-pay-green-btn,
+.lk-pay-actions .primary,
+button[data-pay-action="true"]{
+  background:#059669!important;
+  border-color:#059669!important;
+  color:#fff!important;
+}
+.lk-pay-green-btn:hover,
+.lk-pay-actions .primary:hover,
+button[data-pay-action="true"]:hover{
+  background:#047857!important;
+  border-color:#047857!important;
+}

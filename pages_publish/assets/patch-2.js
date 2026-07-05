@@ -24,6 +24,7 @@
   }
   function patchPaymentButtons(root){
     (root || document).querySelectorAll('button').forEach(btn => {
+      if(btn.id === 'lkPaySbpButton' || btn.classList.contains('lk-pay-sbp-btn') || btn.closest('.lk-pay-modal') && btn.id !== 'lkPaySubmit') return;
       const text = (btn.textContent || '').replace(/\s+/g,' ').trim();
       const isPay = /^(Оплатить|Оплатить заказ|Перейти к оплате)(\s|$)/i.test(text) || btn.id === 'lkPaySubmit';
       if(!isPay || /Пополнить/i.test(text)) return;
@@ -40,6 +41,6 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedulePatch); else schedulePatch();
   document.addEventListener('click', schedulePatch, true);
   const observer = new MutationObserver(schedulePatch);
-  observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
+  observer.observe(document.documentElement, {childList:true, subtree:true});
 })();
 
