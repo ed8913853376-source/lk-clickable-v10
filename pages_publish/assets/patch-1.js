@@ -91,7 +91,7 @@
     const btn = e.target.closest('button');
     if(!btn || btn.closest('.lk-pay-modal')) return;
     const text = (btn.textContent||'').trim();
-    if(text === 'Оплатить' || text.startsWith('Оплатить остаток')){
+    if(/^Оплатить(\s|$)/.test(text)){
       const row = btn.closest('tr');
       if(row){
         const cells = Array.from(row.querySelectorAll('td')).map(td => (td.textContent||'').replace(/\s+/g,' ').trim());
