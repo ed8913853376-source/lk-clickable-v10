@@ -37,7 +37,7 @@
   document.addEventListener('change', () => window.setTimeout(scan, 0), true);
   document.addEventListener('click', () => window.setTimeout(scan, 40), true);
   const observer = new MutationObserver(scan);
-  observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
+  observer.observe(document.documentElement, {childList:true, subtree:true});
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan); else scan();
 })();
 

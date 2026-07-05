@@ -57,7 +57,7 @@
     if(btn) openFromButton(btn, e);
   }, true);
   ['input','change','click'].forEach(evt => document.addEventListener(evt, () => setTimeout(ensureSbp,0), true));
-  new MutationObserver(ensureSbp).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+  new MutationObserver(ensureSbp).observe(document.documentElement,{childList:true,subtree:true});
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureSbp); else ensureSbp();
 })();
 
