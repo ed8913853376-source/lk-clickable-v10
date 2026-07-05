@@ -276,15 +276,9 @@ Error generating stack: `+i.message+`
           setTimeout(()=>{const Ze=document.querySelector('[data-payment-dashboard="true"]');Ze&&Ze.scrollIntoView({behavior:"smooth",block:"start"})},50)
         };
   return l.jsxs("div",{className:"space-y-4 md:space-y-5",children:[
-    l.jsxs("div",{className:"hidden md:grid grid-cols-2 lg:grid-cols-4 gap-4",children:[
-      l.jsx(Y,{label:"Баланс",value:"23 791 ₽",extra:l.jsx(w,{v:"green",children:"доступно"})}),
-      l.jsx(Y,{label:"К оплате",value:"57 900 ₽",extra:l.jsx(w,{v:"amber",children:"2 счёта"})}),
-      l.jsx(Y,{label:"Привязанные карты",value:"3",extra:l.jsx("p",{className:"text-xs text-slate-500",children:"1 основная"})}),
-      l.jsx(Y,{label:"Бонусы",value:"4 800",extra:l.jsx(w,{v:"blue",children:"можно списать"})})
-    ]}),
-    l.jsxs("div",{className:"lk-mobile-billing-cards grid grid-cols-2 gap-2 md:hidden",children:[
-      l.jsxs(F,{cls:"p-2.5 min-h-[58px]",children:[l.jsx("p",{className:"text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1",children:"Баланс"}),l.jsx("p",{className:"text-lg md:text-xl font-extrabold text-slate-900 leading-none mb-1",children:"23 791 ₽"}),l.jsx(w,{v:"green",sm:!0,children:"доступно"})]}),
-      l.jsxs(F,{cls:"p-2.5 min-h-[58px]",children:[l.jsx("p",{className:"text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1",children:"Бонусы"}),l.jsx("p",{className:"text-lg md:text-xl font-extrabold text-slate-900 leading-none mb-1",children:"4 800"}),l.jsx(w,{v:"blue",sm:!0,children:"можно списать"})]})
+    l.jsxs("div",{className:"lk-billing-summary",children:[
+      l.jsxs(F,{cls:"billing-summary-card p-2.5 md:p-5",children:[l.jsx("p",{className:"billing-summary-title text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 md:mb-2",children:"Баланс"}),l.jsx("p",{className:"billing-summary-value text-lg md:text-3xl font-extrabold text-slate-900 leading-none mb-1 md:mb-2",children:"23 791 ₽"}),l.jsx(w,{v:"green",sm:!0,children:"доступно"})]}),
+      l.jsxs(F,{cls:"billing-summary-card p-2.5 md:p-5",children:[l.jsx("p",{className:"billing-summary-title text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 md:mb-2",children:"Бонусы"}),l.jsx("p",{className:"billing-summary-value text-lg md:text-3xl font-extrabold text-slate-900 leading-none mb-1 md:mb-2",children:"4 800"}),l.jsx(w,{v:"blue",sm:!0,children:"можно списать"})]})
     ]}),
     l.jsxs("div",{className:"grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-5",children:[
       l.jsxs(F,{cls:"p-4 md:p-5",children:[
