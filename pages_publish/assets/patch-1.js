@@ -57,6 +57,7 @@
         </div>
         <div class="lk-pay-actions">
           <button type="button" id="lkPaySubmit" class="primary">Оплатить</button>
+          <button type="button" id="lkPaySbpButton" class="lk-pay-sbp-btn lk-pay-green-btn"><span class="lk-sbp-logo" aria-hidden="true"></span><span class="lk-sbp-text">Оплатить по СБП</span></button>
           <button type="button" id="lkDownloadInvoice">Скачать счёт</button>
           <button type="button" id="lkDownloadDoc">Скачать документ</button>
         </div>
@@ -74,6 +75,13 @@
       $('#lkCalcBalance').textContent = '− ' + money(bal);
       $('#lkCalcRest').textContent = money(rest);
       $('#lkPaySubmit').textContent = rest > 0 ? `Оплатить остаток ${money(rest)}` : 'Подтвердить списание';
+      const sbpBtn = $('#lkPaySbpButton');
+      const sbpText = sbpBtn && sbpBtn.querySelector('.lk-sbp-text');
+      if(sbpBtn){
+        sbpBtn.disabled = rest <= 0;
+        sbpBtn.style.opacity = rest > 0 ? '1' : '.55';
+      }
+      if(sbpText) sbpText.textContent = rest > 0 ? `Оплатить по СБП ${money(rest)}` : 'СБП не требуется';
       method.closest('.lk-pay-field').style.display = rest > 0 ? '' : 'none';
     }
     basis.addEventListener('change', () => { const opt = basis.selectedOptions[0]; amount.value = money(opt.dataset.amount).replace(' ₽',''); recalc(); });
@@ -83,23 +91,36 @@
     wrap.querySelector('.lk-pay-modal-close').onclick = () => wrap.remove();
     wrap.addEventListener('click', e => { if(e.target === wrap) wrap.remove(); });
     $('#lkPaySubmit').onclick = () => { const rest = parseMoney($('#lkCalcRest').textContent); const msg = rest ? `К оплате ${money(rest)} способом “${method.value}”.` : 'Документ полностью закрывается бонусами и балансом.'; const toast=$('#lkPayToast'); toast.textContent=msg; toast.classList.add('show'); };
+    const sbpButton = $('#lkPaySbpButton');
+    if(sbpButton){
+      sbpButton.onclick = () => {
+        const rest = parseMoney($('#lkCalcRest').textContent);
+        const toast=$('#lkPayToast');
+        if(method) method.value = 'СБП';
+        toast.textContent = rest > 0 ? `Переход к оплате по СБП на сумму ${money(rest)}.` : 'Сумма полностью закрывается бонусами и балансом. СБП не требуется.';
+        toast.classList.add('show');
+      };
+    }
     $('#lkDownloadInvoice').onclick = () => { const toast=$('#lkPayToast'); toast.textContent='Счёт подготовлен к скачиванию.'; toast.classList.add('show'); };
     $('#lkDownloadDoc').onclick = () => { const toast=$('#lkPayToast'); toast.textContent='Документ подготовлен к скачиванию.'; toast.classList.add('show'); };
     recalc();
   }
+  window.lkOpenPayModal = openPayModal;
   document.addEventListener('click', function(e){
     const btn = e.target.closest('button');
     if(!btn || btn.closest('.lk-pay-modal')) return;
     const text = (btn.textContent||'').trim();
     if(/^Оплатить(\s|$)/.test(text)){
       const row = btn.closest('tr');
-      if(row){
-        const cells = Array.from(row.querySelectorAll('td')).map(td => (td.textContent||'').replace(/\s+/g,' ').trim());
-        const amount = (cells.find(c=>/\d[\d\s]*₽/.test(c)) || '0 ₽').match(/\d[\d\s]*₽/);
-        const basis = cells.slice(0,3).filter(Boolean).join(' / ');
-        e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-        openPayModal({basis, amount: amount ? amount[0] : '0 ₽'});
-      }
+      const context = row || btn.closest('.rounded-xl,.bg-white,.border,.shadow-sm,li,div') || btn.parentElement;
+      const contextText = (context ? context.textContent : text).replace(/\s+/g,' ').trim();
+      const explicitAmount = text.match(/\d[\d\s]*₽/);
+      const contextAmounts = contextText.match(/\d[\d\s]*₽/g) || [];
+      const amount = explicitAmount || contextAmounts.find(v => Number(String(v).replace(/[^0-9]/g,'')) > 0) || '0 ₽';
+      let basis = contextText.match(/(Заказ\s*№\s*\d+[^/]*?Сч[её]т\s*№\s*\d+|Сч[её]т\s*№\s*\d+|№\s*\d+)/i);
+      basis = basis ? basis[0] : contextText.slice(0,120);
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+      openPayModal({basis, amount: Array.isArray(amount) ? amount[0] : amount});
     }
   }, true);
   document.addEventListener('click', function(e){
@@ -117,5 +138,4 @@
     if(navBtn){ e.preventDefault(); navBtn.click(); }
   }, true);
 })();
-
 

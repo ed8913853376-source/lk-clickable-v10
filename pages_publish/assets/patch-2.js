@@ -43,4 +43,3 @@
   observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
 })();
 
-

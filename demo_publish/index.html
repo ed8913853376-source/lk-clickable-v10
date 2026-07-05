@@ -790,6 +790,7 @@ Error generating stack: `+i.message+`
         </div>
         <div class="lk-pay-actions">
           <button type="button" id="lkPaySubmit" class="primary">Оплатить</button>
+          <button type="button" id="lkPaySbpButton" class="lk-pay-sbp-btn lk-pay-green-btn"><span class="lk-sbp-logo" aria-hidden="true"></span><span class="lk-sbp-text">Оплатить по СБП</span></button>
           <button type="button" id="lkDownloadInvoice">Скачать счёт</button>
           <button type="button" id="lkDownloadDoc">Скачать документ</button>
         </div>
@@ -807,6 +808,13 @@ Error generating stack: `+i.message+`
       $('#lkCalcBalance').textContent = '− ' + money(bal);
       $('#lkCalcRest').textContent = money(rest);
       $('#lkPaySubmit').textContent = rest > 0 ? `Оплатить остаток ${money(rest)}` : 'Подтвердить списание';
+      const sbpBtn = $('#lkPaySbpButton');
+      const sbpText = sbpBtn && sbpBtn.querySelector('.lk-sbp-text');
+      if(sbpBtn){
+        sbpBtn.disabled = rest <= 0;
+        sbpBtn.style.opacity = rest > 0 ? '1' : '.55';
+      }
+      if(sbpText) sbpText.textContent = rest > 0 ? `Оплатить по СБП ${money(rest)}` : 'СБП не требуется';
       method.closest('.lk-pay-field').style.display = rest > 0 ? '' : 'none';
     }
     basis.addEventListener('change', () => { const opt = basis.selectedOptions[0]; amount.value = money(opt.dataset.amount).replace(' ₽',''); recalc(); });
@@ -816,23 +824,36 @@ Error generating stack: `+i.message+`
     wrap.querySelector('.lk-pay-modal-close').onclick = () => wrap.remove();
     wrap.addEventListener('click', e => { if(e.target === wrap) wrap.remove(); });
     $('#lkPaySubmit').onclick = () => { const rest = parseMoney($('#lkCalcRest').textContent); const msg = rest ? `К оплате ${money(rest)} способом “${method.value}”.` : 'Документ полностью закрывается бонусами и балансом.'; const toast=$('#lkPayToast'); toast.textContent=msg; toast.classList.add('show'); };
+    const sbpButton = $('#lkPaySbpButton');
+    if(sbpButton){
+      sbpButton.onclick = () => {
+        const rest = parseMoney($('#lkCalcRest').textContent);
+        const toast=$('#lkPayToast');
+        if(method) method.value = 'СБП';
+        toast.textContent = rest > 0 ? `Переход к оплате по СБП на сумму ${money(rest)}.` : 'Сумма полностью закрывается бонусами и балансом. СБП не требуется.';
+        toast.classList.add('show');
+      };
+    }
     $('#lkDownloadInvoice').onclick = () => { const toast=$('#lkPayToast'); toast.textContent='Счёт подготовлен к скачиванию.'; toast.classList.add('show'); };
     $('#lkDownloadDoc').onclick = () => { const toast=$('#lkPayToast'); toast.textContent='Документ подготовлен к скачиванию.'; toast.classList.add('show'); };
     recalc();
   }
+  window.lkOpenPayModal = openPayModal;
   document.addEventListener('click', function(e){
     const btn = e.target.closest('button');
     if(!btn || btn.closest('.lk-pay-modal')) return;
     const text = (btn.textContent||'').trim();
     if(/^Оплатить(\s|$)/.test(text)){
       const row = btn.closest('tr');
-      if(row){
-        const cells = Array.from(row.querySelectorAll('td')).map(td => (td.textContent||'').replace(/\s+/g,' ').trim());
-        const amount = (cells.find(c=>/\d[\d\s]*₽/.test(c)) || '0 ₽').match(/\d[\d\s]*₽/);
-        const basis = cells.slice(0,3).filter(Boolean).join(' / ');
-        e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-        openPayModal({basis, amount: amount ? amount[0] : '0 ₽'});
-      }
+      const context = row || btn.closest('.rounded-xl,.bg-white,.border,.shadow-sm,li,div') || btn.parentElement;
+      const contextText = (context ? context.textContent : text).replace(/\s+/g,' ').trim();
+      const explicitAmount = text.match(/\d[\d\s]*₽/);
+      const contextAmounts = contextText.match(/\d[\d\s]*₽/g) || [];
+      const amount = explicitAmount || contextAmounts.find(v => Number(String(v).replace(/[^0-9]/g,'')) > 0) || '0 ₽';
+      let basis = contextText.match(/(Заказ\s*№\s*\d+[^/]*?Сч[её]т\s*№\s*\d+|Сч[её]т\s*№\s*\d+|№\s*\d+)/i);
+      basis = basis ? basis[0] : contextText.slice(0,120);
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+      openPayModal({basis, amount: Array.isArray(amount) ? amount[0] : amount});
     }
   }, true);
   document.addEventListener('click', function(e){
@@ -1016,6 +1037,79 @@ button.lk-pay-green-btn{
   const observer = new MutationObserver(scan);
   observer.observe(document.documentElement, {childList:true, subtree:true, characterData:true});
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scan); else scan();
+})();
+</script>
+
+
+<style id="chatgpt-v10-29-payment-modal-bugfix">
+/* v10.29: отдельная кнопка СБП внутри формы и надежное открытие формы оплаты */
+.lk-pay-actions #lkPaySbpButton{order:2;}
+.lk-pay-actions #lkDownloadInvoice{order:3;}
+.lk-pay-actions #lkDownloadDoc{order:4;}
+.lk-pay-actions #lkPaySubmit{order:1;}
+@media(min-width:641px){.lk-pay-actions #lkPaySubmit,.lk-pay-actions #lkPaySbpButton{flex:1 1 220px;}.lk-pay-actions #lkDownloadInvoice,.lk-pay-actions #lkDownloadDoc{flex:0 1 auto;}}
+</style>
+<script id="chatgpt-v10-29-payment-modal-bugfix">
+(function(){
+  const parseMoney = text => Number(String(text||'').replace(/[^0-9]/g,'')) || 0;
+  const money = value => new Intl.NumberFormat('ru-RU').format(Math.max(0, Math.round(Number(value)||0))) + ' ₽';
+  function ensureSbp(){
+    document.querySelectorAll('.lk-pay-modal').forEach(modal => {
+      const actions = modal.querySelector('.lk-pay-actions');
+      const submit = modal.querySelector('#lkPaySubmit');
+      if(!actions || !submit) return;
+      let sbp = modal.querySelector('#lkPaySbpButton');
+      if(!sbp){
+        sbp = document.createElement('button');
+        sbp.type = 'button';
+        sbp.id = 'lkPaySbpButton';
+        sbp.className = 'lk-pay-sbp-btn lk-pay-green-btn';
+        sbp.innerHTML = '<span class="lk-sbp-logo" aria-hidden="true"></span><span class="lk-sbp-text">Оплатить по СБП</span>';
+        submit.insertAdjacentElement('afterend', sbp);
+      }
+      const rest = parseMoney((modal.querySelector('#lkCalcRest')||{}).textContent);
+      const text = sbp.querySelector('.lk-sbp-text');
+      if(text) text.textContent = rest > 0 ? 'Оплатить по СБП ' + money(rest) : 'СБП не требуется';
+      sbp.disabled = rest <= 0;
+      sbp.style.opacity = rest > 0 ? '1' : '.55';
+      sbp.onclick = function(){
+        const method = modal.querySelector('#lkPayMethod');
+        if(method) method.value = 'СБП';
+        const toast = modal.querySelector('#lkPayToast');
+        if(toast){
+          toast.textContent = rest > 0 ? 'Переход к оплате по СБП на сумму ' + money(rest) + '.' : 'Сумма закрыта бонусами и балансом. СБП не требуется.';
+          toast.classList.add('show');
+        }
+      };
+    });
+  }
+  function openFromButton(btn, e){
+    if(btn.closest('.lk-pay-modal')) return false;
+    const label = (btn.textContent||'').replace(/\s+/g,' ').trim();
+    if(!/^Оплатить(\s|$)/i.test(label) || /Пополнить/i.test(label)) return false;
+    const row = btn.closest('tr');
+    const context = row || btn.closest('[class*=rounded],[class*=border],section,article,div') || btn.parentElement;
+    const contextText = (context ? context.textContent : label).replace(/\s+/g,' ').trim();
+    const explicit = label.match(/\d[\d\s]*₽/);
+    const amounts = contextText.match(/\d[\d\s]*₽/g) || [];
+    const amount = explicit ? explicit[0] : (amounts.find(v => parseMoney(v)>0) || '0 ₽');
+    const basisMatch = contextText.match(/(Заказ\s*№\s*\d+[^\n]{0,80}?Сч[её]т\s*№\s*\d+|Сч[её]т\s*№\s*\d+|№\s*\d+)/i);
+    const basis = basisMatch ? basisMatch[0] : contextText.slice(0,120);
+    if(typeof window.lkOpenPayModal === 'function'){
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+      window.lkOpenPayModal({basis, amount});
+      setTimeout(ensureSbp,0);
+      return true;
+    }
+    return false;
+  }
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('button');
+    if(btn) openFromButton(btn, e);
+  }, true);
+  ['input','change','click'].forEach(evt => document.addEventListener(evt, () => setTimeout(ensureSbp,0), true));
+  new MutationObserver(ensureSbp).observe(document.documentElement,{childList:true,subtree:true,characterData:true});
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensureSbp); else ensureSbp();
 })();
 </script>
 
