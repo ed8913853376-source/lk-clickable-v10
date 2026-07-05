@@ -68,6 +68,22 @@
 
 
 
+/* v10.25: баланс/бонусы в одну строку и переключатели слева от суммы */
+.lk-billing-summary{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;}
+@media (min-width:768px){.lk-billing-summary{gap:16px!important;}}
+.lk-billing-summary .billing-summary-card{min-height:64px!important;}
+@media (max-width:640px){.lk-billing-summary .billing-summary-card{padding:10px!important;border-radius:12px!important;min-height:58px!important;} .lk-billing-summary .billing-summary-title{font-size:9px!important;margin-bottom:5px!important;} .lk-billing-summary .billing-summary-value{font-size:18px!important;line-height:1!important;margin-bottom:5px!important;}}
+.payment-source-row{grid-template-columns:44px minmax(0,1fr)!important;align-items:center!important;}
+.payment-source-row .payment-toggle-switch{grid-column:1!important;grid-row:1!important;justify-self:start!important;align-self:center!important;margin:0!important;}
+.payment-source-row .payment-amount-input{grid-column:2!important;grid-row:1!important;min-width:0!important;}
+.payment-toggle-switch-centered{justify-self:start!important;}
+.payment-source-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;white-space:nowrap!important;}
+.payment-source-title{flex:0 0 auto!important;text-align:left!important;}
+.payment-source-available{flex:0 0 auto!important;text-align:right!important;margin-left:auto!important;}
+@media (max-width:640px){.payment-source-row{grid-template-columns:40px minmax(0,1fr)!important;gap:8px!important;} .payment-source-head{gap:6px!important;} .payment-source-title,.payment-source-available{font-size:10px!important;} }
+
+
+
 /* v10.23: компактные переключатели бонусов/баланса и редактирование суммы прямо в карточке */
 .payment-source-compact{min-height:auto!important;}
 .payment-source-compact .payment-toggle-switch{width:38px!important;height:22px!important;min-width:38px!important;flex:0 0 38px!important;box-sizing:border-box!important;padding:0!important;overflow:hidden!important;margin:0!important;}
@@ -81,40 +97,6 @@
   .payment-source-compact .payment-toggle-switch:checked:before{transform:translateX(16px)!important;}
   .payment-source-compact input[type="text"],
   .payment-source-compact input:not([type]){font-size:13px!important;padding:7px 9px!important;}
-}
-
-
-
-/* v10.25: compact payment toggles and mobile billing cards */
-.payment-source-card{padding:10px 12px!important;}
-.payment-source-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;margin-bottom:7px!important;white-space:nowrap!important;}
-.payment-source-title{font-size:10px!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.05em!important;color:#334155!important;line-height:1!important;white-space:nowrap!important;}
-.payment-source-available{font-size:10px!important;font-weight:800!important;color:#334155!important;line-height:1!important;white-space:nowrap!important;text-align:right!important;overflow:hidden!important;text-overflow:ellipsis!important;}
-.payment-source-row{display:grid!important;grid-template-columns:46px minmax(0,1fr)!important;align-items:center!important;gap:9px!important;}
-.payment-source-row .payment-toggle-switch{grid-column:1!important;grid-row:1!important;justify-self:center!important;align-self:center!important;}
-.payment-source-row .payment-amount-input{grid-column:2!important;grid-row:1!important;min-width:0!important;}
-.payment-toggle-switch{appearance:none!important;-webkit-appearance:none!important;width:42px!important;height:24px!important;min-width:42px!important;flex:0 0 42px!important;border-radius:9999px!important;border:1px solid #cbd5e1!important;background:#cbd5e1!important;position:relative!important;display:inline-block!important;box-sizing:border-box!important;padding:0!important;margin:0!important;overflow:hidden!important;vertical-align:middle!important;cursor:pointer!important;transition:background-color .18s ease,border-color .18s ease,box-shadow .18s ease!important;}
-.payment-toggle-switch:before{content:""!important;position:absolute!important;width:18px!important;height:18px!important;left:3px!important;top:50%!important;border-radius:9999px!important;background:#fff!important;box-shadow:0 1px 3px rgba(15,23,42,.24)!important;transform:translateY(-50%)!important;transition:transform .18s ease!important;}
-.payment-toggle-switch:checked{background:#22c55e!important;border-color:#16a34a!important;box-shadow:inset 0 0 0 1px rgba(22,163,74,.18)!important;}
-.payment-toggle-switch:checked:before{transform:translate(18px,-50%)!important;}
-.payment-amount-input{height:38px!important;border-radius:10px!important;font-size:13px!important;font-weight:800!important;}
-.lk-mobile-billing-cards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;align-items:stretch!important;}
-.lk-mobile-billing-cards>*{min-width:0!important;min-height:54px!important;padding:8px!important;border-radius:14px!important;}
-.lk-mobile-billing-cards p:first-child{font-size:9px!important;line-height:1!important;margin-bottom:4px!important;color:#475569!important;}
-.lk-mobile-billing-cards p:nth-child(2){font-size:16px!important;line-height:1.05!important;color:#0f172a!important;}
-.lk-mobile-billing-cards span{font-size:10px!important;}
-.lk-mobile-billing-cards .text-blue-700,.lk-mobile-billing-cards .text-blue-600{color:#1e3a8a!important;}
-@media (max-width:767px){
-  .payment-source-card{padding:9px 10px!important;border-radius:13px!important;}
-  .payment-source-head{gap:6px!important;margin-bottom:6px!important;}
-  .payment-source-title,.payment-source-available{font-size:9px!important;letter-spacing:.03em!important;}
-  .payment-source-row{grid-template-columns:42px minmax(0,1fr)!important;gap:7px!important;}
-  .payment-toggle-switch{width:40px!important;height:22px!important;min-width:40px!important;}
-  .payment-toggle-switch:before{width:16px!important;height:16px!important;left:3px!important;top:50%!important;transform:translateY(-50%)!important;}
-  .payment-toggle-switch:checked:before{transform:translate(18px,-50%)!important;}
-  .payment-amount-input{height:34px!important;font-size:12px!important;padding:7px 8px!important;}
-  .lk-mobile-billing-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;margin-bottom:8px!important;}
-  .lk-mobile-billing-cards>*{min-height:50px!important;padding:7px 8px!important;}
 }
 
 
