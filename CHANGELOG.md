@@ -277,3 +277,14 @@
 - Исправлены неработающие кнопки оплаты после v11.1.
 - Добавлен независимый платежный модал.
 - Переключатели бонусов и баланса сделаны заметными.
+
+
+## v11.3
+- Жестко исправлена страница оплаты: удалены старые конфликтующие обработчики, добавлена стабильная форма оплаты и корректная передача суммы счета.
+
+
+## v11.4 — SBP logo and nav payment fix
+
+- Added real SBP logo image to payment modal button.
+- Fixed sidebar/top-up payment action: it opens the stable payment modal with SBP.
+- Mobile billing navigation opens payment modal directly.
