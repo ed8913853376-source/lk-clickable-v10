@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Прототип личного кабинета клиента — демо</title>
+  <style>
+    :root{
+      --bg:#f5f7fb; --card:#fff; --text:#111827; --muted:#6b7280; --line:#e5e7eb;
+      --accent:#16a34a; --accent2:#2563eb; --warn:#f59e0b; --danger:#ef4444; --dark:#111827;
+      --radius:18px; --shadow:0 10px 30px rgba(17,24,39,.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+    .app{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    aside{background:#fff;border-right:1px solid var(--line);padding:24px 18px;position:sticky;top:0;height:100vh;overflow:auto}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+    .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#111827,#374151);display:grid;place-items:center;color:#fff;font-weight:800}
+    .brand small{display:block;color:var(--muted);margin-top:2px}
+    .profile-card,.balance-card{border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin:14px 0;background:#fff}
+    .profile-card b{display:block;margin-bottom:4px}
+    .notice{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px;margin:8px 0}
+    .badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700;background:#ecfdf5;color:#047857;border:1px solid #bbf7d0}
+    .badge.warn{background:#fffbeb;color:#b45309;border-color:#fde68a}.badge.danger{background:#fef2f2;color:#b91c1c;border-color:#fecaca}.badge.blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}.badge.gray{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
+    nav{margin-top:18px}.nav-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:22px 8px 8px}
+    .nav-btn{width:100%;border:0;background:transparent;display:flex;align-items:center;gap:11px;padding:12px 12px;border-radius:12px;color:#374151;font-size:14px;cursor:pointer;text-align:left}
+    .nav-btn:hover,.nav-btn.active{background:#f3f6fb;color:#111827;font-weight:700}.nav-btn span:first-child{width:20px;text-align:center}
+    main{padding:24px 28px 60px;overflow:hidden}.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:16px}
+    .topbar h1{font-size:30px;margin:0}.system{display:flex;align-items:center;gap:10px;color:#047857;font-size:14px}.actions{display:flex;gap:10px;flex-wrap:wrap}
+    button,.btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px 14px;cursor:pointer;color:var(--text);font-weight:700;font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+    button.primary,.btn.primary{background:var(--dark);border-color:var(--dark);color:#fff}button.green,.btn.green{background:var(--accent);border-color:var(--accent);color:#fff}button.blue,.btn.blue{background:var(--accent2);border-color:var(--accent2);color:#fff}button.danger{color:#b91c1c;border-color:#fecaca;background:#fff5f5}
+    .grid{display:grid;gap:18px}.grid.two{grid-template-columns:1.4fr .9fr}.grid.three{grid-template-columns:repeat(3,1fr)}.grid.four{grid-template-columns:repeat(4,1fr)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px}.card.soft{box-shadow:none;background:#fbfcff}
+    .card h2{margin:0 0 14px;font-size:20px}.card h3{margin:0 0 10px;font-size:17px}.muted{color:var(--muted)}
+    .metric{display:flex;flex-direction:column;gap:8px}.metric strong{font-size:32px}.metric small{color:var(--muted)}
+    .progress{height:10px;border-radius:999px;background:#eef2f7;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,#16a34a,#2563eb);border-radius:999px}
+    .quick-card{background:linear-gradient(135deg,#111827,#374151);color:#fff;border:0}.quick-card .muted{color:#d1d5db}.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.quick-grid button{justify-content:center}
+    .table{width:100%;border-collapse:separate;border-spacing:0 10px}.table th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#9ca3af;font-weight:800;padding:0 12px}.table td{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:14px 12px;font-size:14px}.table tr td:first-child{border-left:1px solid var(--line);border-radius:14px 0 0 14px}.table tr td:last-child{border-right:1px solid var(--line);border-radius:0 14px 14px 0}
+    .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}.search{flex:1;min-width:280px;border:1px solid var(--line);border-radius:14px;padding:13px 14px;background:#fff}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tab{padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#374151;font-size:13px;cursor:pointer}.tab.active{background:#111827;color:#fff;border-color:#111827}
+    .server-row{border:1px solid var(--line);border-radius:18px;background:#fff;margin-top:14px;overflow:hidden}.server-head{display:grid;grid-template-columns:1.4fr 1.1fr .8fr .8fr .8fr auto;gap:12px;padding:16px;align-items:center;border-left:4px solid #22c55e}.server-details{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:18px;background:#fbfcff;border-top:1px solid var(--line)}.info p{margin:3px 0 10px;color:#6b7280;font-size:12px}.info b{font-size:15px}.server-actions{display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 18px;background:#fbfcff}
+    .screen{display:none}.screen.active{display:block}.timeline{border-left:2px solid #e5e7eb;margin-left:8px;padding-left:18px}.event{margin:0 0 18px;position:relative}.event:before{content:"";position:absolute;left:-25px;top:4px;width:12px;height:12px;background:#2563eb;border-radius:999px;border:3px solid #fff;box-shadow:0 0 0 1px #bfdbfe}.chat{display:flex;flex-direction:column;gap:12px}.msg{max-width:76%;padding:12px 14px;border-radius:15px;background:#f3f4f6}.msg.me{align-self:flex-end;background:#eff6ff}.form{display:grid;gap:12px}.form label{font-size:13px;color:#6b7280;font-weight:700}.form input,.form textarea,.form select{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 13px;font:inherit;background:#fff}.form textarea{min-height:110px;resize:vertical}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.lane{background:#eef2f7;border-radius:16px;padding:12px}.lane h3{font-size:14px}.mini-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px;margin-top:10px}.doc-card{display:flex;justify-content:space-between;gap:14px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px;margin:10px 0}.role-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.role{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.role b{display:block;margin-bottom:8px}.hint{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:14px;padding:12px 14px;margin:14px 0}.mobile-warning{display:none}.counterparty-deck{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.cp-card{border:1px solid var(--line);border-radius:16px;padding:16px;background:#fff;box-shadow:var(--shadow)}.cp-card.active{border-color:#bfdbfe;background:#eff6ff}.cp-card b{display:block;margin-bottom:6px}.cp-card .cp-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.notif{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0;background:#fff}.icon-pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.message-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer;box-shadow:0 6px 16px rgba(17,24,39,.08);transition:.15s}.message-icon:hover{transform:translateY(-1px);border-color:#bfdbfe;background:#eff6ff}.message-icon.small{width:30px;height:30px;font-size:16px;box-shadow:none}.license-map{display:grid;grid-template-columns:1fr .9fr 1fr;gap:14px;align-items:stretch}.license-pool{background:linear-gradient(135deg,#111827,#374151);color:#fff;border:0}.license-pool .muted{color:#d1d5db}.license-arrow{display:grid;place-items:center;color:#6b7280;font-weight:900;font-size:24px}.user-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:#fff;margin:4px;font-size:13px}.price-note{border:1px dashed #93c5fd;background:#eff6ff;color:#1e3a8a;border-radius:14px;padding:12px 14px;margin:12px 0;font-weight:700}.license-stepper{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.license-stepper button{width:44px;height:44px;justify-content:center;font-size:20px}.license-count{min-width:80px;text-align:center;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px 14px;font-size:24px;font-weight:900}.calc-card{border:1px solid #bfdbfe;background:#eff6ff;border-radius:16px;padding:14px}.calc-row{display:flex;justify-content:space-between;gap:12px;margin:8px 0;color:#374151}.calc-row b{color:#111827}
+    @media(max-width:1100px){.app{grid-template-columns:1fr}aside{height:auto;position:static}.grid.two,.grid.three,.grid.four,.server-details,.kanban,.role-grid,.license-map{grid-template-columns:1fr}.server-head{grid-template-columns:1fr}.mobile-warning{display:block}.topbar{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo">LK</div><div><b>GoMark Service</b><small>Личный кабинет клиента</small></div></div>
+    <div class="profile-card">
+      <b id="selectedCounterpartyName">ED ART</b><span class="muted">ООО / ИНН <span id="selectedCounterpartyInn">0000000000</span></span>
+      <div class="notice"><span>Менеджер</span><b>Алексей</b></div>
+      <div class="notice"><span>Инженер</span><b>Иван</b></div>
+      <span class="badge">● договор активен</span>
+    </div>
+    <div class="balance-card">
+      <div class="muted">Баланс и часы</div>
+      <h2 style="margin:6px 0">23 791 ₽</h2>
+      <button class="primary" style="width:100%;justify-content:center" onclick="showScreen('billing')">Пополнить / оплатить</button>
+      <div class="notice"><span>Остаток часов</span><b>12 из 20</b></div>
+    </div>
+    <nav>
+      <div class="nav-title">Кабинет</div>
+      <button class="nav-btn active" data-screen="dashboard"><span>🏠</span>Главная</button>
+      <button class="nav-btn" data-screen="counterparties"><span>🏢</span>Контрагенты</button>
+      <button class="nav-btn" data-screen="tickets"><span>💬</span>Обращения <span class="badge gray" style="margin-left:auto">4</span></button>
+      <button class="nav-btn" data-screen="deals"><span>📌</span>Сделки и проекты</button>
+      <button class="nav-btn" data-screen="contracts"><span>📄</span>Договоры и SLA</button>
+      <button class="nav-btn" data-screen="billing"><span>💳</span>Счета и оплаты</button>
+      <button class="nav-btn" data-screen="documents"><span>🧾</span>Акты и документы</button>
+      <button class="nav-btn" data-screen="offers"><span>📑</span>Коммерческие предложения</button>
+      <button class="nav-btn" data-screen="servers"><span>🖥️</span>Серверы / ресурсы</button>
+      <button class="nav-btn" data-screen="bases1c"><span>🗂️</span>Базы 1С</button>
+      <button class="nav-btn" data-screen="licenses"><span>🔑</span>Лицензии 1С</button>
+      <button class="nav-btn" data-screen="sessions"><span>🔌</span>Сеансы 1С</button>
+      <button class="nav-btn" data-screen="orders"><span>🛒</span>Аренда ресурсов</button>
+      <button class="nav-btn" data-screen="shipments"><span>🚚</span>Заказы и отгрузки</button>
+      <button class="nav-btn" data-screen="notifications"><span>🔔</span>Уведомления</button>
+      <button class="nav-btn" data-screen="bonuses"><span>🎁</span>Бонусы</button>
+      <button class="nav-btn" data-screen="referral"><span>🤝</span>Реферальная программа</button>
+      <button class="nav-btn" data-screen="services"><span>➕</span>Заказать услугу</button>
+      <div class="nav-title">Компания</div>
+      <button class="nav-btn" data-screen="users"><span>👥</span>Пользователи и роли</button>
+      <button class="nav-btn" data-screen="knowledge"><span>📚</span>База знаний</button>
+      <button class="nav-btn" data-screen="settings"><span>⚙️</span>Настройки</button>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div><h1 id="pageTitle">Главная</h1><div class="system">● Все системы работают · UTC+3 · SLA под контролем</div></div>
+      <div class="actions"><button class="green" onclick="openModal('ticket')">Создать обращение</button><button class="blue" onclick="showScreen('services')">Заказать услугу</button><button onclick="showScreen('billing')">Запросить счет</button></div>
+    </div>
+    <div class="mobile-warning hint">Это демонстрационный прототип. На реальном проекте нужно отдельно сделать мобильную адаптацию и проверить роли доступа.</div>
+
+    <section id="dashboard" class="screen active">
+      <div class="grid four">
+        <div class="card metric"><small>Открытые обращения</small><strong>4</strong><span class="badge warn">1 срочное</span></div>
+        <div class="card metric"><small>Остаток часов</small><strong>12 ч</strong><div class="progress"><i style="width:60%"></i></div></div>
+        <div class="card metric"><small>Неоплаченные счета</small><strong>2</strong><span class="badge danger">1 просрочен</span></div>
+        <div class="card metric"><small>Ресурсы в аренде</small><strong>4</strong><span class="badge warn">1 продлить</span></div>
+      </div>
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Сводка обслуживания</h2>
+          <div class="grid three">
+            <div class="card soft"><b>Договор № 45/1С</b><p class="muted">Абонентское обслуживание 1С</p><span class="badge">активен</span></div>
+            <div class="card soft"><b>SLA: 2 часа</b><p class="muted">Время реакции по критичным обращениям</p><span class="badge blue">контроль</span></div>
+            <div class="card soft"><b>Тариф: Бизнес</b><p class="muted">20 часов в месяц + серверное сопровождение</p><span class="badge gray">до 01.07.2026</span></div>
+          </div>
+          <h3 style="margin-top:22px">Последние обращения</h3>
+          <table class="table">
+            <tr><th>№</th><th>Тема</th><th>Статус</th><th>SLA</th><th></th></tr>
+            <tr><td>#1042</td><td>Ошибка обмена 1С с сайтом</td><td><span class="badge warn">в работе</span></td><td>01:20 осталось</td><td><button onclick="showScreen('tickets')">Открыть</button></td></tr>
+            <tr><td>#1038</td><td>Нужно добавить пользователя в базу</td><td><span class="badge blue">ожидает клиента</span></td><td>в срок</td><td><button onclick="showScreen('tickets')">Открыть</button></td></tr>
+          </table>
+        </div>
+        <div class="card quick-card">
+          <h2>Быстрые действия</h2><p class="muted">По аналогии с удобным блоком быстрого заказа из видео: клиент сразу выбирает действие без поиска по меню.</p>
+          <div class="quick-grid">
+            <button onclick="openModal('ticket')">💬 Обращение</button><button onclick="showScreen('services')">🛠 Услуга</button><button onclick="showScreen('orders')">🖥 Что в аренде</button><button onclick="showScreen('billing')">💳 Счет</button><button onclick="showScreen('bases1c')">🗂 Базы 1С</button><button onclick="showScreen('licenses')">🔑 Лицензии 1С</button><button onclick="showScreen('sessions')">🔌 Сеансы 1С</button><button onclick="showScreen('deals')">📌 Сделки / проекты</button>
+          </div>
+          <div class="hint" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff">AI-подсказка: перед созданием заявки показать 3 статьи базы знаний и предложить правильную категорию.</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <h2>Базы 1С</h2>
+            <p class="muted">На главной показываем только информацию по базам: конфигурация, релиз, размер, пользователи, backup и действия. Данные серверов здесь не смешиваем.</p>
+          </div>
+          <button class="primary" onclick="showScreen('bases1c')">Открыть базы 1С</button>
+        </div>
+        <div class="grid four" style="margin-top:14px">
+          <div class="card soft metric"><small>Активные базы</small><strong>3</strong><span class="muted">фактически</span></div>
+          <div class="card soft metric"><small>Конфигурации</small><strong>3</strong><span class="muted">Бухгалтерия, УНФ, ЗУП</span></div>
+          <div class="card soft metric"><small>Backup</small><strong>3/3</strong><span class="badge">актуально</span></div>
+          <div class="card soft metric"><small>Клиентские лицензии</small><strong>10</strong><span class="muted">7 занято · 3 свободно</span></div>
+        </div>
+        <div class="card soft" style="margin-top:14px">
+          <h3>Активные базы 1С</h3>
+          <table class="table">
+            <tr><th>База</th><th>Конфигурация</th><th>Релиз</th><th>Размер</th><th>Backup</th><th></th></tr>
+            <tr><td>1С Бухгалтерия</td><td>Бухгалтерия предприятия</td><td>3.0.160.21</td><td>18.4 GB</td><td><span class="badge">сегодня 03:00</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('1С Бухгалтерия')">💬</button> <button onclick="showScreen('bases1c'); setTimeout(()=>openBaseCard('buh'),250)">Открыть</button></td></tr>
+            <tr><td>1С УНФ</td><td>УНФ</td><td>3.0.11.104</td><td>9.7 GB</td><td><span class="badge">сегодня 03:00</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('1С УНФ')">💬</button> <button onclick="showScreen('bases1c'); setTimeout(()=>openBaseCard('unf'),250)">Открыть</button></td></tr>
+            <tr><td>1С ЗУП</td><td>Зарплата и управление персоналом</td><td>3.1.34.57</td><td>6.2 GB</td><td><span class="badge warn">проверить</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('1С ЗУП')">💬</button> <button onclick="showScreen('bases1c'); setTimeout(()=>openBaseCard('zup'),250)">Открыть</button></td></tr>
+          </table>
+          <div class="toolbar"><button onclick="showScreen('bases1c')">Все базы</button><button onclick="openModal('ticket')">Создать обращение по базе</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="counterparties" class="screen">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <h2>Контрагенты пользователя</h2>
+            <p class="muted">Здесь пользователь выбирает, по какому контрагенту смотреть данные. Это важно, если один человек работает за несколько компаний / ИНН.</p>
+          </div>
+          <button class="green">Добавить доступ к контрагенту</button>
+        </div>
+        <div class="counterparty-deck" style="margin-top:14px">
+          <div class="cp-card active" id="cp2-edart"><b>ED ART</b><div class="muted">ООО · ИНН 0000000000</div><p class="muted">Основной контрагент. 3 договора, 4 обращения, 2 счета.</p><div class="cp-actions"><button class="primary" onclick="selectCounterparty('ED ART','0000000000','cp2-edart')">Сделать активным</button><button onclick="showScreen('contracts')">Договоры</button></div></div>
+          <div class="cp-card" id="cp2-plasma"><b>Плазма-Сервис</b><div class="muted">ООО · ИНН 7700123456</div><p class="muted">2 договора, 1 активный проект, 1 обращение.</p><div class="cp-actions"><button onclick="selectCounterparty('Плазма-Сервис','7700123456','cp2-plasma')">Сделать активным</button><button onclick="showScreen('billing')">Счета</button></div></div>
+          <div class="cp-card" id="cp2-retail"><b>Retail Group</b><div class="muted">ООО · ИНН 5400987654</div><p class="muted">1 договор, нет активных обращений, есть аренда сервера.</p><div class="cp-actions"><button onclick="selectCounterparty('Retail Group','5400987654','cp2-retail')">Сделать активным</button><button onclick="showScreen('orders')">Аренда</button></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tickets" class="screen">
+      <div class="grid two">
+        <div class="card">
+          <h2>Обращения</h2>
+          <div class="toolbar"><input class="search" placeholder="Поиск по теме, номеру, базе 1С, серверу..."/><button class="green" onclick="openModal('ticket')">Создать обращение</button></div>
+          <div class="tabs"><span class="tab active">Все</span><span class="tab">Новые</span><span class="tab">В работе</span><span class="tab">Ожидают клиента</span><span class="tab">Закрытые</span></div>
+          <table class="table">
+            <tr><th>№</th><th>Тема</th><th>Тип</th><th>Статус</th><th>Ответственный</th></tr>
+            <tr><td>#1042</td><td>Ошибка обмена 1С с сайтом</td><td>1С / интеграция</td><td><span class="badge warn">в работе</span></td><td>Иван</td></tr>
+            <tr><td>#1041</td><td>Не открывается база бухгалтерии</td><td>Сервер / база 1С</td><td><span class="badge danger">критично</span></td><td>Сергей</td></tr>
+            <tr><td>#1038</td><td>Добавить пользователя</td><td>Доступы</td><td><span class="badge blue">ожидает клиента</span></td><td>Иван</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h2>Карточка обращения #1042</h2>
+          <p><span class="badge warn">В работе</span> <span class="badge blue">SLA 01:20</span></p>
+          <p class="muted">Проблема: не проходит обмен заказами между сайтом и 1С.</p>
+          <div class="chat">
+            <div class="msg"><b>Клиент</b><br>После обновления не выгружаются заказы. Скрин приложил.</div>
+            <div class="msg me"><b>Инженер</b><br>Проверяю регламентные задания и доступ к API.</div>
+            <div class="msg"><b>AI-помощник</b><br>Предварительная категория: интеграция 1С ↔ сайт. Возможная причина: ошибка авторизации или изменение формата обмена.</div>
+          </div>
+          <div class="toolbar"><button>Приложить файл</button><button>Добавить комментарий</button><button class="danger">Закрыть обращение</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="bases1c" class="screen">
+      <div class="grid two">
+        <div class="card">
+          <h2>Базы 1С</h2>
+          <p class="muted">Раздел показывает только базы 1С. Информация о сервере, IP, CPU/RAM/SSD и тарифах находится в разделе «Серверы / ресурсы».</p>
+          <div class="grid four" style="margin-top:14px">
+            <div class="card soft metric"><small>Фактические базы</small><strong>3</strong></div>
+            <div class="card soft metric"><small>Клиентские лицензии</small><strong>10</strong><span class="muted">общий пул</span></div>
+            <div class="card soft metric"><small>Используется</small><strong>7</strong><span class="muted">пользователей</span></div>
+            <div class="card soft metric"><small>Свободно</small><strong>3</strong><span class="badge">доступно</span></div>
+          </div>
+          <div class="toolbar"><input class="search" placeholder="Поиск по базе, конфигурации, релизу, пользователю..."/><button>Бухгалтерия</button><button>УНФ</button><button>ЗУП</button><button>Backup</button><button onclick="showScreen('licenses')">Лицензии 1С</button></div>
+          <table class="table">
+            <tr><th>База</th><th>Конфигурация</th><th>Релиз</th><th>Размер</th><th>Пользователи</th><th>Backup</th><th></th></tr>
+            <tr><td><b>1С Бухгалтерия</b></td><td>Бухгалтерия предприятия</td><td>3.0.160.21</td><td>18.4 GB</td><td>4</td><td><span class="badge">сегодня 03:00</span></td><td><button class="message-icon small" onclick="openDiscussionModal('1С Бухгалтерия')">💬</button> <button onclick="openBaseCard('buh')">Открыть</button></td></tr>
+            <tr><td><b>1С УНФ</b></td><td>УНФ</td><td>3.0.11.104</td><td>9.7 GB</td><td>3</td><td><span class="badge">сегодня 03:00</span></td><td><button class="message-icon small" onclick="openDiscussionModal('1С УНФ')">💬</button> <button onclick="openBaseCard('unf')">Открыть</button></td></tr>
+            <tr><td><b>1С ЗУП</b></td><td>ЗУП</td><td>3.1.34.57</td><td>6.2 GB</td><td>2</td><td><span class="badge warn">проверить</span></td><td><button class="message-icon small" onclick="openDiscussionModal('1С ЗУП')">💬</button> <button onclick="openBaseCard('zup')">Открыть</button></td></tr>
+          </table>
+        </div>
+        <div class="card" id="baseCard">
+          <h2 id="baseTitle">Карточка базы: 1С Бухгалтерия</h2>
+          <p class="muted" id="baseSubtitle">Информация только по базе 1С, без параметров сервера.</p>
+          <div class="grid two" style="grid-template-columns:1fr 1fr">
+            <div class="card soft"><h3>Основное</h3><p class="muted">Конфигурация</p><b id="baseConfig">Бухгалтерия предприятия</b><p class="muted">Релиз</p><b id="baseRelease">3.0.160.21</b><p class="muted">Тип базы</p><b id="baseType">SQL</b><p class="muted">Размер</p><b id="baseSize">18.4 GB</b></div>
+            <div class="card soft"><h3>Состояние</h3><p class="muted">Backup</p><b id="baseBackup">Сегодня, 03:00</b><p class="muted">Автообновление</p><b id="baseAutoupdate">Включено</b><p class="muted">Web-публикация</p><b id="baseWeb">Активна</b><p class="muted">Статус</p><b id="baseStatus">Работает</b><p class="muted">Лицензии</p><b>10 всего · 7 занято · 3 свободно</b></div>
+          </div>
+          <div class="card soft" style="margin-top:14px">
+            <h3>Пользователи и доступы</h3>
+            <table class="table" id="baseUsersTable">
+              <tr><th>Пользователь</th><th>Роль в базе</th><th>Доступ</th></tr>
+              <tr><td>Мария Акопян</td><td>Администратор</td><td><span class="badge">разрешен</span></td></tr>
+              <tr><td>Бухгалтерия</td><td>Пользователь</td><td><span class="badge">разрешен</span></td></tr>
+            </table>
+          </div>
+          <div class="card soft" style="margin-top:14px">
+            <h3>Действия по базе</h3>
+            <div class="toolbar"><button>Подключиться к базе</button><button>Скопировать web-ссылку</button><button>Настроить доступ</button><button>Политики доступа</button><button>Загрузить .dt</button><button>Восстановить из backup</button><button>Скачать базу</button><button class="danger">Удалить базу</button></div>
+          </div>
+          <div class="toolbar"><button onclick="openDiscussionModal('База 1С')">💬 Создать обращение по базе</button><button>История изменений</button><button>Журнал backup</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="servers" class="screen">
+      <div class="toolbar" style="margin-top:0">
+        <button onclick="goBack()">← Назад</button>
+        <span class="muted">После возврата клиент попадает на то же место на предыдущей странице.</span>
+      </div>
+      <div class="card">
+        <h2>Мои серверы / ресурсы</h2>
+        <p class="muted">Здесь показываем только серверы и арендованные ресурсы: IP, CPU/RAM/SSD, тарифы, продление, доступы и действия по ресурсу. Базы 1С вынесены в отдельный раздел.</p>
+        <div class="grid four">
+          <div class="card soft metric"><small>Активные серверы</small><strong>3</strong></div>
+          <div class="card soft metric"><small>Базы 1С</small><strong>3</strong></div>
+          <div class="card soft metric"><small>Backup</small><strong>3/3</strong><span class="badge">актуально</span></div>
+          <div class="card soft metric"><small>Нужно продлить</small><strong>1</strong><span class="badge warn">через 6 дней</span></div>
+        </div>
+        <div class="toolbar"><input class="search" placeholder="Поиск по серверу, IP, базе 1С, партнеру..."/><button>Windows</button><button>Linux</button><button>Backup</button><button>Продление</button><button class="primary" onclick="showScreen('orders')">Быстрый заказ сервера</button></div>
+        <div class="server-row">
+          <div class="server-head">
+            <div><b>#SRV-247090</b> <span class="badge">ONLINE</span><br><span class="muted">Москва · Windows Server · 1С</span></div><div><span class="muted">IP</span><br><b>10.10.100.12</b></div><div><span class="muted">Тариф</span><br><b>Бизнес</b></div><div><span class="muted">CPU/RAM</span><br><b>6 vCPU / 16 GB</b></div><div><span class="muted">До конца</span><br><b>6 дней</b></div><button>Свернуть</button>
+          </div>
+          <div class="server-details">
+            <div class="info"><p>ОС</p><b>Windows Server</b><p>Оплачено до</p><b>01.07.2026</b><p>RAM</p><b>16 GB</b></div>
+            <div class="info"><p>Базы 1С</p><b>Бухгалтерия, УНФ, ЗУП</b><p>Backup</p><b>Сегодня, 03:00</b><p>Владелец</p><b>ED ART</b></div>
+            <div class="info"><p>Ответственный</p><b>Инженер Сергей</b><p>Статус</p><b>Запущен</b><p>Входит в договор</p><b>Да</b></div>
+          </div>
+          <div class="card soft" style="margin:0 18px 18px"><h3>Базы 1С на ресурсе</h3><table class="table"><tr><th>База</th><th>Статус</th><th>Действия</th></tr><tr><td>1С Бухгалтерия</td><td><span class="badge">активна</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('База 1С')">💬</button></td></tr><tr><td>1С УНФ</td><td><span class="badge">активна</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('База 1С')">💬</button></td></tr><tr><td>1С ЗУП</td><td><span class="badge warn">проверить</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('База 1С')">💬</button></td></tr></table></div><div class="server-actions"><button>Диагностика</button><button>Перезагрузка VPS</button><button>Статистика</button><button>Как подключиться?</button><button>Запросить доступ</button><button class="danger">Создать инцидент</button></div><div class="icon-pills" style="padding:0 18px 18px;background:#fbfcff"><button class="message-icon" title="Создать обращение" onclick="openDiscussionModal('VPS для 1С #SRV-247090')">💬</button></div>
+        </div>
+        <div class="card soft" style="margin-top:18px">
+          <h2>Карточка базы 1С: Бухгалтерия</h2>
+          <p class="muted">Вся информация и действия по базе собраны в одной карточке. Данные сервера, ресурса, CPU/RAM/SSD и тарифы сервера отсюда убраны — они должны быть в карточке ресурса.</p>
+
+          <div class="grid four" style="margin-top:14px">
+            <div class="card soft metric"><small>Конфигурация</small><strong>1С Бухгалтерия</strong><span class="muted">ред. 3.0</span></div>
+            <div class="card soft metric"><small>Релиз</small><strong>3.0.172.1</strong><span class="badge">актуальный</span></div>
+            <div class="card soft metric"><small>Тип базы</small><strong>SQL</strong><span class="muted">рабочая база</span></div>
+            <div class="card soft metric"><small>Размер базы</small><strong>18.4 GB</strong><span class="muted">контроль роста</span></div>
+          </div>
+
+          <div class="grid three" style="margin-top:14px">
+            <div class="card soft">
+              <h3>Состояние базы</h3>
+              <p class="muted">Статус</p><b>Работает</b>
+              <p class="muted">Последний backup базы</p><b>Сегодня, 03:00</b>
+              <p class="muted">Автообновление</p><b>Включено</b>
+              <p class="muted">Публикация</p><b>Опубликована</b>
+            </div>
+            <div class="card soft">
+              <h3>Доступ к базе</h3>
+              <button>Подключиться к базе</button>
+              <button style="margin-top:8px">Скопировать web-ссылку</button>
+              <button style="margin-top:8px">Настроить публикацию</button>
+              <button style="margin-top:8px">Политики доступа</button>
+            </div>
+            <div class="card soft">
+              <h3>Обслуживание базы</h3>
+              <button>Загрузить .dt</button>
+              <button style="margin-top:8px">Восстановить из backup</button>
+              <button style="margin-top:8px">Скачать базу</button>
+              <button style="margin-top:8px">История изменений</button>
+            </div>
+          </div>
+
+          <div class="grid two" style="margin-top:14px">
+            <div class="card soft">
+              <h3>Пользователи базы</h3>
+              <p class="muted">Здесь видно, кто имеет доступ к базе и занимает клиентскую лицензию.</p>
+              <table class="table"><tr><th>Пользователь</th><th>Роль</th><th>Лицензия</th><th>Статус</th></tr><tr><td>Мария Акопян</td><td>Администратор</td><td>занимает</td><td><span class="badge">активен</span></td></tr><tr><td>Бухгалтерия</td><td>Пользователь</td><td>занимает</td><td><span class="badge">активен</span></td></tr><tr><td>Иван инженер</td><td>Техспециалист</td><td>не занимает</td><td><span class="badge blue">сервисный доступ</span></td></tr></table>
+              <div class="toolbar"><button class="green">Добавить пользователя к базе</button><button>Группы доступа</button><button>История входов</button></div>
+            </div>
+            <div class="card soft">
+              <h3>Действия по базе</h3>
+              <div class="doc-card"><div><b>Создать обращение по базе</b><p class="muted">Открывает заполненную форму обращения с привязкой к базе.</p></div><button class="message-icon small" onclick="openDiscussionModal('1С Бухгалтерия')">💬</button></div>
+              <div class="doc-card"><div><b>Проверить обновления</b><p class="muted">Показать доступный релиз и план обновления.</p></div><button>Проверить</button></div>
+              <div class="doc-card"><div><b>Настроить доступы</b><p class="muted">Права пользователей именно к этой базе.</p></div><button>Открыть</button></div>
+              <div class="doc-card"><div><b>Удаление базы</b><p class="muted">Опасное действие, доступно только администратору клиента.</p></div><button class="danger">Удалить</button></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="contracts" class="screen">
+      <div class="grid two">
+        <div class="card"><h2>Договоры и SLA</h2><div class="doc-card"><div><b>Договор №45/1С</b><p class="muted">Абонентское обслуживание 1С · активен до 01.07.2026</p></div><span class="badge">активен</span></div><div class="doc-card"><div><b>SLA обслуживания</b><p class="muted">Критичные — 2 часа, обычные — 8 часов</p></div><button>Открыть</button></div><div class="doc-card"><div><b>Регламент работ</b><p class="muted">Что входит и что не входит в абонентку</p></div><button>Скачать</button></div></div>
+        <div class="card"><h2>Лимит часов</h2><div class="metric"><strong>12 / 20 ч</strong><small>Остаток на текущий месяц</small><div class="progress"><i style="width:60%"></i></div></div><table class="table"><tr><th>Работа</th><th>Часы</th></tr><tr><td>Обновление 1С</td><td>2.5</td></tr><tr><td>Консультация бухгалтера</td><td>1.0</td></tr><tr><td>Интеграция с сайтом</td><td>4.5</td></tr></table></div>
+      </div>
+    </section>
+
+    <section id="billing" class="screen">
+      <div class="grid four">
+        <div class="card metric"><small>Баланс</small><strong>23 791 ₽</strong><span class="badge">доступно</span></div>
+        <div class="card metric"><small>К оплате</small><strong>57 900 ₽</strong><span class="badge warn">2 счета</span></div>
+        <div class="card metric"><small>Привязанные карты</small><strong>2</strong><span class="muted">1 основная</span></div>
+        <div class="card metric"><small>Бонусы</small><strong>4 800</strong><span class="badge blue">можно списать</span></div>
+      </div>
+
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Платежный дашборд</h2>
+          <p class="muted">Здесь клиент может быстро пополнить баланс, выбрать сумму и оплатить с привязанной карты.</p>
+          <div class="grid two">
+            <div class="card soft"><h3>Пополнить баланс</h3><p class="muted">Введите сумму</p><input class="search" value="10000" style="min-width:0"/><div class="toolbar"><button>5 000 ₽</button><button>10 000 ₽</button><button>20 000 ₽</button></div></div>
+            <div class="card soft"><h3>Способ оплаты</h3><p class="muted">Основная карта</p><b>Visa •••• 4589</b><p class="muted">Автоплатеж</p><b>Включен</b><div class="toolbar"><button>Сменить карту</button></div></div>
+          </div>
+          <div class="toolbar" style="margin-top:18px"><button class="green" onclick="openPaymentModal('card')">Пополнить / оплатить картой</button><button class="primary" onclick="openPaymentModal('invoice')">Счет на оплату</button><button onclick="showScreen('bonuses')">Использовать бонусы</button></div>
+        </div>
+        <div class="card">
+          <h2>Привязанные карты</h2>
+          <div class="doc-card"><div><b>Visa •••• 4589</b><p class="muted">Основная карта для оплаты услуг и аренды</p></div><span class="badge">основная</span></div>
+          <div class="doc-card"><div><b>Mastercard •••• 1124</b><p class="muted">Резервная карта</p></div><button>Сделать основной</button></div>
+          <div class="doc-card"><div><b>Корпоративная карта •••• 9031</b><p class="muted">Автоплатеж отключен</p></div><button>Подключить</button></div>
+          <div class="toolbar"><button class="green">Привязать новую карту</button><button>Удалить карту</button><button>История автоплатежей</button></div>
+        </div>
+      </div>
+
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Счета и оплаты</h2>
+          <div class="tabs"><span class="tab active">Счета</span><span class="tab">Оплаты</span><span class="tab">Автоплатежи</span></div>
+          <table class="table"><tr><th>Документ</th><th>Дата</th><th>Сумма</th><th>Статус</th><th></th></tr><tr><td>Счет №237</td><td>09.05.2026</td><td>45 000 ₽</td><td><span class="badge warn">ожидает оплату</span></td><td><button class="green" onclick="openPaymentModal('card')">Оплатить</button></td></tr><tr><td>Счет №233</td><td>01.05.2026</td><td>12 900 ₽</td><td><span class="badge danger">просрочен</span></td><td><button class="green" onclick="openPaymentModal('card')">Оплатить</button></td></tr><tr><td>Оплата #741</td><td>27.05.2026</td><td>12 500 ₽</td><td><span class="badge">оплачено</span></td><td><button>Чек</button></td></tr></table>
+        </div>
+        <div class="card">
+          <h2>Сертификаты, промокоды и купоны</h2>
+          <div class="doc-card"><div><b>Подарочный сертификат</b><p class="muted">Номинал 10 000 ₽ · действует до 31.12.2026</p></div><button>Применить</button></div>
+          <div class="doc-card"><div><b>Промокод START1C</b><p class="muted">Скидка 10% на аудит 1С</p></div><button>Активировать</button></div>
+          <div class="doc-card"><div><b>Купон SERVER-UP</b><p class="muted">+20 GB SSD при апгрейде сервера</p></div><button>Использовать</button></div>
+          <div class="form" style="margin-top:12px"><label>Ввести промокод / купон</label><div class="form-row"><div><input placeholder="Введите код"></div><div><button class="primary" style="width:100%;justify-content:center">Применить код</button></div></div></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px"><h2>Быстрые действия по оплате</h2><div class="grid four"><div class="doc-card"><div><b>Запросить счет</b><p class="muted">На новую услугу или продление</p></div><button onclick="openPaymentModal('invoice')">Создать</button></div><div class="doc-card"><div><b>Обещанный платеж</b><p class="muted">Временно продлить доступ при задержке оплаты</p></div><button class="green">Оформить</button></div><div class="doc-card"><div><b>Скачать акт сверки</b><p class="muted">По выбранному контрагенту</p></div><button>Скачать</button></div><div class="doc-card"><div><b>Настроить автоплатеж</b><p class="muted">Автоматически оплачивать аренду и сопровождение</p></div><button>Настроить</button></div></div></div>
+    </section>
+
+    <section id="licenses" class="screen">
+      <div class="grid four">
+        <div class="card metric"><small>Конфигурации 1С</small><strong>2</strong><span class="badge">Бухгалтерия + УНФ</span></div>
+        <div class="card metric"><small>Клиентские лицензии</small><strong id="licenseMetricTotal">10</strong><span class="muted">общий пул</span></div>
+        <div class="card metric"><small>Цена пула лицензий</small><strong id="licenseMetricPrice">15 000 ₽</strong><span class="badge blue">при 10 лицензиях</span></div>
+        <div class="card metric"><small>Использовано</small><strong><span id="licenseUsedText">7 / 10</span></strong><div class="progress"><i id="licenseProgress" style="width:70%"></i></div></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Как показываем лицензии 1С</h2>
+        <p class="muted">Визуальная логика: клиент покупает или арендует конфигурацию 1С и отдельный общий пул клиентских лицензий. При добавлении второй конфигурации клиентские лицензии не покупаются заново — те же 10 пользователей могут работать в разных конфигурациях, если это разрешено условиями лицензирования и настройками доступа.</p>
+        <div class="license-map" style="margin-top:14px">
+          <div class="card soft" id="configListCard">
+            <h3>Конфигурации</h3>
+            <div class="doc-card"><div><b>1С Бухгалтерия</b><p class="muted">Основная конфигурация · использует общий пул лицензий</p></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge">активна</span><button onclick="openConfigCard('buh')">Открыть</button></div></div>
+            <div class="doc-card"><div><b>1С УНФ</b><p class="muted">Добавлена к тому же пулу лицензий · цена пула не изменилась</p></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="badge blue">новая</span><button onclick="openConfigCard('unf')">Открыть</button></div></div>
+          </div>
+          <div class="card license-pool">
+            <h3>Общий пул клиентских лицензий</h3>
+            <p class="muted"><span id="licensePoolTotal">10</span> клиентских лицензий</p>
+            <strong id="licensePoolPrice" style="font-size:34px">15 000 ₽</strong>
+            <p class="muted">Цена остается прежней при добавлении 1С УНФ</p>
+            <div class="progress" style="margin-top:14px"><i style="width:70%"></i></div>
+            <p class="muted"><span id="licensePoolUsedText">7 из 10</span> сейчас используются</p>
+          </div>
+          <div class="card soft">
+            <h3>Пользователи</h3>
+            <span class="user-chip">👤 Иван · Бухгалтерия</span>
+            <span class="user-chip">👤 Мария · Бухгалтерия + УНФ</span>
+            <span class="user-chip">👤 Артем · УНФ</span>
+            <span class="user-chip">👤 Ольга · Бухгалтерия</span>
+            <span class="user-chip">👤 Сергей · УНФ</span>
+            <span class="user-chip">+ 2 активных</span>
+            <div class="price-note">Один пользователь может быть привязан к нескольким конфигурациям, но клиентские лицензии считаются из общего пула.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="configCard" style="margin-top:18px;display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <h2 id="configTitle">Карточка конфигурации</h2>
+            <p class="muted" id="configSubtitle">Подробная информация по выбранной конфигурации 1С.</p>
+          </div>
+          <button onclick="scrollToConfigList()">← К списку конфигураций</button>
+        </div>
+        <div class="grid four" style="margin-top:14px">
+          <div class="card soft metric"><small>Статус</small><strong id="configStatus">Активна</strong></div>
+          <div class="card soft metric"><small>Базы</small><strong id="configBasesCount">1</strong></div>
+          <div class="card soft metric"><small>Пользователи</small><strong id="configUsersCount">4</strong></div>
+          <div class="card soft metric"><small>Лицензии</small><strong>общий пул</strong><span class="muted" id="configLicenseText">10 клиентских</span></div>
+        </div>
+        <div class="grid two" style="margin-top:14px">
+          <div class="card soft">
+            <h3>Основная информация</h3>
+            <div class="info"><p>Конфигурация</p><b id="configName">1С Бухгалтерия</b><p>Договор</p><b id="configContract">Лицензии 1С / ЛК-15/2026</b><p>Стоимость клиентских лицензий</p><b id="configPrice">15 000 ₽ за общий пул</b></div>
+          </div>
+          <div class="card soft">
+            <h3>Доступы и лицензии</h3>
+            <div class="info"><p>Как считается лицензия</p><b>Пользователь занимает 1 лицензию из общего пула</b><p>Можно ли использовать в других конфигурациях</p><b id="configSharedText">Да, Бухгалтерия и УНФ используют один пул</b><p>Свободно</p><b id="configFreeText">3 лицензии</b></div>
+            <div class="toolbar"><button class="green">Добавить пользователя</button><button onclick="setLicenses(15)">Увеличить пул</button><button onclick="openModal('ticket')">Задать вопрос</button></div>
+          </div>
+        </div>
+        <div class="grid two" style="margin-top:14px">
+          <div class="card soft">
+            <h3>Базы в этой конфигурации</h3>
+            <table class="table" id="configBasesTable">
+              <tr><th>База</th><th>Конфигурация</th><th>Статус</th><th></th></tr>
+              <tr><td>1С Бухгалтерия</td><td>Бухгалтерия предприятия</td><td><span class="badge">активна</span></td><td><button class="message-icon small" onclick="openDiscussionModal('1С Бухгалтерия')">💬</button></td></tr>
+            </table>
+          </div>
+          <div class="card soft">
+            <h3>Пользователи конфигурации</h3>
+            <table class="table" id="configUsersTable">
+              <tr><th>Пользователь</th><th>Доступ</th><th>Лицензия</th></tr>
+              <tr><td>Мария Акопян</td><td>Администратор</td><td>1 из общего пула</td></tr>
+              <tr><td>Бухгалтерия</td><td>Пользователь</td><td>1 из общего пула</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="toolbar"><button>Документы по конфигурации</button><button>История изменений</button><button>Связанные обращения</button><button>Настройки доступа</button></div>
+      </div>
+
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Управление количеством клиентских лицензий</h2>
+          <p class="muted">Клиент может подать заявку на увеличение или уменьшение общего пула. Уменьшить ниже уже используемых лицензий нельзя.</p>
+          <div class="grid two" style="grid-template-columns:.8fr 1.2fr">
+            <div class="card soft">
+              <h3>Количество в пуле</h3>
+              <div class="license-stepper">
+                <button onclick="changeLicenses(-1)">−</button>
+                <div class="license-count" id="licenseStepperCount">10</div>
+                <button onclick="changeLicenses(1)">+</button>
+              </div>
+              <p class="muted">Использовано: <b>7</b>. Свободно: <b id="licenseFreeCount">3</b>.</p>
+              <div class="toolbar"><button onclick="setLicenses(7)">Минимум 7</button><button onclick="setLicenses(10)">10</button><button onclick="setLicenses(15)">15</button><button onclick="setLicenses(20)">20</button></div>
+            </div>
+            <div class="calc-card">
+              <h3>Расчет изменения</h3>
+              <div class="calc-row"><span>Текущий пул</span><b>10 лицензий · 15 000 ₽</b></div>
+              <div class="calc-row"><span>Новый пул</span><b><span id="licenseNewTotal">10</span> лицензий · <span id="licenseNewPrice">15 000 ₽</span></b></div>
+              <div class="calc-row"><span>Изменение</span><b id="licenseDelta">без изменений</b></div>
+              <div class="calc-row"><span>Конфигурации</span><b>1С Бухгалтерия + 1С УНФ</b></div>
+              <div class="price-note" id="licenseCalcNote">Количество конфигураций не меняет стоимость клиентских лицензий. Стоимость меняется только при изменении количества клиентских лицензий.</div>
+              <div class="toolbar"><button class="green">Отправить заявку на изменение лицензий</button><button>Получить счет</button><button onclick="openModal('ticket')">Задать вопрос</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Правила изменения пула</h2>
+          <div class="doc-card"><div><b>Увеличение</b><p class="muted">Добавляет новые клиентские лицензии к общему пулу. Пользователи смогут работать в Бухгалтерии и УНФ.</p></div><span class="badge">можно</span></div>
+          <div class="doc-card"><div><b>Уменьшение</b><p class="muted">Можно уменьшить только до количества, которое не меньше фактически используемых лицензий.</p></div><span class="badge warn">минимум 7</span></div>
+          <div class="doc-card"><div><b>Цена</b><p class="muted">В прототипе расчет показан как 1 500 ₽ за клиентскую лицензию: 10 × 1 500 = 15 000 ₽.</p></div><span class="badge blue">пример</span></div>
+        </div>
+      </div>
+
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Текущий пакет клиента</h2>
+          <table class="table">
+            <tr><th>Позиция</th><th>Количество</th><th>Цена</th><th>Комментарий</th></tr>
+            <tr><td>1С Бухгалтерия</td><td>1 конфигурация</td><td>в составе пакета</td><td><span class="badge">активна</span> <button onclick="openConfigCard('buh')">Открыть</button></td></tr>
+            <tr><td>Клиентские лицензии 1С</td><td><span id="licenseTableTotal">10</span> пользователей</td><td><span id="licenseTablePrice">15 000 ₽</span></td><td>общий пул для конфигураций</td></tr>
+            <tr><td>1С УНФ</td><td>1 конфигурация</td><td>+0 ₽ к пулу лицензий</td><td><span class="badge blue">использует те же лицензии</span> <button onclick="openConfigCard('unf')">Открыть</button></td></tr>
+          </table>
+          <div class="hint">Главная мысль для клиента: добавили 1С УНФ, но не покупаем второй комплект из 10 клиентских лицензий. Клиентские лицензии общие, поэтому итог по пользовательским лицензиям остается 15 000 ₽.</div>
+        </div>
+        <div class="card">
+          <h2>Добавить конфигурацию</h2>
+          <div class="form">
+            <label>Контрагент</label>
+            <select><option>ED ART · ИНН 0000000000</option><option>Плазма-Сервис · ИНН 7700123456</option></select>
+            <div class="form-row"><div><label>Что добавить</label><select><option>1С УНФ</option><option>1С ЗУП</option><option>1С Розница</option><option>1С Управление торговлей</option></select></div><div><label>Использовать лицензии</label><select><option>Текущий пул: 10 клиентских лицензий</option><option>Добавить пользователей к пулу</option><option>Нужна консультация</option></select></div></div>
+            <div class="form-row"><div><label>Текущая цена пула</label><input value="15 000 ₽" readonly></div><div><label>Новая цена пула</label><input id="licenseFormNewPrice" value="15 000 ₽" readonly></div></div>
+            <label>Комментарий</label>
+            <textarea placeholder="Например: добавить 1С УНФ, подключить 3 сотрудников, права как у бухгалтерии...">Добавить 1С УНФ к существующему пулу клиентских лицензий. Дополнительные пользовательские лицензии пока не нужны.</textarea>
+            <button class="primary">Отправить заявку на добавление конфигурации</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Матрица доступа пользователей</h2>
+        <p class="muted">Так клиент видит, какие сотрудники используют общий пул лицензий и к каким конфигурациям у них есть доступ.</p>
+        <table class="table">
+          <tr><th>Пользователь</th><th>1С Бухгалтерия</th><th>1С УНФ</th><th>Занимает лицензию</th><th>Статус</th></tr>
+          <tr><td>Мария Акопян</td><td>✓</td><td>✓</td><td>1 из общего пула</td><td><span class="badge">активен</span></td></tr>
+          <tr><td>Бухгалтерия</td><td>✓</td><td>—</td><td>1 из общего пула</td><td><span class="badge">активен</span></td></tr>
+          <tr><td>Менеджер продаж</td><td>—</td><td>✓</td><td>1 из общего пула</td><td><span class="badge blue">активен</span></td></tr>
+          <tr><td>Склад</td><td>—</td><td>✓</td><td>1 из общего пула</td><td><span class="badge">активен</span></td></tr>
+        </table>
+        <div class="toolbar"><button class="green">Добавить пользователя</button><button>Изменить доступы</button><button>Заказать еще лицензии</button><button onclick="openModal('ticket')">Задать вопрос по лицензиям</button></div>
+      </div>
+    </section>
+
+    <section id="sessions" class="screen">
+      <div class="grid four">
+        <div class="card metric"><small>Доступно сеансов</small><strong>10</strong><span class="muted">по пулу лицензий</span></div>
+        <div class="card metric"><small>Активные подключения</small><strong>7</strong><span class="badge">3 свободно</span></div>
+        <div class="card metric"><small>Пиковая нагрузка</small><strong>9</strong><span class="badge warn">вчера</span></div>
+        <div class="card metric"><small>Рекомендация</small><strong>+5</strong><span class="badge blue">при росте</span></div>
+      </div>
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Активные сеансы 1С</h2>
+          <p class="muted">Раздел связывает текущий экран “Сеансы 1С” с нашим разделом лицензий: сеансы расходуют общий пул клиентских лицензий.</p>
+          <table class="table"><tr><th>Пользователь</th><th>База</th><th>Начало</th><th>Статус</th><th></th></tr><tr><td>Мария Акопян</td><td>1С Бухгалтерия</td><td>09:10</td><td><span class="badge">активен</span></td><td><button>Завершить</button></td></tr><tr><td>Бухгалтерия</td><td>1С Бухгалтерия</td><td>09:25</td><td><span class="badge">активен</span></td><td><button>Завершить</button></td></tr><tr><td>Склад</td><td>1С УНФ</td><td>10:05</td><td><span class="badge">активен</span></td><td><button>Завершить</button></td></tr></table>
+        </div>
+        <div class="card">
+          <h2>Управление сеансами</h2>
+          <div class="doc-card"><div><b>Изменить количество клиентских лицензий</b><p class="muted">Текущее значение: 10, используется: 7</p></div><button class="green" onclick="showScreen('licenses')">Изменить</button></div>
+          <div class="doc-card"><div><b>История подключений</b><p class="muted">Кто, когда и к какой базе подключался</p></div><button>Открыть</button></div>
+          <div class="doc-card"><div><b>Лимит одновременных подключений</b><p class="muted">Контроль превышения и уведомления</p></div><button>Настроить</button></div>
+          <div class="hint">Если клиент упирается в лимит сеансов, система предлагает увеличить пул лицензий, а не просто показывает ошибку.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="orders" class="screen">
+      <div class="grid four">
+        <div class="card metric"><small>Всего в аренде</small><strong>4</strong><span class="badge">активно</span></div>
+        <div class="card metric"><small>Ежемесячно</small><strong>23 900 ₽</strong><span class="muted">по активным ресурсам</span></div>
+        <div class="card metric"><small>Оплачено до</small><strong>01.07</strong><span class="badge warn">есть продление</span></div>
+        <div class="card metric"><small>Заявки по аренде</small><strong>2</strong><span class="badge blue">в работе</span></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Аренда ресурсов</h2>
+        <p class="muted">Это должен быть главный блок раздела аренды: клиент сразу видит все арендованные ресурсы, стоимость, срок, статус оплаты и быстрые действия.</p>
+        <div class="toolbar"><input class="search" placeholder="Поиск по ресурсу, серверу, IP, договору, базе 1С..."/><button class="primary">Скачать список</button><button class="green">Продлить все</button></div>
+        <table class="table">
+          <tr><th>Ресурс</th><th>Тариф / параметры</th><th>Стоимость</th><th>Оплачено до</th><th>Статус</th><th></th></tr>
+          <tr><td><b>VPS для 1С #SRV-247090</b><br><span class="muted">Москва · Windows Server · IP 10.10.100.12</span></td><td>6 vCPU · 16 GB RAM · 250 GB SSD</td><td>12 900 ₽/мес</td><td>01.07.2026</td><td><span class="badge warn">продлить через 6 дней</span></td><td><button>Открыть</button></td></tr>
+          <tr><td><b>Резервное копирование 1С</b><br><span class="muted">3 базы · ежедневный backup</span></td><td>Хранение 30 дней · 500 GB</td><td>4 500 ₽/мес</td><td>01.08.2026</td><td><span class="badge">активно</span></td><td><button>Открыть</button></td></tr>
+          <tr><td><b>Лицензии / доступы 1С</b><br><span class="muted">10 клиентских лицензий · 2 конфигурации</span></td><td>1С Бухгалтерия + 1С УНФ</td><td>15 000 ₽/мес</td><td>01.08.2026</td><td><span class="badge">активно</span></td><td><button onclick="showScreen('licenses')">Открыть</button></td></tr>
+          <tr><td><b>Облачное хранилище документов</b><br><span class="muted">для обмена файлами с поддержкой</span></td><td>200 GB</td><td>3 000 ₽/мес</td><td>15.07.2026</td><td><span class="badge blue">активно</span></td><td><button>Открыть</button></td></tr>
+        </table>
+      </div>
+
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Карточка аренды: VPS для 1С</h2>
+          <p><span class="badge warn">Требуется продление</span> <span class="badge blue">SLA включен</span></p>
+          <div class="grid three">
+            <div class="card soft"><h3>Основное</h3><p class="muted">Ресурс</p><b>VPS для 1С #SRV-247090</b><p class="muted">Договор</p><b>АР-15/2026</b><p class="muted">Период аренды</p><b>01.05.2026 — 01.07.2026</b></div>
+            <div class="card soft"><h3>Параметры</h3><p class="muted">CPU / RAM / SSD</p><b>6 vCPU / 16 GB / 250 GB</b><p class="muted">ОС</p><b>Windows Server</b><p class="muted">Базы 1С</p><b>Бухгалтерия, УНФ, ЗУП</b></div>
+            <div class="card soft"><h3>Финансы</h3><p class="muted">Стоимость</p><b>12 900 ₽/мес</b><p class="muted">Счет</p><b>№237 · ожидает оплату</b><p class="muted">Следующее списание</p><b>01.07.2026</b></div>
+          </div>
+          <div class="server-details" style="margin-top:14px">
+            <div class="info"><p>Ответственный инженер</p><b>Сергей</b><p>Менеджер</p><b>Алексей</b><p>Входит в абонентку</p><b>Да, серверное сопровождение</b></div>
+            <div class="info"><p>Backup</p><b>Сегодня, 03:00</b><p>Последняя проверка</p><b>25.06.2026, 09:15</b><p>Мониторинг</p><b>CPU 23% · RAM 61% · SSD 74%</b></div>
+            <div class="info"><p>Доступы</p><b>Скрыты по роли</b><p>Кто видит</p><b>Администратор клиента, техспециалист</b><p>IP</p><b>10.10.100.12</b></div>
+          </div>
+          <div class="card soft" style="margin:0 18px 18px"><h3>Базы 1С на арендованном ресурсе</h3><table class="table"><tr><th>База</th><th>Статус</th><th>Действия</th></tr><tr><td>1С Бухгалтерия</td><td><span class="badge">активна</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('База 1С')">💬</button></td></tr><tr><td>1С УНФ</td><td><span class="badge">активна</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('База 1С')">💬</button></td></tr><tr><td>1С ЗУП</td><td><span class="badge warn">проверить</span></td><td><button class="message-icon small" title="Создать обращение" onclick="openDiscussionModal('База 1С')">💬</button></td></tr></table></div><div class="server-actions"><button class="green">Продлить</button><button>Изменить тариф</button><button>Добавить RAM/SSD</button><button>Запросить доступ</button><button>Скачать договор</button><button class="danger" onclick="openModal('ticket')">Сообщить о проблеме</button></div><div class="icon-pills" style="padding:0 18px 18px;background:#fbfcff"><button class="message-icon" title="Создать обращение" onclick="openDiscussionModal('VPS для 1С #SRV-247090')">💬</button></div>
+        </div>
+
+        <div class="card">
+          <h2>Документы и история по аренде</h2>
+          <div class="doc-card"><div><b>Счет №237</b><p class="muted">12 900 ₽ · продление VPS до 01.08.2026</p></div><button class="green">Оплатить</button></div>
+          <div class="doc-card"><div><b>Акт №188</b><p class="muted">Аренда VPS за май 2026</p></div><button>Скачать</button></div>
+          <div class="doc-card"><div><b>Договор аренды АР-15/2026</b><p class="muted">Условия, SLA, ответственность, доступы</p></div><button>Открыть</button></div>
+          <h3 style="margin-top:18px">История</h3>
+          <div class="timeline">
+            <div class="event"><b>25.06.2026</b><br><span class="muted">Backup успешно выполнен, 3/3 базы.</span></div>
+            <div class="event"><b>20.06.2026</b><br><span class="muted">Выставлен счет на продление VPS.</span></div>
+            <div class="event"><b>10.06.2026</b><br><span class="muted">Добавлена база ЗУП на сервер.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid two" style="margin-top:18px">
+        <div class="card"><h2>Заказать новый ресурс</h2><p class="muted">Форма должна не только создавать заказ, но и передавать заявку в 1С: клиент, договор, ресурс, тариф, комментарий, UTM/источник.</p><div class="form"><label>Что нужно</label><select><option>Арендовать сервер для 1С</option><option>Увеличить текущий сервер</option><option>Заказать резервное копирование</option><option>Арендовать лицензии / доступы</option><option>Заказать оборудование</option><option>Купить расходники</option><option>Заказать кассовое обслуживание</option></select><div class="form-row"><div><label>Тариф</label><select><option>1С Бизнес · 6 vCPU / 16 GB</option><option>1С Старт · 4 vCPU / 8 GB</option><option>1С Проф · 8 vCPU / 32 GB</option></select></div><div><label>Локация</label><select><option>Москва</option><option>Санкт-Петербург</option><option>Не важно</option></select></div></div><div class="form-row"><div><label>Количество пользователей</label><input value="5"></div><div><label>Нужен перенос баз?</label><select><option>Да</option><option>Нет</option><option>Нужно обсудить</option></select></div></div><label>Комментарий</label><textarea placeholder="Опишите задачу, количество пользователей, базы 1С, сроки, пожелания по backup..."></textarea><button class="primary">Отправить заявку в 1С</button></div></div>
+        <div class="card"><h2>Активные заказы</h2><div class="kanban"><div class="lane"><h3>Новый</h3><div class="mini-card">Заказ сервера<br><span class="muted">#9001</span></div></div><div class="lane"><h3>Согласование</h3><div class="mini-card">КП на оборудование<br><span class="muted">#8990</span></div></div><div class="lane"><h3>В работе</h3><div class="mini-card">Перенос базы 1С<br><span class="muted">#8988</span></div></div><div class="lane"><h3>Готово</h3><div class="mini-card">Расходники<br><span class="muted">#8975</span></div></div></div></div>
+      </div>
+    </section>
+
+    <section id="deals" class="screen">
+      <div class="grid two">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+            <div>
+              <h2>Сделки и проекты</h2>
+              <p class="muted">Раздел для длинных проектов: автоматизация, внедрение, интеграции, переносы, доработки, инфраструктура.</p>
+            </div>
+            <button class="green">Запросить статус проекта</button>
+          </div>
+          <div class="tabs"><span class="tab active">Все</span><span class="tab">Активные</span><span class="tab">Согласование</span><span class="tab">В работе</span><span class="tab">Завершенные</span></div>
+          <table class="table">
+            <tr><th>Проект</th><th>Тип</th><th>Статус</th><th>Срок</th><th>Прогресс</th></tr>
+            <tr><td>Автоматизация отдела продаж</td><td>Внедрение / CRM</td><td><span class="badge warn">в работе</span></td><td>до 15.08.2026</td><td>65%</td></tr>
+            <tr><td>Интеграция 1С с сайтом</td><td>Интеграция</td><td><span class="badge blue">согласование этапа</span></td><td>до 07.07.2026</td><td>40%</td></tr>
+            <tr><td>Перенос баз 1С на новый сервер</td><td>Инфраструктура</td><td><span class="badge">идет по плану</span></td><td>до 30.06.2026</td><td>80%</td></tr>
+          </table>
+          <div class="hint">Клиенту здесь важно видеть не только сам факт сделки, а именно: текущий этап, что уже сделано, что ожидается от клиента, ближайший следующий шаг и кто ответственный.</div>
+        </div>
+        <div class="card">
+          <h2>Карточка проекта</h2>
+          <div class="doc-card"><div><b>Проект: Автоматизация отдела продаж</b><p class="muted">Сделка № PR-2026-018 · клиент ED ART</p></div><span class="badge warn">в работе</span></div>
+          <div class="grid two" style="grid-template-columns:1fr 1fr">
+            <div class="card soft"><h3>Основное</h3><p class="muted">Руководитель проекта</p><b>Алексей</b><p class="muted">Технический лидер</p><b>Иван</b><p class="muted">Срок</p><b>15.08.2026</b></div>
+            <div class="card soft"><h3>Текущий этап</h3><p class="muted">Сейчас идет</p><b>Настройка бизнес-процессов и ролей</b><p class="muted">Следующий шаг</p><b>Тестирование клиентом</b><p class="muted">Ожидается от клиента</p><b>Подтвердить сценарии</b></div>
+          </div>
+          <h3 style="margin-top:18px">Этапы проекта</h3>
+          <div class="timeline">
+            <div class="event"><b>Этап 1. Обследование</b><br><span class="muted">Завершен · собраны требования, согласована схема работ.</span></div>
+            <div class="event"><b>Этап 2. Проектирование</b><br><span class="muted">Завершен · согласован прототип, составлено ТЗ.</span></div>
+            <div class="event"><b>Этап 3. Реализация</b><br><span class="muted">В работе · выполняется настройка и доработка.</span></div>
+            <div class="event"><b>Этап 4. Тестирование</b><br><span class="muted">Не начат.</span></div>
+          </div>
+          <div class="toolbar"><button>Комментарии проекта</button><button>Документы</button><button>Счета</button><button>Связанные обращения</button></div>
+        </div>
+      </div>
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Файлы и документы по проекту</h2>
+          <div class="doc-card"><div><b>Коммерческое предложение КП-74</b><p class="muted">Согласовано клиентом</p></div><button>Открыть</button></div>
+          <div class="doc-card"><div><b>План-график проекта</b><p class="muted">Этапы, сроки, ответственные</p></div><button>Скачать</button></div>
+          <div class="doc-card"><div><b>Акт по этапу 2</b><p class="muted">Проектирование завершено</p></div><button>Скачать</button></div>
+        </div>
+        <div class="card">
+          <h2>Коммуникация по проекту</h2>
+          <div class="chat">
+            <div class="msg"><b>Клиент</b><br>Просьба уточнить, когда можно будет посмотреть тестовый стенд.</div>
+            <div class="msg me"><b>Менеджер проекта</b><br>Тестовый стенд будет готов завтра после 14:00. Отправим ссылку и доступы.</div>
+            <div class="msg"><b>AI-помощник</b><br>Рекомендация: показать клиенту ближайшую веху и список того, что нужно подтвердить для перехода к тестированию.</div>
+          </div>
+          <div class="toolbar"><button class="green">Добавить комментарий</button><button>Создать связанное обращение</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="documents" class="screen">
+      <div class="card">
+        <h2>Акты и документы</h2>
+        <p class="muted">Отдельный раздел для закрывающих документов, договоров, приложений, регламентов и файлов клиента.</p>
+        <div class="doc-card"><div><b>Акт №188</b><p class="muted">Аренда VPS за май 2026</p></div><button>Скачать</button></div>
+        <div class="doc-card"><div><b>Акт №177</b><p class="muted">Сопровождение 1С за май 2026</p></div><button>Скачать</button></div>
+        <div class="doc-card"><div><b>Приложение к договору</b><p class="muted">SLA и перечень включенных услуг</p></div><button>Открыть</button></div>
+        <div class="doc-card"><div><b>Регламент работ</b><p class="muted">Что входит и что не входит в обслуживание</p></div><button>Скачать</button></div>
+      </div>
+    </section>
+
+    <section id="offers" class="screen">
+      <div class="grid two">
+        <div class="card">
+          <h2>Коммерческие предложения</h2>
+          <p class="muted">Клиент видит все КП, может открыть, согласовать, запросить уточнение или задать вопрос по предложению.</p>
+          <table class="table">
+            <tr><th>№ КП</th><th>Тема</th><th>Статус</th><th>Сумма</th><th></th></tr>
+            <tr><td>КП-74</td><td>Автоматизация отдела продаж</td><td><span class="badge">согласовано</span></td><td>380 000 ₽</td><td><button>Открыть</button></td></tr>
+            <tr><td>КП-81</td><td>Расширение сервера 1С</td><td><span class="badge blue">отправлено</span></td><td>24 900 ₽</td><td><button>Открыть</button></td></tr>
+            <tr><td>КП-83</td><td>Подключение резервного канала backup</td><td><span class="badge warn">ожидает решения</span></td><td>12 500 ₽</td><td><button>Открыть</button></td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h2>Карточка КП</h2>
+          <div class="doc-card"><div><b>КП-81 · Расширение сервера 1С</b><p class="muted">Для контрагента <span id="offerCounterparty">ED ART</span></p></div><span class="badge blue">отправлено</span></div>
+          <p class="muted">Что предлагаем: увеличить RAM до 32 GB, расширить SSD, усилить backup.</p>
+          <div class="toolbar"><button class="green">Согласовать КП</button><button>Задать вопрос</button><button>Скачать PDF</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="shipments" class="screen">
+      <div class="grid two">
+        <div class="card">
+          <h2>Заказы и отгрузки</h2>
+          <p class="muted">Раздел для оборудования, расходников и других заказов, где важен статус поставки / выдачи / отгрузки.</p>
+          <table class="table">
+            <tr><th>Заказ</th><th>Тип</th><th>Статус</th><th>Ожидаемая дата</th></tr>
+            <tr><td>#9012</td><td>Кассовый принтер</td><td><span class="badge blue">в пути</span></td><td>29.06.2026</td></tr>
+            <tr><td>#9008</td><td>Сканер штрихкода</td><td><span class="badge">готов к выдаче</span></td><td>сегодня</td></tr>
+            <tr><td>#8997</td><td>Расходники</td><td><span class="badge warn">ожидает оплаты</span></td><td>после оплаты</td></tr>
+          </table>
+        </div>
+        <div class="card">
+          <h2>Карточка заказа</h2>
+          <div class="doc-card"><div><b>Заказ #9012</b><p class="muted">Кассовый принтер · 1 шт.</p></div><span class="badge blue">в пути</span></div>
+          <div class="timeline">
+            <div class="event"><b>Заказ оформлен</b><br><span class="muted">24.06.2026</span></div>
+            <div class="event"><b>Передан поставщику</b><br><span class="muted">25.06.2026</span></div>
+            <div class="event"><b>Отгружен</b><br><span class="muted">26.06.2026</span></div>
+          </div>
+          <div class="toolbar"><button>Документы</button><button>Связаться с менеджером</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="notifications" class="screen">
+      <div class="card">
+        <h2>Уведомления</h2>
+        <p class="muted">Уведомления по обращениям, счетам, проектам, аренде и отгрузкам.</p>
+        <div class="notif"><div><b>Счет №237 ожидает оплату</b><div class="muted">Аренда VPS · оплатить до 01.07.2026</div></div><span class="badge warn">важно</span></div>
+        <div class="notif"><div><b>Проект «Автоматизация отдела продаж» перешел на этап тестирования</b><div class="muted">Нужно согласовать сценарии и назначить ответственного от клиента.</div></div><span class="badge blue">проект</span></div>
+        <div class="notif"><div><b>Обращение #1042 обновлено инженером</b><div class="muted">Добавлен комментарий и приложены рекомендации.</div></div><span class="badge">обращение</span></div>
+        <div class="notif"><div><b>Заказ #9012 отгружен</b><div class="muted">Кассовый принтер отправлен клиенту.</div></div><span class="badge">логистика</span></div>
+      </div>
+    </section>
+
+    <section id="bonuses" class="screen">
+      <div class="grid four">
+        <div class="card metric"><small>Бонусный баланс</small><strong>4 800</strong><span class="badge">активно</span></div>
+        <div class="card metric"><small>Можно списать</small><strong>3 000</strong><span class="muted">на ближайший счет</span></div>
+        <div class="card metric"><small>Начислено за месяц</small><strong>1 200</strong><span class="muted">бонусных ₽</span></div>
+        <div class="card metric"><small>Сгорит</small><strong>0</strong><span class="badge">всё активно</span></div>
+      </div>
+
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Бонусы</h2>
+          <p class="muted">Бонусы можно использовать для частичной оплаты услуг, аренды ресурсов, аудита и дополнительных работ.</p>
+          <div class="doc-card"><div><b>Доступно к списанию</b><p class="muted">Можно списать на ближайший счет или заказ услуги</p></div><button class="green">Списать бонусы</button></div>
+          <div class="doc-card"><div><b>Правила начисления</b><p class="muted">За оплаты, участие в акциях, рекомендации клиентов и специальные кампании</p></div><button>Открыть правила</button></div>
+          <table class="table"><tr><th>Дата</th><th>Операция</th><th>Сумма</th><th>Статус</th></tr><tr><td>25.06.2026</td><td>Оплата счета №233</td><td>+500</td><td><span class="badge">начислено</span></td></tr><tr><td>20.06.2026</td><td>Акция по серверу</td><td>+700</td><td><span class="badge">начислено</span></td></tr><tr><td>11.06.2026</td><td>Списание на аудит 1С</td><td>-1000</td><td><span class="badge blue">использовано</span></td></tr></table>
+        </div>
+        <div class="card">
+          <h2>Списать бонусы</h2>
+          <div class="form"><label>Куда списать</label><select><option>Счет №237 · продление VPS</option><option>Аудит 1С</option><option>Абонентское обслуживание</option></select><label>Сумма списания</label><input value="3000"><button class="green">Применить бонусы</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="referral" class="screen">
+      <div class="grid four">
+        <div class="card metric"><small>Реферальный код</small><strong>EDART2026</strong><span class="muted">можно делиться</span></div>
+        <div class="card metric"><small>Приглашено клиентов</small><strong>3</strong><span class="badge blue">2 активны</span></div>
+        <div class="card metric"><small>Ожидает бонуса</small><strong>1</strong><span class="badge warn">после первой оплаты</span></div>
+        <div class="card metric"><small>Всего начислено</small><strong>6 000</strong><span class="muted">за рекомендации</span></div>
+      </div>
+
+      <div class="grid two" style="margin-top:18px">
+        <div class="card">
+          <h2>Реферальная программа</h2>
+          <p class="muted">Клиент может пригласить другую компанию и получить бонусы после первой оплаты приглашенного клиента.</p>
+          <div class="doc-card"><div><b>Ваша реферальная ссылка</b><p class="muted">https://example.ru/ref/EDART2026</p></div><button>Скопировать</button></div>
+          <div class="doc-card"><div><b>Ваш код</b><p class="muted">EDART2026</p></div><button>Поделиться</button></div>
+          <div class="form"><label>Пригласить клиента</label><div class="form-row"><div><input placeholder="Email или телефон"></div><div><button class="green" style="width:100%;justify-content:center">Отправить приглашение</button></div></div></div>
+        </div>
+        <div class="card">
+          <h2>Приглашенные клиенты</h2>
+          <table class="table"><tr><th>Компания</th><th>Статус</th><th>Бонус</th><th>Этап</th></tr><tr><td>ООО Альфа</td><td><span class="badge">активный клиент</span></td><td>2 000</td><td>оплачено</td></tr><tr><td>ООО Бета</td><td><span class="badge blue">лид</span></td><td>0</td><td>в работе</td></tr><tr><td>ООО Гамма</td><td><span class="badge warn">ожидание</span></td><td>0</td><td>ожидает первой оплаты</td></tr></table>
+        </div>
+      </div>
+    </section>
+
+    <section id="services" class="screen">
+      <div class="card">
+        <h2>Услуги и сервисы</h2>
+        <p class="muted">Оставляем категории из текущего ЛК, но показываем их понятными карточками: что это, входит ли в договор, срок реакции и кнопка заказа.</p>
+        <div class="grid three">
+          <div class="card soft"><h3>Расширение тарифа</h3><p class="muted">Увеличить сервер, диски, backup, пользователей или SLA.</p><span class="badge blue">по заявке</span><div class="toolbar"><button class="primary">Заказать</button></div></div>
+          <div class="card soft"><h3>Сервисы 1С</h3><p class="muted">1С-Отчетность, ЭДО, контрагенты, подписи и другие сервисы.</p><span class="badge">доступно</span><div class="toolbar"><button class="primary">Подключить</button></div></div>
+          <div class="card soft"><h3>Готовые решения 1С</h3><p class="muted">Подбор и подключение типовых конфигураций и отраслевых решений.</p><span class="badge">каталог</span><div class="toolbar"><button class="primary">Открыть</button></div></div>
+          <div class="card soft"><h3>Доработка конфигурации 1С</h3><p class="muted">Отчет, обработка, печатная форма, обмен, автоматизация процесса.</p><span class="badge warn">оценка</span><div class="toolbar"><button class="primary">Описать задачу</button></div></div>
+          <div class="card soft"><h3>Услуги консультантов</h3><p class="muted">Консультации бухгалтера, методолога, специалиста по учету.</p><span class="badge blue">по часам</span><div class="toolbar"><button class="primary">Заказать</button></div></div>
+          <div class="card soft"><h3>Услуги IT-специалистов</h3><p class="muted">Серверы, рабочие места, кассы, принтеры, оборудование.</p><span class="badge blue">SLA</span><div class="toolbar"><button class="primary">Заказать</button></div></div>
+          <div class="card soft"><h3>Бухгалтерское сопровождение</h3><p class="muted">Аутсорсинг, отчетность, консультации, контроль учета.</p><span class="badge gray">доп. услуга</span><div class="toolbar"><button class="primary">Узнать условия</button></div></div>
+          <div class="card soft"><h3>Юридические услуги</h3><p class="muted">Договоры, консультации, документы, проверка контрагентов.</p><span class="badge gray">доп. услуга</span><div class="toolbar"><button class="primary">Заказать</button></div></div>
+          <div class="card soft"><h3>Лицензии 1С</h3><p class="muted">Конфигурации, клиентские лицензии, общий пул и пользователи.</p><span class="badge">активно</span><div class="toolbar"><button class="primary" onclick="showScreen('licenses')">Открыть</button></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="users" class="screen">
+      <div class="grid two">
+        <div class="card">
+          <h2>Пользователи и роли</h2>
+          <p class="muted">Привели текущую форму добавления пользователя к понятному мастеру: контактные данные → роль → контрагенты → базы 1С → подтверждение.</p>
+          <div class="role-grid"><div class="role"><b>Администратор</b><span class="muted">Все разделы</span></div><div class="role"><b>Руководитель</b><span class="muted">SLA, счета, проекты</span></div><div class="role"><b>Бухгалтер</b><span class="muted">Счета, акты, оплаты</span></div><div class="role"><b>Техспециалист</b><span class="muted">Тикеты, серверы, базы</span></div><div class="role"><b>Пользователь</b><span class="muted">Свои обращения и доступные базы</span></div></div>
+          <table class="table"><tr><th>Пользователь</th><th>Email</th><th>Роль</th><th>Базы</th><th>Статус</th></tr><tr><td>Мария Акопян</td><td>maria@example.ru</td><td>Руководитель</td><td>2</td><td><span class="badge">активен</span></td></tr><tr><td>Бухгалтерия</td><td>buh@example.ru</td><td>Бухгалтер</td><td>1</td><td><span class="badge">активен</span></td></tr><tr><td>Соболев Василий</td><td>tech@example.ru</td><td>Техспециалист</td><td>3</td><td><span class="badge blue">приглашен</span></td></tr></table>
+        </div>
+        <div class="card">
+          <h2>Добавить пользователя</h2>
+          <div class="tabs"><span class="tab active">1. Контакты</span><span class="tab">2. Роль</span><span class="tab">3. Контрагенты</span><span class="tab">4. Базы</span></div>
+          <div class="form">
+            <div class="form-row"><div><label>ФИО</label><input value="Иван Петров"></div><div><label>Должность</label><input value="Бухгалтер"></div></div>
+            <div class="form-row"><div><label>Email</label><input value="ivan@example.ru"></div><div><label>Телефон</label><input value="+7 999 000-00-00"></div></div>
+            <div class="form-row"><div><label>Логин</label><input value="ivan.petrov"></div><div><label>Пароль</label><input value="Сгенерировать автоматически"></div></div>
+            <div class="form-row"><div><label>Роль в кабинете</label><select><option>Пользователь</option><option>Бухгалтер</option><option>Техспециалист</option><option>Администратор клиента</option></select></div><div><label>Контрагент</label><select><option>ED ART · ИНН 0000000000</option><option>Плазма-Сервис · ИНН 7700123456</option></select></div></div>
+            <label>Доступ к базам 1С</label><select><option>1С Бухгалтерия</option><option>1С УНФ</option><option>Все базы контрагента</option></select>
+            <div class="toolbar"><button class="green">Создать пользователя</button><button>Сгенерировать доступы</button><button>Отправить приглашение</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h2>Матрица доступа</h2>
+        <p class="muted">Нужно, чтобы администратор клиента видел: кто к каким базам, контрагентам и документам имеет доступ.</p>
+        <table class="table"><tr><th>Пользователь</th><th>Контрагент</th><th>Бухгалтерия</th><th>УНФ</th><th>Счета</th><th>Договоры</th></tr><tr><td>Мария Акопян</td><td>ED ART</td><td>админ</td><td>админ</td><td>да</td><td>да</td></tr><tr><td>Бухгалтерия</td><td>ED ART</td><td>пользователь</td><td>нет</td><td>да</td><td>нет</td></tr><tr><td>Склад</td><td>ED ART</td><td>нет</td><td>пользователь</td><td>нет</td><td>нет</td></tr></table>
+      </div>
+    </section>
+
+    <section id="knowledge" class="screen">
+      <div class="card"><h2>База знаний</h2><div class="toolbar"><input class="search" placeholder="Найти инструкцию или ошибку..."/><button>1С</button><button>Серверы</button><button>Кассы</button><button>Интеграции</button></div><div class="grid three"><div class="card soft"><h3>Как подключиться к серверу 1С</h3><p class="muted">Инструкция для пользователей.</p></div><div class="card soft"><h3>Что делать, если не открывается база</h3><p class="muted">Первые шаги перед созданием тикета.</p></div><div class="card soft"><h3>Как передать доступ инженеру</h3><p class="muted">Безопасная передача доступов.</p></div></div></div>
+    </section>
+
+    <section id="settings" class="screen">
+      <div class="card"><h2>Настройки компании</h2><p class="muted">Профиль компании, уведомления, Telegram, email, контактные лица, юридические данные.</p><div class="form"><div class="form-row"><div><label>Компания</label><input value="ED ART"></div><div><label>ИНН</label><input value="0000000000"></div></div><div class="form-row"><div><label>Email для счетов</label><input value="plasma@t-sk.ru"></div><div><label>Telegram уведомления</label><input value="Не подключено"></div></div><button class="primary">Сохранить</button></div></div>
+    </section>
+  </main>
+</div>
+
+<div id="discussionModal" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:12;align-items:flex-start;justify-content:center;padding:24px;overflow:auto">
+  <div class="card" style="max-width:760px;width:100%;overflow:visible;margin:20px auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+      <h2 id="discussionTitle">Новое обращение</h2>
+      <button onclick="closeDiscussionModal()">✕</button>
+    </div>
+    <div class="hint">Это пример заполнения нового обращения по выбранному ресурсу или базе 1С. Переписку здесь не показываем — она уже есть в карточках обращений.</div>
+    <div class="form" style="margin-top:14px">
+      <div class="form-row">
+        <div>
+          <label>Контрагент</label>
+          <select>
+            <option>ED ART · ИНН 0000000000</option>
+            <option>Плазма-Сервис · ИНН 7700123456</option>
+            <option>Retail Group · ИНН 5400987654</option>
+          </select>
+        </div>
+        <div>
+          <label>Связанный ресурс / база</label>
+          <input id="newTicketResource" value="VPS для 1С #SRV-247090" readonly>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label>Тип обращения</label>
+          <select>
+            <option>Проблема с базой 1С</option>
+            <option>Проблема с сервером / доступом</option>
+            <option>Вопрос по backup</option>
+            <option>Нужна консультация инженера</option>
+          </select>
+        </div>
+        <div>
+          <label>Приоритет</label>
+          <select>
+            <option>Обычный</option>
+            <option selected>Срочный</option>
+            <option>Критичный простой</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Тема обращения</label>
+      <input id="newTicketSubject" value="Не открывается база 1С Бухгалтерия на сервере #SRV-247090">
+
+      <label>Описание проблемы</label>
+      <textarea>При попытке открыть базу 1С Бухгалтерия появляется ошибка подключения. Проблема возникла сегодня утром примерно в 09:30. У нескольких пользователей база не открывается. Просим проверить сервер, доступы и состояние базы.</textarea>
+
+      <div class="form-row">
+        <div>
+          <label>Кого затронуло</label>
+          <select>
+            <option selected>Несколько пользователей</option>
+            <option>Один пользователь</option>
+            <option>Вся компания</option>
+          </select>
+        </div>
+        <div>
+          <label>Желаемый способ связи</label>
+          <select>
+            <option selected>Ответ в личном кабинете</option>
+            <option>Телефон</option>
+            <option>Email</option>
+            <option>Telegram</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label>Файл / скриншот ошибки</label>
+          <input type="file">
+        </div>
+        <div>
+          <label>Входит в договор</label>
+          <input value="AI проверит по договору и SLA после отправки" readonly>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button>Сохранить черновик</button>
+        <button>Приложить файл</button>
+        <button class="green" onclick="closeDiscussionModal()">Создать обращение в 1С</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="paymentModal" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:11;align-items:flex-start;justify-content:center;padding:24px;overflow:auto">
+  <div class="card" style="max-width:760px;width:100%;overflow:visible;margin:20px auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 id="paymentModalTitle">Оплата</h2><button onclick="closePaymentModal()">✕</button></div>
+    <div class="hint">Форма открывается поверх дашборда, не увеличивает высоту раздела “Счета и оплаты” и не сдвигает содержимое вниз.</div>
+    <div class="form">
+      <div class="form-row">
+        <div><label>Контрагент</label><select><option>ED ART · ИНН 0000000000</option><option>Плазма-Сервис · ИНН 7700123456</option><option>Retail Group · ИНН 5400987654</option></select></div>
+        <div><label>Тип операции</label><select id="paymentOperation"><option>Пополнить баланс</option><option>Оплатить счет №237</option><option>Сформировать счет на оплату</option><option>Оплатить аренду ресурсов</option></select></div>
+      </div>
+      <div class="form-row">
+        <div><label>Сумма</label><input value="10000"></div>
+        <div><label>Способ оплаты</label><select><option>Visa •••• 4589</option><option>Mastercard •••• 1124</option><option>Новая банковская карта</option><option>Счет на оплату для юрлица</option></select></div>
+      </div>
+      <label>Назначение платежа</label>
+      <select><option>Пополнение баланса</option><option>Продление VPS для 1С #SRV-247090</option><option>Сопровождение 1С</option><option>Аренда ресурсов</option><option>Другое</option></select>
+      <label>Комментарий</label>
+      <textarea placeholder="Например: сформировать счет на оплату от выбранного контрагента, указать договор, услугу или ресурс..."></textarea>
+      <div class="toolbar"><button class="green" onclick="closePaymentModal()">Подтвердить</button><button onclick="closePaymentModal()">Отмена</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:10;align-items:flex-start;justify-content:center;padding:24px;overflow:auto">
+  <div class="card" style="max-width:720px;width:100%;overflow:visible;margin:20px auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2>Создать обращение</h2><button onclick="closeModal()">✕</button></div>
+    <div class="hint">AI сначала предложит категорию и статьи, но заявку создаст только после подтверждения клиента.</div>
+    <div class="form"><div class="form-row"><div><label>Тип обращения</label><select><option>Проблема с 1С</option><option>Сервер / доступ / backup</option><option>Касса / оборудование</option><option>Запрос консультации</option></select></div><div><label>Приоритет</label><select><option>Обычный</option><option>Срочный</option><option>Критичный простой</option></select></div></div><label>Тема</label><input placeholder="Например: не открывается база 1С"/><label>Описание</label><textarea placeholder="Опишите проблему: что делали, какая ошибка, кого затронуло..."></textarea><div class="form-row"><div><label>Связанная база / сервер</label><select><option>Бухгалтерия на SRV-247090</option><option>УНФ на SRV-247090</option><option>Не знаю</option></select></div><div><label>Файл</label><input type="file"></div></div><button class="green" onclick="closeModal()">Создать обращение в 1С</button></div>
+  </div>
+</div>
+<script>
+const titles={dashboard:'Главная',counterparties:'Контрагенты',tickets:'Обращения',deals:'Сделки и проекты',contracts:'Договоры и SLA',billing:'Счета и оплаты',documents:'Акты и документы',offers:'Коммерческие предложения',servers:'Серверы / ресурсы',bases1c:'Базы 1С',licenses:'Лицензии 1С',sessions:'Сеансы 1С',orders:'Аренда ресурсов',shipments:'Заказы и отгрузки',notifications:'Уведомления',bonuses:'Бонусы',referral:'Реферальная программа',services:'Заказать услугу',users:'Пользователи и роли',knowledge:'База знаний',settings:'Настройки'};
+let currentScreen='dashboard';
+const screenScrolls={dashboard:0};
+const screenHistory=[];
+function setActiveScreen(id, scrollTop=0, behavior='auto'){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.screen===id));
+  document.getElementById('pageTitle').textContent=titles[id]||'Личный кабинет';
+  currentScreen=id;
+  requestAnimationFrame(()=>window.scrollTo({top:scrollTop,behavior}));
+}
+function showScreen(id){
+  if(id===currentScreen) return;
+  screenScrolls[currentScreen]=window.scrollY || window.pageYOffset || 0;
+  screenHistory.push({screen:currentScreen, scroll:screenScrolls[currentScreen]});
+  setActiveScreen(id, screenScrolls[id] || 0, 'smooth');
+}
+function goBack(){
+  if(!screenHistory.length){ setActiveScreen('dashboard', screenScrolls.dashboard || 0, 'smooth'); return; }
+  const prev=screenHistory.pop();
+  screenScrolls[currentScreen]=window.scrollY || window.pageYOffset || 0;
+  setActiveScreen(prev.screen, prev.scroll || 0, 'smooth');
+}
+document.querySelectorAll('.nav-btn[data-screen]').forEach(b=>b.addEventListener('click',()=>showScreen(b.dataset.screen)));
+function openBaseCard(type){
+  const data={
+    buh:{title:'Карточка базы: 1С Бухгалтерия',subtitle:'База бухгалтерского учета. Информация только по базе 1С, без параметров сервера.',config:'Бухгалтерия предприятия',release:'3.0.160.21',type:'SQL',size:'18.4 GB',backup:'Сегодня, 03:00',auto:'Включено',web:'Активна',status:'Работает',users:`<tr><th>Пользователь</th><th>Роль в базе</th><th>Доступ</th></tr><tr><td>Мария Акопян</td><td>Администратор</td><td><span class="badge">разрешен</span></td></tr><tr><td>Бухгалтерия</td><td>Пользователь</td><td><span class="badge">разрешен</span></td></tr><tr><td>Ольга</td><td>Пользователь</td><td><span class="badge">разрешен</span></td></tr>`},
+    unf:{title:'Карточка базы: 1С УНФ',subtitle:'База управленческого учета. Показываем только параметры базы и доступы.',config:'Управление нашей фирмой',release:'3.0.11.104',type:'SQL',size:'9.7 GB',backup:'Сегодня, 03:00',auto:'По согласованию',web:'Активна',status:'Работает',users:`<tr><th>Пользователь</th><th>Роль в базе</th><th>Доступ</th></tr><tr><td>Мария Акопян</td><td>Администратор</td><td><span class="badge">разрешен</span></td></tr><tr><td>Менеджер продаж</td><td>Пользователь</td><td><span class="badge">разрешен</span></td></tr><tr><td>Склад</td><td>Пользователь</td><td><span class="badge">разрешен</span></td></tr>`},
+    zup:{title:'Карточка базы: 1С ЗУП',subtitle:'База зарплаты и кадров. В карточке нет IP, CPU/RAM/SSD и тарифа сервера.',config:'Зарплата и управление персоналом',release:'3.1.34.57',type:'SQL',size:'6.2 GB',backup:'Требует проверки',auto:'Выключено',web:'Ограничена',status:'Нужна проверка backup',users:`<tr><th>Пользователь</th><th>Роль в базе</th><th>Доступ</th></tr><tr><td>HR</td><td>Пользователь</td><td><span class="badge">разрешен</span></td></tr><tr><td>Руководитель</td><td>Просмотр</td><td><span class="badge">разрешен</span></td></tr>`}
+  };
+  const d=data[type]||data.buh;
+  const set=(id,val)=>{const el=document.getElementById(id); if(el) el.textContent=val};
+  set('baseTitle',d.title); set('baseSubtitle',d.subtitle); set('baseConfig',d.config); set('baseRelease',d.release); set('baseType',d.type); set('baseSize',d.size); set('baseBackup',d.backup); set('baseAutoupdate',d.auto); set('baseWeb',d.web); set('baseStatus',d.status);
+  const users=document.getElementById('baseUsersTable'); if(users) users.innerHTML=d.users;
+  const card=document.getElementById('baseCard'); if(card) card.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function openConfigCard(type){
+  const data={
+    buh:{
+      title:'Карточка конфигурации: 1С Бухгалтерия', subtitle:'Основная конфигурация клиента. Использует общий пул клиентских лицензий.', status:'Активна', bases:'1', users:'4', name:'1С Бухгалтерия', server:'#SRV-247090', shared:'Да, пользователь может использовать ту же лицензию и в 1С УНФ', free:'3 лицензии',
+      basesRows:`<tr><th>База</th><th>Конфигурация</th><th>Статус</th><th></th></tr><tr><td>1С Бухгалтерия</td><td>Бухгалтерия предприятия</td><td><span class="badge">активна</span></td><td><button class="message-icon small" onclick="openDiscussionModal('1С Бухгалтерия')">💬</button></td></tr>`,
+      usersRows:`<tr><th>Пользователь</th><th>Доступ</th><th>Лицензия</th></tr><tr><td>Мария Акопян</td><td>Администратор</td><td>1 из общего пула</td></tr><tr><td>Бухгалтерия</td><td>Пользователь</td><td>1 из общего пула</td></tr><tr><td>Ольга</td><td>Пользователь</td><td>1 из общего пула</td></tr><tr><td>Иван</td><td>Техспециалист</td><td>1 из общего пула</td></tr>`
+    },
+    unf:{
+      title:'Карточка конфигурации: 1С УНФ', subtitle:'Дополнительная конфигурация, подключенная к тому же пулу клиентских лицензий. Цена пула не изменилась.', status:'Новая', bases:'1', users:'3', name:'1С УНФ', server:'#SRV-247090', shared:'Да, УНФ использует тот же пул 10 клиентских лицензий', free:'3 лицензии',
+      basesRows:`<tr><th>База</th><th>Конфигурация</th><th>Статус</th><th></th></tr><tr><td>1С УНФ</td><td>УНФ</td><td><span class="badge blue">активна</span></td><td><button class="message-icon small" onclick="openDiscussionModal('1С УНФ')">💬</button></td></tr>`,
+      usersRows:`<tr><th>Пользователь</th><th>Доступ</th><th>Лицензия</th></tr><tr><td>Мария Акопян</td><td>Администратор</td><td>1 из общего пула</td></tr><tr><td>Менеджер продаж</td><td>Пользователь</td><td>1 из общего пула</td></tr><tr><td>Склад</td><td>Пользователь</td><td>1 из общего пула</td></tr>`
+    }
+  };
+  const d=data[type]||data.buh;
+  const set=(id,val)=>{const el=document.getElementById(id); if(el) el.textContent=val};
+  set('configTitle',d.title); set('configSubtitle',d.subtitle); set('configStatus',d.status); set('configBasesCount',d.bases); set('configUsersCount',d.users); set('configName',d.name); set('configSharedText',d.shared); set('configFreeText',d.free);
+  const bases=document.getElementById('configBasesTable'); if(bases) bases.innerHTML=d.basesRows;
+  const users=document.getElementById('configUsersTable'); if(users) users.innerHTML=d.usersRows;
+  const card=document.getElementById('configCard'); if(card){ card.style.display='block'; card.scrollIntoView({behavior:'smooth',block:'start'}); }
+}
+function scrollToConfigList(){const el=document.getElementById('configListCard'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'});}
+let licenseQty=10;
+const licenseUsed=7;
+const licenseUnitPrice=1500;
+function formatRub(n){return new Intl.NumberFormat('ru-RU').format(n)+' ₽'}
+function updateLicenseUI(){
+  if(licenseQty<licenseUsed) licenseQty=licenseUsed;
+  const price=licenseQty*licenseUnitPrice;
+  const free=licenseQty-licenseUsed;
+  const progress=Math.min(100, Math.round((licenseUsed/licenseQty)*100));
+  const deltaQty=licenseQty-10;
+  const deltaPrice=price-15000;
+  const set=(id,val)=>{const el=document.getElementById(id); if(el) el.textContent=val};
+  set('licenseMetricTotal',licenseQty);
+  set('licenseMetricPrice',formatRub(price));
+  set('licenseUsedText',`${licenseUsed} / ${licenseQty}`);
+  set('licensePoolTotal',licenseQty);
+  set('licensePoolPrice',formatRub(price));
+  set('licensePoolUsedText',`${licenseUsed} из ${licenseQty}`);
+  set('licenseStepperCount',licenseQty);
+  set('licenseFreeCount',free);
+  set('licenseNewTotal',licenseQty);
+  set('licenseNewPrice',formatRub(price));
+  set('licenseTableTotal',licenseQty);
+  set('licenseTablePrice',formatRub(price));
+  const formPrice=document.getElementById('licenseFormNewPrice'); if(formPrice) formPrice.value=formatRub(price);
+  const progressEl=document.getElementById('licenseProgress'); if(progressEl) progressEl.style.width=progress+'%';
+  let delta='без изменений';
+  if(deltaQty>0) delta=`+${deltaQty} лицензий · +${formatRub(deltaPrice)}`;
+  if(deltaQty<0) delta=`${deltaQty} лицензий · ${formatRub(deltaPrice)}`;
+  set('licenseDelta',delta);
+  const note=document.getElementById('licenseCalcNote');
+  if(note){
+    if(deltaQty>0) note.textContent='Вы увеличиваете общий пул. Новые лицензии смогут использоваться и в 1С Бухгалтерии, и в 1С УНФ.';
+    else if(deltaQty<0) note.textContent='Вы уменьшаете общий пул. Система не даст уменьшить ниже 7 используемых лицензий.';
+    else note.textContent='Количество конфигураций не меняет стоимость клиентских лицензий. Стоимость меняется только при изменении количества клиентских лицензий.';
+  }
+}
+function changeLicenses(delta){licenseQty+=delta; updateLicenseUI()}
+function setLicenses(qty){licenseQty=qty; updateLicenseUI()}
+updateLicenseUI();
+function selectCounterparty(name, inn, cardId){
+  document.getElementById('selectedCounterpartyName').textContent=name;
+  document.getElementById('selectedCounterpartyInn').textContent=inn;
+  const offerCp=document.getElementById('offerCounterparty'); if(offerCp) offerCp.textContent=name;
+  document.querySelectorAll('.cp-card').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.cp-card .primary').forEach(btn=>btn.textContent='Выбрано');
+  document.querySelectorAll('.cp-card .cp-actions button:first-child').forEach(btn=>{ if(!btn.classList.contains('primary')){} });
+  document.querySelectorAll('.cp-card').forEach(c=>{
+    const first=c.querySelector('.cp-actions button');
+    if(first){ first.classList.remove('primary'); first.textContent='Выбрать'; }
+  });
+  document.querySelectorAll(`[id$="${cardId.split('-').pop()}"]`).forEach(c=>c.classList.add('active'));
+  const target=document.getElementById(cardId); if(target){ target.classList.add('active'); const btn=target.querySelector('.cp-actions button'); if(btn){ btn.classList.add('primary'); btn.textContent='Выбрано'; } }
+  const mate=Array.from(document.querySelectorAll('.cp-card')).find(c=>c.id.endsWith(cardId.split('-').pop()) && c.id!==cardId);
+  if(mate){ mate.classList.add('active'); const btn=mate.querySelector('.cp-actions button'); if(btn){ btn.classList.add('primary'); btn.textContent='Выбрано'; } }
+}
+function openDiscussionModal(title){
+  document.getElementById('discussionTitle').textContent='Новое обращение: '+title;
+  const resource=document.getElementById('newTicketResource');
+  const subject=document.getElementById('newTicketSubject');
+  if(resource) resource.value=title;
+  if(subject) subject.value='Проблема по объекту: '+title;
+  document.getElementById('discussionModal').style.display='flex';
+}
+function closeDiscussionModal(){document.getElementById('discussionModal').style.display='none'}
+function openModal(){document.getElementById('modal').style.display='flex'}
+function closeModal(){document.getElementById('modal').style.display='none'}
+function openPaymentModal(mode){
+  const title=document.getElementById('paymentModalTitle');
+  const op=document.getElementById('paymentOperation');
+  if(mode==='invoice'){
+    title.textContent='Счет на оплату';
+    if(op) op.value='Сформировать счет на оплату';
+  } else {
+    title.textContent='Оплата картой';
+    if(op) op.value='Пополнить баланс';
+  }
+  document.getElementById('paymentModal').style.display='flex';
+}
+function closePaymentModal(){document.getElementById('paymentModal').style.display='none'}
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+
+
+/* Hide visual scrollbar in the left sidebar while keeping scrolling available */
+.sidebar-scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.sidebar-scrollbar-hidden::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* Strong sidebar scrollbar hiding fix for Chromium/Edge/Firefox/Safari.
+   Scrolling is preserved, only the visible scrollbar is hidden. */
+aside.sidebar-scrollbar-hidden,
+.sidebar-scrollbar-hidden,
+.sidebar-scrollbar-hidden nav {
+  overflow-y: auto;
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+aside.sidebar-scrollbar-hidden::-webkit-scrollbar,
+.sidebar-scrollbar-hidden::-webkit-scrollbar,
+.sidebar-scrollbar-hidden nav::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+/* v4: hide sidebar scrollbar robustly, keep menu scrolling */
+.lk-sidebar-scroll,
+aside.lk-sidebar-scroll,
+.sidebar-scrollbar-hidden {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.lk-sidebar-scroll::-webkit-scrollbar,
+.lk-sidebar-scroll *::-webkit-scrollbar,
+aside.lk-sidebar-scroll::-webkit-scrollbar,
+.sidebar-scrollbar-hidden::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+  background: transparent !important;
+}
+
+
+/* v5: readability pass — increase small interface text without redesigning headers/buttons */
+html {
+  font-size: 16px !important;
+}
+
+body {
+  font-size: 16px;
+}
+
+/* Figma Make used many 10px/12px labels; they were hard to read on desktop. */
+.text-\[10px\] {
+  font-size: 0.75rem !important; /* 12px */
+  line-height: 1.45 !important;
+}
+
+.text-xs:not(button):not(.badge):not([role="button"]) {
+  font-size: 0.8125rem !important; /* 13px */
+  line-height: 1.5 !important;
+}
+
+.text-sm:not(button):not([role="button"]) {
+  font-size: 0.9375rem !important; /* 15px */
+  line-height: 1.55 !important;
+}
+
+/* Tables, card descriptions, form fields and sidebar descriptions need better readability. */
+main table,
+main td,
+main th,
+main p,
+main span,
+main label,
+main input,
+main select,
+main textarea,
+aside p,
+aside span,
+aside label {
+  line-height: 1.5;
+}
+
+main td,
+main input,
+main select,
+main textarea {
+  font-size: 0.9375rem !important; /* 15px */
+}
+
+main th {
+  font-size: 0.75rem !important; /* 12px */
+}
+
+/* Keep badges compact but readable. */
+.badge,
+[aria-label="badge"] {
+  font-size: 0.75rem;
+}
+
+
+/* v6: sidebar readability pass — increase left navigation and client summary text */
+aside.lk-sidebar-scroll {
+  width: 18rem !important;
+}
+aside.lk-sidebar-scroll button {
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+}
+aside.lk-sidebar-scroll p,
+aside.lk-sidebar-scroll span {
+  line-height: 1.45 !important;
+}
+aside.lk-sidebar-scroll .text-\[10px\] {
+  font-size: 12px !important;
+}
+aside.lk-sidebar-scroll .text-xs {
+  font-size: 13px !important;
+}
+aside.lk-sidebar-scroll .text-sm {
+  font-size: 15px !important;
+}
