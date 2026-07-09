@@ -1,141 +1,101 @@
 ﻿
 (function(){
-  const money = v => new Intl.NumberFormat('ru-RU').format(Math.max(0, Math.round(Number(v)||0))) + ' ₽';
-  const parseMoney = v => Number(String(v||'').replace(/[^0-9]/g,'')) || 0;
-  const docs = [
-    {label:'Заказ №9012 / Счёт №237', amount:45000, doc:'Счёт №237 от 09.05.2026'},
-    {label:'Заказ №8997 / Счёт №233', amount:12900, doc:'Счёт №233 от 01.05.2026'},
-    {label:'Пополнение баланса', amount:10000, doc:'Без документа'},
-    {label:'Оплата аренды ресурсов', amount:23791, doc:'Аренда ресурсов'}
+  const docs=[
+    {label:'Заказ №9012 / Счёт №237', amount:45000},
+    {label:'Заказ №8997 / Счёт №233', amount:12900},
+    {label:'Пополнение баланса', amount:10000},
+    {label:'Оплата аренды ресурсов', amount:23791}
   ];
-  const bonusesAvail = 4800;
-  const balanceAvail = 23791;
-  function normalizeAmount(raw){ return parseMoney(raw) || 0; }
-  function findDocFromText(text, amount){
-    if(/237/.test(text)) return docs[0];
-    if(/233/.test(text)) return docs[1];
-    const byAmount = docs.find(d => d.amount === normalizeAmount(amount));
-    return byAmount || {label:text || 'Документ', amount:normalizeAmount(amount), doc:text || 'Документ'};
+  const bonusesAvail=4800, balanceAvail=23791;
+  const money=v=>new Intl.NumberFormat('ru-RU').format(Math.max(0,Math.round(Number(v)||0)))+' ₽';
+  const parseMoney=v=>Number(String(v||'').replace(/[^0-9]/g,''))||0;
+  function cleanText(el){return ((el&&el.textContent)||'').replace(/\s+/g,' ').trim();}
+  function nearestContext(btn){return btn.closest('tr') || btn.closest('[data-document-row]') || btn.closest('[data-order-row]') || btn.closest('article') || btn.closest('section') || btn.closest('.rounded-xl') || btn.parentElement || btn;}
+  function docByText(text, amount){
+    if(/237/.test(text)||/9012/.test(text)) return docs[0];
+    if(/233/.test(text)||/8997/.test(text)) return docs[1];
+    const n=parseMoney(amount);
+    if(n){ const byAmount=docs.find(d=>d.amount===n); return byAmount || {label:text||'Выбранный документ',amount:n}; }
+    return docs[0];
   }
-  function openPayModal(payload){
-    document.querySelectorAll('.lk-pay-modal-backdrop').forEach(el=>el.remove());
-    const selected = findDocFromText(payload.basis, payload.amount);
-    const wrap = document.createElement('div');
-    wrap.className = 'lk-pay-modal-backdrop';
-    wrap.innerHTML = `
-      <div class="lk-pay-modal" role="dialog" aria-modal="true">
-        <div class="lk-pay-modal-head">
-          <div><h2 class="lk-pay-modal-title">Оплата</h2><p class="lk-pay-modal-sub">Сумма и основание подставлены из выбранного документа. Их можно изменить.</p></div>
-          <button class="lk-pay-modal-close" type="button" aria-label="Закрыть">×</button>
-        </div>
-        <div class="lk-pay-modal-body">
-          <div class="lk-pay-grid">
-            <div class="lk-pay-field"><label>Основание платежа</label><select id="lkPayBasis">${docs.map(d=>`<option value="${d.label}" data-amount="${d.amount}" ${d.label===selected.label?'selected':''}>${d.label} · остаток ${money(d.amount)}</option>`).join('')}</select></div>
-            <div class="lk-pay-field"><label>Сумма к оплате</label><input id="lkPayAmount" value="${money(selected.amount).replace(' ₽','')}" inputmode="numeric"></div>
-          </div>
-          <div class="lk-pay-sources">
-            <div class="lk-pay-source">
-              <div class="lk-pay-source-top"><span class="lk-pay-source-name">Бонусы</span><span class="lk-pay-source-avail">Доступно ${money(bonusesAvail)}</span></div>
-              <div class="lk-pay-source-row"><input id="lkUseBonus" class="lk-pay-switch" type="checkbox"><input id="lkBonusAmount" class="lk-pay-source-input" value="${money(bonusesAvail).replace(' ₽','')}" disabled inputmode="numeric"></div>
-            </div>
-            <div class="lk-pay-source">
-              <div class="lk-pay-source-top"><span class="lk-pay-source-name">Баланс</span><span class="lk-pay-source-avail">Доступно ${money(balanceAvail)}</span></div>
-              <div class="lk-pay-source-row"><input id="lkUseBalance" class="lk-pay-switch" type="checkbox"><input id="lkBalanceAmount" class="lk-pay-source-input" value="${money(balanceAvail).replace(' ₽','')}" disabled inputmode="numeric"></div>
-            </div>
-          </div>
-          <div class="lk-pay-calc">
-            <div><span>Документ</span><b id="lkCalcDoc">${money(selected.amount)}</b></div>
-            <div><span>Бонусы</span><b id="lkCalcBonus">− 0 ₽</b></div>
-            <div><span>Баланс</span><b id="lkCalcBalance">− 0 ₽</b></div>
-            <div><span>Остаток</span><b id="lkCalcRest">${money(selected.amount)}</b></div>
-          </div>
-          <div class="lk-pay-grid">
-            <div class="lk-pay-field"><label>Чем доплатить остаток</label><select id="lkPayMethod"><option>Картой</option><option>СБП</option><option>Счётом для юрлица</option><option>Новой картой</option></select></div>
-            <div class="lk-pay-field"><label>Комментарий</label><input placeholder="Например: оплатить сегодня"></div>
-          </div>
-          <div class="lk-pay-toast" id="lkPayToast"></div>
-        </div>
-        <div class="lk-pay-actions">
-          <button type="button" id="lkPaySubmit" class="primary">Оплатить</button>
-          <button type="button" id="lkPaySbpButton" class="lk-pay-sbp-btn lk-pay-green-btn"><span class="lk-sbp-logo" aria-hidden="true"></span><span class="lk-sbp-text">Оплатить по СБП</span></button>
-          <button type="button" id="lkDownloadInvoice">Скачать счёт</button>
-          <button type="button" id="lkDownloadDoc">Скачать документ</button>
-        </div>
-      </div>`;
+  function amountFromButton(btn){
+    const label=cleanText(btn);
+    const labelAmount=label.match(/\d[\d\s]*₽/);
+    if(labelAmount) return parseMoney(labelAmount[0]);
+    const ctx=nearestContext(btn); const text=cleanText(ctx);
+    if(/237/.test(text)||/9012/.test(text)) return 45000;
+    if(/233/.test(text)||/8997/.test(text)) return 12900;
+    const amounts=(text.match(/\d[\d\s]*₽/g)||[]).map(parseMoney).filter(v=>v>0);
+    return amounts.length ? Math.max.apply(null,amounts) : 45000;
+  }
+  function basisFromButton(btn){
+    const text=cleanText(nearestContext(btn));
+    if(/237/.test(text)||/9012/.test(text)) return docs[0].label;
+    if(/233/.test(text)||/8997/.test(text)) return docs[1].label;
+    const m=text.match(/(Заказ\s*№\s*\d+[^.]{0,80}?Сч[её]т\s*№\s*\d+|Сч[её]т\s*№\s*\d+|Заказ\s*№\s*\d+)/i);
+    return m?m[0]:(text.slice(0,120)||'Выбранный документ');
+  }
+  function isPayButton(el){
+    if(!el || el.closest('.lk3-pay-modal')) return false;
+    const text=cleanText(el);
+    return /^Оплатить(\s|$)/i.test(text) && !/Пополнить/i.test(text);
+  }
+  function openPaymentModal(payload={}){
+    document.querySelectorAll('.lk3-pay-backdrop,.lk2-pay-backdrop,.lk-pay-modal-backdrop').forEach(el=>el.remove());
+    const selected=docByText(String(payload.basis||''), payload.amount);
+    const wrap=document.createElement('div'); wrap.className='lk3-pay-backdrop';
+    wrap.innerHTML=`<div class="lk3-pay-modal" role="dialog" aria-modal="true">
+      <div class="lk3-pay-head"><div><h2 class="lk3-pay-title">Оплата</h2><p class="lk3-pay-sub">Сумма и основание подставлены из выбранного документа. Их можно изменить.</p></div><button class="lk3-pay-close" type="button" aria-label="Закрыть">×</button></div>
+      <div class="lk3-pay-body">
+        <div class="lk3-pay-grid"><div class="lk3-field"><label>Основание платежа</label><select id="lk3Basis">${docs.map(d=>`<option value="${d.label}" data-amount="${d.amount}" ${d.label===selected.label?'selected':''}>${d.label} · остаток ${money(d.amount)}</option>`).join('')}</select></div><div class="lk3-field"><label>Сумма к оплате</label><input id="lk3Amount" value="${String(selected.amount)}" inputmode="numeric"></div></div>
+        <div class="lk3-sources"><div class="lk3-source"><div class="lk3-source-top"><span class="lk3-source-name">Бонусы</span><span class="lk3-source-avail">Доступно ${money(bonusesAvail)}</span></div><div class="lk3-source-row"><input id="lk3UseBonus" class="lk3-switch" type="checkbox" aria-label="Списать бонусы"><input id="lk3BonusAmount" class="lk3-source-amount" value="${String(bonusesAvail)}" disabled inputmode="numeric"></div></div><div class="lk3-source"><div class="lk3-source-top"><span class="lk3-source-name">Баланс</span><span class="lk3-source-avail">Доступно ${money(balanceAvail)}</span></div><div class="lk3-source-row"><input id="lk3UseBalance" class="lk3-switch" type="checkbox" aria-label="Списать с баланса"><input id="lk3BalanceAmount" class="lk3-source-amount" value="${String(balanceAvail)}" disabled inputmode="numeric"></div></div></div>
+        <div class="lk3-calc"><div><span>Документ</span><b id="lk3CalcDoc"></b></div><div><span>Бонусы</span><b id="lk3CalcBonus"></b></div><div><span>Баланс</span><b id="lk3CalcBalance"></b></div><div><span>Остаток</span><b id="lk3CalcRest"></b></div></div>
+        <div class="lk3-pay-grid"><div class="lk3-field" id="lk3MethodField"><label>Чем доплатить остаток</label><select id="lk3Method"><option>Картой</option><option>СБП</option><option>Счётом для юрлица</option><option>Новой картой</option></select></div><div class="lk3-field"><label>Комментарий</label><input placeholder="Например: оплатить сегодня"></div></div>
+        <div class="lk3-toast" id="lk3Toast"></div>
+      </div>
+      <div class="lk3-pay-actions"><button type="button" id="lk3Submit" class="lk3-primary">Оплатить</button><button type="button" id="lk3Sbp" class="lk3-sbp"><span class="lk3-sbp-logo" aria-hidden="true"></span><span id="lk3SbpText">Оплатить по СБП</span></button><button type="button" id="lk3Invoice">Скачать счёт</button><button type="button" id="lk3Close">Закрыть</button></div>
+    </div>`;
     document.body.appendChild(wrap);
-    const $ = id => wrap.querySelector(id);
-    const basis = $('#lkPayBasis'), amount = $('#lkPayAmount'), useBonus = $('#lkUseBonus'), bonusAmount = $('#lkBonusAmount'), useBalance = $('#lkUseBalance'), balanceAmount = $('#lkBalanceAmount'), method = $('#lkPayMethod');
+    const q=s=>wrap.querySelector(s);
+    const basis=q('#lk3Basis'), amount=q('#lk3Amount'), useBonus=q('#lk3UseBonus'), bonus=q('#lk3BonusAmount'), useBalance=q('#lk3UseBalance'), balance=q('#lk3BalanceAmount'), method=q('#lk3Method'), methodField=q('#lk3MethodField');
     function recalc(){
-      const total = parseMoney(amount.value);
-      let b = useBonus.checked ? Math.min(parseMoney(bonusAmount.value)||bonusesAvail, bonusesAvail, total) : 0;
-      let bal = useBalance.checked ? Math.min(parseMoney(balanceAmount.value)||balanceAvail, balanceAvail, Math.max(0,total-b)) : 0;
-      const rest = Math.max(0,total-b-bal);
-      $('#lkCalcDoc').textContent = money(total);
-      $('#lkCalcBonus').textContent = '− ' + money(b);
-      $('#lkCalcBalance').textContent = '− ' + money(bal);
-      $('#lkCalcRest').textContent = money(rest);
-      $('#lkPaySubmit').textContent = rest > 0 ? `Оплатить остаток ${money(rest)}` : 'Подтвердить списание';
-      const sbpBtn = $('#lkPaySbpButton');
-      const sbpText = sbpBtn && sbpBtn.querySelector('.lk-sbp-text');
-      if(sbpBtn){
-        sbpBtn.disabled = rest <= 0;
-        sbpBtn.style.opacity = rest > 0 ? '1' : '.55';
-      }
-      if(sbpText) sbpText.textContent = rest > 0 ? `Оплатить по СБП ${money(rest)}` : 'СБП не требуется';
-      method.closest('.lk-pay-field').style.display = rest > 0 ? '' : 'none';
+      const total=parseMoney(amount.value); let b=0, bal=0;
+      if(useBonus.checked) b=Math.min(parseMoney(bonus.value)||0, bonusesAvail, total);
+      if(useBalance.checked) bal=Math.min(parseMoney(balance.value)||0, balanceAvail, Math.max(0,total-b));
+      const rest=Math.max(0,total-b-bal);
+      q('#lk3CalcDoc').textContent=money(total); q('#lk3CalcBonus').textContent='− '+money(b); q('#lk3CalcBalance').textContent='− '+money(bal); q('#lk3CalcRest').textContent=money(rest);
+      q('#lk3Submit').textContent=rest>0?'Оплатить остаток '+money(rest):'Подтвердить списание';
+      q('#lk3SbpText').textContent=rest>0?'Оплатить по СБП '+money(rest):'СБП не требуется';
+      q('#lk3Sbp').disabled=rest<=0; q('#lk3Sbp').style.opacity=rest>0?'1':'.55'; methodField.style.display=rest>0?'':'none';
     }
-    basis.addEventListener('change', () => { const opt = basis.selectedOptions[0]; amount.value = money(opt.dataset.amount).replace(' ₽',''); recalc(); });
-    [amount, bonusAmount, balanceAmount].forEach(inp=>inp.addEventListener('input', recalc));
-    useBonus.addEventListener('change', () => { bonusAmount.disabled = !useBonus.checked; if(useBonus.checked) bonusAmount.value = String(Math.min(bonusesAvail,parseMoney(amount.value))); recalc(); });
-    useBalance.addEventListener('change', () => { balanceAmount.disabled = !useBalance.checked; if(useBalance.checked) balanceAmount.value = String(Math.min(balanceAvail,parseMoney(amount.value))); recalc(); });
-    wrap.querySelector('.lk-pay-modal-close').onclick = () => wrap.remove();
-    wrap.addEventListener('click', e => { if(e.target === wrap) wrap.remove(); });
-    $('#lkPaySubmit').onclick = () => { const rest = parseMoney($('#lkCalcRest').textContent); const msg = rest ? `К оплате ${money(rest)} способом “${method.value}”.` : 'Документ полностью закрывается бонусами и балансом.'; const toast=$('#lkPayToast'); toast.textContent=msg; toast.classList.add('show'); };
-    const sbpButton = $('#lkPaySbpButton');
-    if(sbpButton){
-      sbpButton.onclick = () => {
-        const rest = parseMoney($('#lkCalcRest').textContent);
-        const toast=$('#lkPayToast');
-        if(method) method.value = 'СБП';
-        toast.textContent = rest > 0 ? `Переход к оплате по СБП на сумму ${money(rest)}.` : 'Сумма полностью закрывается бонусами и балансом. СБП не требуется.';
-        toast.classList.add('show');
-      };
-    }
-    $('#lkDownloadInvoice').onclick = () => { const toast=$('#lkPayToast'); toast.textContent='Счёт подготовлен к скачиванию.'; toast.classList.add('show'); };
-    $('#lkDownloadDoc').onclick = () => { const toast=$('#lkPayToast'); toast.textContent='Документ подготовлен к скачиванию.'; toast.classList.add('show'); };
+    function toast(msg){const t=q('#lk3Toast'); t.textContent=msg; t.classList.add('show');}
+    basis.addEventListener('change',()=>{const opt=basis.selectedOptions[0]; amount.value=String(opt.dataset.amount||''); recalc();});
+    [amount,bonus,balance].forEach(el=>el.addEventListener('input',recalc));
+    useBonus.addEventListener('change',()=>{bonus.disabled=!useBonus.checked;if(useBonus.checked)bonus.value=String(Math.min(bonusesAvail,parseMoney(amount.value)));recalc();});
+    useBalance.addEventListener('change',()=>{balance.disabled=!useBalance.checked;if(useBalance.checked)balance.value=String(Math.min(balanceAvail,parseMoney(amount.value)));recalc();});
+    q('.lk3-pay-close').onclick=()=>wrap.remove(); q('#lk3Close').onclick=()=>wrap.remove(); wrap.addEventListener('click',e=>{if(e.target===wrap)wrap.remove();});
+    q('#lk3Submit').onclick=()=>{const rest=parseMoney(q('#lk3CalcRest').textContent);toast(rest>0?`К оплате ${money(rest)} способом “${method.value}”.`:'Документ полностью закрывается бонусами и балансом.');};
+    q('#lk3Sbp').onclick=()=>{if(method)method.value='СБП';const rest=parseMoney(q('#lk3CalcRest').textContent);toast(rest>0?`Переход к оплате по СБП на сумму ${money(rest)}.`:'Сумма полностью закрывается бонусами и балансом.');};
+    q('#lk3Invoice').onclick=()=>toast('Счёт подготовлен к скачиванию.');
     recalc();
   }
-  window.lkOpenPayModal = openPayModal;
-  document.addEventListener('click', function(e){
-    const btn = e.target.closest('button');
-    if(!btn || btn.closest('.lk-pay-modal')) return;
-    const text = (btn.textContent||'').trim();
-    if(/^Оплатить(\s|$)/.test(text)){
-      const row = btn.closest('tr');
-      const context = row || btn.closest('.rounded-xl,.bg-white,.border,.shadow-sm,li,div') || btn.parentElement;
-      const contextText = (context ? context.textContent : text).replace(/\s+/g,' ').trim();
-      const explicitAmount = text.match(/\d[\d\s]*₽/);
-      const contextAmounts = contextText.match(/\d[\d\s]*₽/g) || [];
-      const amount = explicitAmount || contextAmounts.find(v => Number(String(v).replace(/[^0-9]/g,'')) > 0) || '0 ₽';
-      let basis = contextText.match(/(Заказ\s*№\s*\d+[^/]*?Сч[её]т\s*№\s*\d+|Сч[её]т\s*№\s*\d+|№\s*\d+)/i);
-      basis = basis ? basis[0] : contextText.slice(0,120);
-      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-      openPayModal({basis, amount: Array.isArray(amount) ? amount[0] : amount});
-    }
-  }, true);
-  document.addEventListener('click', function(e){
-    const card = e.target.closest('.mobile-dashboard-metrics > *');
-    if(!card || e.target.closest('button')) return;
-    const text = (card.textContent||'').replace(/\s+/g,' ');
-    const map = [
-      [/Открытые обращения/i,'Обращения'],[/Остаток часов/i,'Договоры и SLA'],[/Неоплаченные счета/i,'Счета и оплаты'],[/Ресурсы в аренде/i,'Аренда ресурсов'],[/Активные базы|Базы 1С/i,'Базы 1С'],[/Клиентские лицензии|Лицензии/i,'Лицензии 1С'],[/Заказы товаров|Заказы/i,'Заказы и отгрузки']
-    ];
-    const found = map.find(([re])=>re.test(text));
-    if(!found) return;
-    const navLabel = found[1];
-    const buttons = Array.from(document.querySelectorAll('aside button'));
-    const navBtn = buttons.find(b => (b.textContent||'').replace(/\s+/g,' ').includes(navLabel));
-    if(navBtn){ e.preventDefault(); navBtn.click(); }
-  }, true);
+  window.lkOpenPayModal=openPaymentModal;
+  window.addEventListener('click',function(e){
+    const btn=e.target && e.target.closest && e.target.closest('button,a,[role="button"],[data-pay-action="true"]');
+    if(!btn || !isPayButton(btn)) return;
+    e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    openPaymentModal({basis:basisFromButton(btn), amount:amountFromButton(btn)});
+  },true);
+  function patchButtons(root=document){
+    root.querySelectorAll('button,a,[role="button"]').forEach(btn=>{
+      if(btn.closest('.lk3-pay-modal,.lk2-pay-modal,.lk-pay-modal')) return;
+      if(!isPayButton(btn)) return;
+      btn.dataset.payAction='true'; btn.classList.add('lk3-pay-button');
+      const text=cleanText(btn); if(!/^Оплатить\s+\d/i.test(text)) { const amount=amountFromButton(btn); if(amount) btn.textContent='Оплатить '+money(amount); }
+    });
+  }
+  let tm=0; function schedulePatch(){clearTimeout(tm);tm=setTimeout(()=>patchButtons(document),80);} 
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',schedulePatch); else schedulePatch();
+  document.addEventListener('click',schedulePatch,true); new MutationObserver(schedulePatch).observe(document.documentElement,{childList:true,subtree:true});
 })();
 
