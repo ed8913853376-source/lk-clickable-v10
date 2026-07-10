@@ -288,3 +288,10 @@
 - Added real SBP logo image to payment modal button.
 - Fixed sidebar/top-up payment action: it opens the stable payment modal with SBP.
 - Mobile billing navigation opens payment modal directly.
+
+
+## v11.5 — Final UI Polish
+- Приведен внешний вид к более качественному светлому B2B SaaS стилю.
+- Унифицированы цвета, отступы, карточки, кнопки, таблицы, формы и модальные окна.
+- Левая навигация сделана легче и аккуратнее, с зеленым индикатором активного пункта.
+- Улучшены мобильные дашборды и платежная форма.
