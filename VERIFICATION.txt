@@ -1,0 +1,7 @@
+has payment modal API: OK
+has SBP logo style: OK
+has remote real script: OK
+has v12 style: OK
+no old fake AnyDesk number: OK
+no old fake RuDesktop: OK
+no fake sample 123456789: OK
