@@ -4,10 +4,7 @@
     Нельзя подставлять демонстрационные адреса AnyDesk/RuDesktop.
     В production объект должен заполняться только реальными данными от локального агента/расширения/backend:
 
-    window.lkRemoteAccess = {
-      anydesk:   { installed: true, workstation: '123456789', launchUrl: 'anydesk:' },
-      rudesktop: { installed: true, workstation: 'RD-...',   launchUrl: 'edart-agent://launch/rudesktop' }
-    }
+    window.lkRemoteAccess заполняется только реальными данными локального агента, расширения или backend/API.
 
     Если данных нет — адрес не показывается, кнопка остается скачиванием.
   */
