@@ -1,66 +1,118 @@
 ﻿
 (function(){
-  var remoteAccess = {
-    anydesk:{ name:'AnyDesk', status:'установлен', workstation:'891 245 776', download:'https://download.anydesk.com/AnyDesk.exe' },
-    rudesktop:{ name:'RuDesktop', status:'установлен', workstation:'RD-EDART-024', download:'https://storage.rudesktop.ru/download/rudesktop-2.9.1069-x64.msi' }
-  };
-  function copyText(value){
-    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(value).catch(function(){}); }
-    window.dispatchEvent(new CustomEvent('lk:toast',{detail:{text:'Скопировано: '+value}}));
-  }
-  function remoteCard(extraClass){
-    return '<div class="remote-access-status-card '+(extraClass||'')+'" data-remote-access-card="1">'
-      + '<div class="remote-access-status-card__head"><span>Удаленный доступ</span><span class="remote-access-status-card__hint">Номера рабочих мест подтянуты из профиля клиента</span></div>'
-      + remoteRow(remoteAccess.anydesk,'anydesk')
-      + remoteRow(remoteAccess.rudesktop,'rudesktop')
-      + '</div>';
-  }
-  function remoteRow(item,key){
-    var btnClass = key==='anydesk' ? 'remote-access-status-card__btn--green' : 'remote-access-status-card__btn--blue';
-    return '<div class="remote-access-status-card__row">'
-      + '<div><div class="remote-access-status-card__title"><span>'+item.name+'</span><span class="remote-access-status-card__status">'+item.status+'</span></div>'
-      + '<div class="remote-access-status-card__id">Рабочее место: '+item.workstation+'</div></div>'
-      + '<div class="remote-access-status-card__actions">'
-      + '<button type="button" class="remote-access-status-card__btn" data-copy-remote="'+key+'">📋 Номер</button>'
-      + '<a class="remote-access-status-card__btn '+btnClass+'" target="_blank" rel="noopener" href="'+item.download+'">Скачать</a>'
-      + '</div></div>';
-  }
-  function findQuickActionsCard(){
-    var headers = Array.prototype.slice.call(document.querySelectorAll('h2'));
-    var h = headers.find(function(x){ return (x.textContent||'').trim()==='Быстрые действия'; });
-    if(!h) return null;
-    var node = h;
-    for(var i=0;i<6 && node;i++,node=node.parentElement){
-      if((node.className||'').toString().indexOf('rounded-xl')>=0) return node;
+  /*
+    Нельзя подставлять демонстрационные адреса AnyDesk/RuDesktop.
+    В production объект должен заполняться только реальными данными от локального агента/расширения/backend:
+
+    window.lkRemoteAccess = {
+      anydesk:   { installed: true, workstation: '123456789', launchUrl: 'anydesk:' },
+      rudesktop: { installed: true, workstation: 'RD-...',   launchUrl: 'edart-agent://launch/rudesktop' }
     }
-    return h.parentElement;
+
+    Если данных нет — адрес не показывается, кнопка остается скачиванием.
+  */
+  var configured = window.lkRemoteAccess || {};
+  var remoteAccess = {
+    anydesk:{
+      key:'anydesk',
+      name:'AnyDesk',
+      installed: !!(configured.anydesk && configured.anydesk.installed),
+      workstation: configured.anydesk && configured.anydesk.workstation ? String(configured.anydesk.workstation).trim() : '',
+      launchUrl: configured.anydesk && configured.anydesk.launchUrl ? String(configured.anydesk.launchUrl) : 'anydesk:',
+      download:'https://download.anydesk.com/AnyDesk.exe'
+    },
+    rudesktop:{
+      key:'rudesktop',
+      name:'RuDesktop',
+      installed: !!(configured.rudesktop && configured.rudesktop.installed),
+      workstation: configured.rudesktop && configured.rudesktop.workstation ? String(configured.rudesktop.workstation).trim() : '',
+      launchUrl: configured.rudesktop && configured.rudesktop.launchUrl ? String(configured.rudesktop.launchUrl) : '',
+      download:'https://storage.rudesktop.ru/download/rudesktop-2.9.1069-x64.msi'
+    }
+  };
+  function toast(text){ window.dispatchEvent(new CustomEvent('lk:toast',{detail:{text:text}})); }
+  function textOf(el){return (el&&el.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();}
+  function keyForButton(el){
+    var t=textOf(el);
+    if(t.indexOf('anydesk')>=0) return 'anydesk';
+    if(t.indexOf('rudesktop')>=0 || t.indexOf('рудесктоп')>=0) return 'rudesktop';
+    return null;
   }
-  function enhanceQuickActions(){
-    var card = findQuickActionsCard();
-    if(!card || card.querySelector('[data-remote-access-card]')) return;
-    card.insertAdjacentHTML('beforeend', remoteCard(''));
+  function isRemoteButton(el){
+    if(!el || !(el.matches('button,a'))) return false;
+    var t=textOf(el);
+    return t.indexOf('anydesk')>=0 || t.indexOf('rudesktop')>=0 || t.indexOf('рудесктоп')>=0;
   }
-  function enhanceRemoteModal(){
-    var headers = Array.prototype.slice.call(document.querySelectorAll('h2'));
-    var h = headers.find(function(x){ return (x.textContent||'').trim()==='Удаленный доступ'; });
-    if(!h) return;
-    var modal = h.closest('.lk-modal-shell') || h.closest('.bg-white') || h.parentElement;
-    if(!modal || modal.querySelector('[data-remote-access-card]')) return;
-    var body = modal.querySelector('.lk-modal-scroll') || modal.querySelector('[class*="overflow-y-auto"]');
-    if(body) body.insertAdjacentHTML('afterbegin', remoteCard('remote-modal-status-card'));
+  function copyText(value){
+    if(!value) return;
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).catch(function(){});}
+    toast('Скопировано: '+value);
   }
-  function enhance(){ enhanceQuickActions(); enhanceRemoteModal(); }
+  function setButtonLabel(btn,item){
+    var label = item.installed ? ('Запустить '+item.name) : ('Скачать '+item.name);
+    if(btn.tagName.toLowerCase()==='a'){
+      btn.removeAttribute('href');
+      btn.setAttribute('role','button');
+    }
+    if(btn.textContent.indexOf(item.name) >= 0 || textOf(btn).indexOf('рудесктоп') >= 0){
+      btn.textContent = label;
+    }
+    btn.setAttribute('data-remote-action', item.installed ? 'launch' : 'download');
+  }
+  function enhanceButton(btn){
+    if(btn.closest('[data-remote-inline-wrap]')) return;
+    var key=keyForButton(btn);
+    if(!key) return;
+    var item=remoteAccess[key];
+    setButtonLabel(btn,item);
+    var wrap=document.createElement('div');
+    wrap.className='remote-access-inline-wrap';
+    wrap.setAttribute('data-remote-inline-wrap',key);
+    btn.parentNode.insertBefore(wrap,btn);
+    wrap.appendChild(btn);
+    if(item.workstation){
+      var note=document.createElement('div');
+      note.className='remote-access-inline-note';
+      note.innerHTML='<span class="remote-access-inline-label">Адрес этого ПК</span><button type="button" class="remote-access-inline-id" data-copy-remote-inline="'+key+'" title="Скопировать адрес рабочего места">'+item.workstation+'</button>';
+      wrap.appendChild(note);
+      var source=document.createElement('div');
+      source.className='remote-access-inline-source';
+      source.textContent='Адрес получен с устройства пользователя';
+      wrap.appendChild(source);
+    }
+  }
+  function enhance(){
+    Array.prototype.slice.call(document.querySelectorAll('button,a')).filter(isRemoteButton).forEach(enhanceButton);
+  }
+  function launchOrDownload(item){
+    if(item.installed){
+      if(item.launchUrl){
+        window.location.href = item.launchUrl;
+        toast('Пробуем запустить '+item.name);
+      }else{
+        toast('Для запуска '+item.name+' нужен локальный агент или зарегистрированный protocol handler');
+      }
+      return;
+    }
+    window.open(item.download,'_blank','noopener');
+  }
   document.addEventListener('click',function(e){
-    var copy = e.target.closest('[data-copy-remote]');
-    if(copy){ e.preventDefault(); e.stopPropagation(); copyText(remoteAccess[copy.getAttribute('data-copy-remote')].workstation); return; }
-    var btn = e.target.closest('button,a');
-    if(!btn) return;
-    var t = (btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
-    if(t.indexOf('скачать anydesk')>=0){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); window.open(remoteAccess.anydesk.download,'_blank','noopener'); }
-    if(t.indexOf('скачать rudesktop')>=0 || t.indexOf('скачать рудесктоп')>=0){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); window.open(remoteAccess.rudesktop.download,'_blank','noopener'); }
+    var copy=e.target.closest('[data-copy-remote-inline]');
+    if(copy){
+      e.preventDefault();e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      copyText(remoteAccess[copy.getAttribute('data-copy-remote-inline')].workstation); return;
+    }
+    var btn=e.target.closest('button,a');
+    if(isRemoteButton(btn)){
+      var key=keyForButton(btn);
+      if(key){
+        e.preventDefault();e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+        launchOrDownload(remoteAccess[key]);
+      }
+    }
   },true);
-  var observer = new MutationObserver(function(){ enhance(); });
-  observer.observe(document.documentElement,{childList:true,subtree:true});
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',enhance);}else{enhance();}
+  var mo=new MutationObserver(function(){enhance();});
+  mo.observe(document.documentElement,{childList:true,subtree:true});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',enhance); else enhance();
 })();
 

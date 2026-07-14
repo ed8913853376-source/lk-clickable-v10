@@ -640,26 +640,7 @@ button.lk3-pay-button:hover,
   .lk3-sbp-logo{width:64px!important;min-width:64px!important;height:25px!important;}
 }
 
-.remote-access-status-card{margin-top:14px;border:1px solid rgba(148,163,184,.35);background:rgba(255,255,255,.92);border-radius:14px;padding:12px;color:#0f172a;box-shadow:0 10px 24px rgba(15,23,42,.08)}
-  .remote-access-status-card__head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-weight:800;font-size:13px;color:#0f172a}
-  .remote-access-status-card__hint{font-size:11px;color:#64748b;font-weight:600}
-  .remote-access-status-card__row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;margin-top:8px}
-  .remote-access-status-card__title{font-size:13px;font-weight:800;color:#111827;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
-  .remote-access-status-card__status{font-size:10px;font-weight:800;color:#047857;background:#d1fae5;border:1px solid #a7f3d0;border-radius:999px;padding:2px 7px;white-space:nowrap}
-  .remote-access-status-card__id{font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:#334155;margin-top:4px;word-break:break-all}
-  .remote-access-status-card__actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-  .remote-access-status-card__btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer;transition:.15s ease;white-space:nowrap}
-  .remote-access-status-card__btn:hover{background:#f1f5f9;border-color:#94a3b8;color:#0f172a}
-  .remote-access-status-card__btn--green{background:#10b981;border-color:#10b981;color:#fff}
-  .remote-access-status-card__btn--green:hover{background:#059669;border-color:#059669;color:#fff}
-  .remote-access-status-card__btn--blue{background:#2563eb;border-color:#2563eb;color:#fff}
-  .remote-access-status-card__btn--blue:hover{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
-  .remote-modal-status-card{margin:0 0 16px 0}
-  @media (max-width:640px){.remote-access-status-card__row{grid-template-columns:1fr}.remote-access-status-card__actions{justify-content:stretch}.remote-access-status-card__btn{flex:1}.remote-access-status-card{padding:10px}}
-
-/* Убираем новый отдельный блок v11.6, оставляем старый блок быстрых действий */
-  .remote-access-status-card{display:none!important;}
-  .remote-access-inline-wrap{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;min-width:0!important;}
+.remote-access-inline-wrap{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;min-width:0!important;}
   .remote-access-inline-wrap > button,
   .remote-access-inline-wrap > a{width:100%!important;}
   .remote-access-inline-note{
@@ -671,13 +652,12 @@ button.lk3-pay-button:hover,
   .remote-access-inline-id{
     appearance:none;border:0;background:transparent;padding:0;margin:0;cursor:pointer;
     font:800 12px/1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:#0f172a;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;text-align:right;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;text-align:right;
   }
   .remote-access-inline-id:hover{color:#059669;text-decoration:underline;}
-  .remote-access-inline-id.is-pending{font-family:inherit;font-weight:700;font-size:11px;color:#94a3b8;text-decoration:none;cursor:default;}
-  .remote-access-inline-helper{font-size:10px;color:#94a3b8;margin-top:-2px;padding:0 2px;}
+  .remote-access-inline-source{font-size:10px;color:#94a3b8;margin-top:-2px;padding:0 2px;}
   @media (max-width:640px){
     .remote-access-inline-note{padding:6px 7px;gap:6px;}
-    .remote-access-inline-id{max-width:120px;font-size:11px;}
-    .remote-access-inline-helper{font-size:9.5px;}
+    .remote-access-inline-id{max-width:125px;font-size:11px;}
+    .remote-access-inline-source{font-size:9.5px;}
   }
