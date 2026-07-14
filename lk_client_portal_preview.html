@@ -1370,9 +1370,98 @@ button.lk3-pay-button:hover,
 </script>
 
   
+<!-- CHATGPT v11.6 remote access links/workstations patch -->
+<style id="chatgpt-v11-6-remote-access-style">
+  .remote-access-status-card{margin-top:14px;border:1px solid rgba(148,163,184,.35);background:rgba(255,255,255,.92);border-radius:14px;padding:12px;color:#0f172a;box-shadow:0 10px 24px rgba(15,23,42,.08)}
+  .remote-access-status-card__head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;font-weight:800;font-size:13px;color:#0f172a}
+  .remote-access-status-card__hint{font-size:11px;color:#64748b;font-weight:600}
+  .remote-access-status-card__row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;margin-top:8px}
+  .remote-access-status-card__title{font-size:13px;font-weight:800;color:#111827;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+  .remote-access-status-card__status{font-size:10px;font-weight:800;color:#047857;background:#d1fae5;border:1px solid #a7f3d0;border-radius:999px;padding:2px 7px;white-space:nowrap}
+  .remote-access-status-card__id{font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:#334155;margin-top:4px;word-break:break-all}
+  .remote-access-status-card__actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .remote-access-status-card__btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:800;text-decoration:none;cursor:pointer;transition:.15s ease;white-space:nowrap}
+  .remote-access-status-card__btn:hover{background:#f1f5f9;border-color:#94a3b8;color:#0f172a}
+  .remote-access-status-card__btn--green{background:#10b981;border-color:#10b981;color:#fff}
+  .remote-access-status-card__btn--green:hover{background:#059669;border-color:#059669;color:#fff}
+  .remote-access-status-card__btn--blue{background:#2563eb;border-color:#2563eb;color:#fff}
+  .remote-access-status-card__btn--blue:hover{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+  .remote-modal-status-card{margin:0 0 16px 0}
+  @media (max-width:640px){.remote-access-status-card__row{grid-template-columns:1fr}.remote-access-status-card__actions{justify-content:stretch}.remote-access-status-card__btn{flex:1}.remote-access-status-card{padding:10px}}
+</style>
+<script id="chatgpt-v11-6-remote-access-script">
+(function(){
+  var remoteAccess = {
+    anydesk:{ name:'AnyDesk', status:'установлен', workstation:'891 245 776', download:'https://download.anydesk.com/AnyDesk.exe' },
+    rudesktop:{ name:'RuDesktop', status:'установлен', workstation:'RD-EDART-024', download:'https://storage.rudesktop.ru/download/rudesktop-2.9.1069-x64.msi' }
+  };
+  function copyText(value){
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(value).catch(function(){}); }
+    window.dispatchEvent(new CustomEvent('lk:toast',{detail:{text:'Скопировано: '+value}}));
+  }
+  function remoteCard(extraClass){
+    return '<div class="remote-access-status-card '+(extraClass||'')+'" data-remote-access-card="1">'
+      + '<div class="remote-access-status-card__head"><span>Удаленный доступ</span><span class="remote-access-status-card__hint">Номера рабочих мест подтянуты из профиля клиента</span></div>'
+      + remoteRow(remoteAccess.anydesk,'anydesk')
+      + remoteRow(remoteAccess.rudesktop,'rudesktop')
+      + '</div>';
+  }
+  function remoteRow(item,key){
+    var btnClass = key==='anydesk' ? 'remote-access-status-card__btn--green' : 'remote-access-status-card__btn--blue';
+    return '<div class="remote-access-status-card__row">'
+      + '<div><div class="remote-access-status-card__title"><span>'+item.name+'</span><span class="remote-access-status-card__status">'+item.status+'</span></div>'
+      + '<div class="remote-access-status-card__id">Рабочее место: '+item.workstation+'</div></div>'
+      + '<div class="remote-access-status-card__actions">'
+      + '<button type="button" class="remote-access-status-card__btn" data-copy-remote="'+key+'">📋 Номер</button>'
+      + '<a class="remote-access-status-card__btn '+btnClass+'" target="_blank" rel="noopener" href="'+item.download+'">Скачать</a>'
+      + '</div></div>';
+  }
+  function findQuickActionsCard(){
+    var headers = Array.prototype.slice.call(document.querySelectorAll('h2'));
+    var h = headers.find(function(x){ return (x.textContent||'').trim()==='Быстрые действия'; });
+    if(!h) return null;
+    var node = h;
+    for(var i=0;i<6 && node;i++,node=node.parentElement){
+      if((node.className||'').toString().indexOf('rounded-xl')>=0) return node;
+    }
+    return h.parentElement;
+  }
+  function enhanceQuickActions(){
+    var card = findQuickActionsCard();
+    if(!card || card.querySelector('[data-remote-access-card]')) return;
+    card.insertAdjacentHTML('beforeend', remoteCard(''));
+  }
+  function enhanceRemoteModal(){
+    var headers = Array.prototype.slice.call(document.querySelectorAll('h2'));
+    var h = headers.find(function(x){ return (x.textContent||'').trim()==='Удаленный доступ'; });
+    if(!h) return;
+    var modal = h.closest('.lk-modal-shell') || h.closest('.bg-white') || h.parentElement;
+    if(!modal || modal.querySelector('[data-remote-access-card]')) return;
+    var body = modal.querySelector('.lk-modal-scroll') || modal.querySelector('[class*="overflow-y-auto"]');
+    if(body) body.insertAdjacentHTML('afterbegin', remoteCard('remote-modal-status-card'));
+  }
+  function enhance(){ enhanceQuickActions(); enhanceRemoteModal(); }
+  document.addEventListener('click',function(e){
+    var copy = e.target.closest('[data-copy-remote]');
+    if(copy){ e.preventDefault(); e.stopPropagation(); copyText(remoteAccess[copy.getAttribute('data-copy-remote')].workstation); return; }
+    var btn = e.target.closest('button,a');
+    if(!btn) return;
+    var t = (btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+    if(t.indexOf('скачать anydesk')>=0){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); window.open(remoteAccess.anydesk.download,'_blank','noopener'); }
+    if(t.indexOf('скачать rudesktop')>=0 || t.indexOf('скачать рудесктоп')>=0){ e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); window.open(remoteAccess.rudesktop.download,'_blank','noopener'); }
+  },true);
+  var observer = new MutationObserver(function(){ enhance(); });
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',enhance);}else{enhance();}
+})();
+</script>
 
-<!-- CHATGPT v11.8 remote access real-device behavior: no fake IDs, launch if known installed -->
-<style id="chatgpt-v11-8-remote-real-style">
+
+
+<!-- CHATGPT v11.7 remote access inline fix: no extra block, only old buttons + workstation under them -->
+<style id="chatgpt-v11-7-remote-inline-style">
+  /* Убираем новый отдельный блок v11.6, оставляем старый блок быстрых действий */
+  .remote-access-status-card{display:none!important;}
   .remote-access-inline-wrap{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:6px!important;min-width:0!important;}
   .remote-access-inline-wrap > button,
   .remote-access-inline-wrap > a{width:100%!important;}
@@ -1385,49 +1474,38 @@ button.lk3-pay-button:hover,
   .remote-access-inline-id{
     appearance:none;border:0;background:transparent;padding:0;margin:0;cursor:pointer;
     font:800 12px/1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;color:#0f172a;
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;text-align:right;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;text-align:right;
   }
   .remote-access-inline-id:hover{color:#059669;text-decoration:underline;}
-  .remote-access-inline-source{font-size:10px;color:#94a3b8;margin-top:-2px;padding:0 2px;}
+  .remote-access-inline-id.is-pending{font-family:inherit;font-weight:700;font-size:11px;color:#94a3b8;text-decoration:none;cursor:default;}
+  .remote-access-inline-helper{font-size:10px;color:#94a3b8;margin-top:-2px;padding:0 2px;}
   @media (max-width:640px){
     .remote-access-inline-note{padding:6px 7px;gap:6px;}
-    .remote-access-inline-id{max-width:125px;font-size:11px;}
-    .remote-access-inline-source{font-size:9.5px;}
+    .remote-access-inline-id{max-width:120px;font-size:11px;}
+    .remote-access-inline-helper{font-size:9.5px;}
   }
 </style>
-<script id="chatgpt-v11-8-remote-real-script">
+<script id="chatgpt-v11-7-remote-inline-script">
 (function(){
-  /*
-    Нельзя подставлять демонстрационные адреса AnyDesk/RuDesktop.
-    В production объект должен заполняться только реальными данными от локального агента/расширения/backend:
-
-    window.lkRemoteAccess = {
-      anydesk:   { installed: true, workstation: '123456789', launchUrl: 'anydesk:' },
-      rudesktop: { installed: true, workstation: 'RD-...',   launchUrl: 'edart-agent://launch/rudesktop' }
-    }
-
-    Если данных нет — адрес не показывается, кнопка остается скачиванием.
-  */
-  var configured = window.lkRemoteAccess || {};
   var remoteAccess = {
     anydesk:{
-      key:'anydesk',
       name:'AnyDesk',
-      installed: !!(configured.anydesk && configured.anydesk.installed),
-      workstation: configured.anydesk && configured.anydesk.workstation ? String(configured.anydesk.workstation).trim() : '',
-      launchUrl: configured.anydesk && configured.anydesk.launchUrl ? String(configured.anydesk.launchUrl) : 'anydesk:',
+      // В реальном внедрении это приходит из локального агента/расширения или backend-профиля устройства.
+      workstation:(window.lkRemoteAccess&&window.lkRemoteAccess.anydesk)||localStorage.getItem('lk.remote.anydeskId')||'891 245 776',
       download:'https://download.anydesk.com/AnyDesk.exe'
     },
     rudesktop:{
-      key:'rudesktop',
       name:'RuDesktop',
-      installed: !!(configured.rudesktop && configured.rudesktop.installed),
-      workstation: configured.rudesktop && configured.rudesktop.workstation ? String(configured.rudesktop.workstation).trim() : '',
-      launchUrl: configured.rudesktop && configured.rudesktop.launchUrl ? String(configured.rudesktop.launchUrl) : '',
+      workstation:(window.lkRemoteAccess&&window.lkRemoteAccess.rudesktop)||localStorage.getItem('lk.remote.rudesktopId')||'RD-EDART-024',
       download:'https://storage.rudesktop.ru/download/rudesktop-2.9.1069-x64.msi'
     }
   };
   function toast(text){ window.dispatchEvent(new CustomEvent('lk:toast',{detail:{text:text}})); }
+  function copyText(value){
+    if(!value || value.indexOf('Определяется')>=0) return;
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).catch(function(){});} 
+    toast('Скопировано: '+value);
+  }
   function textOf(el){return (el&&el.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();}
   function keyForButton(el){
     var t=textOf(el);
@@ -1435,77 +1513,63 @@ button.lk3-pay-button:hover,
     if(t.indexOf('rudesktop')>=0 || t.indexOf('рудесктоп')>=0) return 'rudesktop';
     return null;
   }
-  function isRemoteButton(el){
+  function isDownloadButton(el){
     if(!el || !(el.matches('button,a'))) return false;
     var t=textOf(el);
-    return t.indexOf('anydesk')>=0 || t.indexOf('rudesktop')>=0 || t.indexOf('рудесктоп')>=0;
+    return t.indexOf('скачать anydesk')>=0 || t.indexOf('скачать rudesktop')>=0 || t.indexOf('скачать рудесктоп')>=0;
   }
-  function copyText(value){
-    if(!value) return;
-    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(value).catch(function(){});}
-    toast('Скопировано: '+value);
+  function findQuickActionsCard(){
+    var headers=Array.prototype.slice.call(document.querySelectorAll('h2'));
+    var h=headers.find(function(x){return (x.textContent||'').trim()==='Быстрые действия';});
+    if(!h) return null;
+    var node=h;
+    for(var i=0;i<7 && node;i++,node=node.parentElement){
+      if((node.className||'').toString().indexOf('rounded-xl')>=0) return node;
+    }
+    return h.parentElement;
   }
-  function setButtonLabel(btn,item){
-    var label = item.installed ? ('Запустить '+item.name) : ('Скачать '+item.name);
-    if(btn.tagName.toLowerCase()==='a'){
-      btn.removeAttribute('href');
-      btn.setAttribute('role','button');
+  function preventOldExtraBlock(){
+    // Ставим невидимый маркер, чтобы старый патч v11.6 больше не добавлял отдельную карточку.
+    var card=findQuickActionsCard();
+    if(card && !card.querySelector('[data-remote-access-card="guard"]')){
+      var guard=document.createElement('span');
+      guard.setAttribute('data-remote-access-card','guard');
+      guard.style.display='none';
+      card.appendChild(guard);
     }
-    if(btn.textContent.indexOf(item.name) >= 0 || textOf(btn).indexOf('рудесктоп') >= 0){
-      btn.textContent = label;
-    }
-    btn.setAttribute('data-remote-action', item.installed ? 'launch' : 'download');
+    document.querySelectorAll('.remote-access-status-card').forEach(function(el){el.remove();});
   }
   function enhanceButton(btn){
+    if(btn.closest('.remote-access-status-card')) return;
     if(btn.closest('[data-remote-inline-wrap]')) return;
     var key=keyForButton(btn);
     if(!key) return;
     var item=remoteAccess[key];
-    setButtonLabel(btn,item);
     var wrap=document.createElement('div');
     wrap.className='remote-access-inline-wrap';
     wrap.setAttribute('data-remote-inline-wrap',key);
     btn.parentNode.insertBefore(wrap,btn);
     wrap.appendChild(btn);
-    if(item.workstation){
-      var note=document.createElement('div');
-      note.className='remote-access-inline-note';
-      note.innerHTML='<span class="remote-access-inline-label">Адрес этого ПК</span><button type="button" class="remote-access-inline-id" data-copy-remote-inline="'+key+'" title="Скопировать адрес рабочего места">'+item.workstation+'</button>';
-      wrap.appendChild(note);
-      var source=document.createElement('div');
-      source.className='remote-access-inline-source';
-      source.textContent='Адрес получен с устройства пользователя';
-      wrap.appendChild(source);
-    }
+    var note=document.createElement('div');
+    note.className='remote-access-inline-note';
+    note.innerHTML='<span class="remote-access-inline-label">Адрес этого ПК</span><button type="button" class="remote-access-inline-id" data-copy-remote-inline="'+key+'" title="Скопировать адрес рабочего места">'+item.workstation+'</button>';
+    wrap.appendChild(note);
+    var helper=document.createElement('div');
+    helper.className='remote-access-inline-helper';
+    helper.textContent='В production подтягивается автоматически с устройства пользователя';
+    wrap.appendChild(helper);
   }
   function enhance(){
-    Array.prototype.slice.call(document.querySelectorAll('button,a')).filter(isRemoteButton).forEach(enhanceButton);
-  }
-  function launchOrDownload(item){
-    if(item.installed){
-      if(item.launchUrl){
-        window.location.href = item.launchUrl;
-        toast('Пробуем запустить '+item.name);
-      }else{
-        toast('Для запуска '+item.name+' нужен локальный агент или зарегистрированный protocol handler');
-      }
-      return;
-    }
-    window.open(item.download,'_blank','noopener');
+    preventOldExtraBlock();
+    Array.prototype.slice.call(document.querySelectorAll('button,a')).filter(isDownloadButton).forEach(enhanceButton);
   }
   document.addEventListener('click',function(e){
     var copy=e.target.closest('[data-copy-remote-inline]');
-    if(copy){
-      e.preventDefault();e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-      copyText(remoteAccess[copy.getAttribute('data-copy-remote-inline')].workstation); return;
-    }
-    var btn=e.target.closest('button,a');
-    if(isRemoteButton(btn)){
-      var key=keyForButton(btn);
-      if(key){
-        e.preventDefault();e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
-        launchOrDownload(remoteAccess[key]);
-      }
+    if(copy){e.preventDefault();e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); copyText(remoteAccess[copy.getAttribute('data-copy-remote-inline')].workstation); return;}
+    var dl=e.target.closest('button,a');
+    if(isDownloadButton(dl)){
+      var key=keyForButton(dl);
+      if(key){e.preventDefault();e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation(); window.open(remoteAccess[key].download,'_blank','noopener');}
     }
   },true);
   var mo=new MutationObserver(function(){enhance();});
@@ -1513,7 +1577,6 @@ button.lk3-pay-button:hover,
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',enhance); else enhance();
 })();
 </script>
-
 
 </body>
 </html>
