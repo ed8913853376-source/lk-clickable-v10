@@ -316,7 +316,17 @@
 - Добавлено копирование адреса рабочего места.
 - Описано production-ограничение: браузер не может сам читать ID установленной программы без локального агента/API.
 
-## v12.1 Restore Base
-- Откат неудачного Figma UI merge.
-- Возврат к рабочей логике и визуальной базе v11.8.
-- Дальнейшие UI-улучшения делать точечно, без полной замены структуры.
+## v11.8 — Remote access real-device fix
+
+- Убраны демонстрационные номера AnyDesk/RuDesktop.
+- Адрес рабочего места больше не показывается, если он не получен реально.
+- Кнопки AnyDesk/RuDesktop теперь могут переключаться между `Скачать` и `Запустить` на основании `window.lkRemoteAccess`.
+- Добавлен production-контракт для локального агента или расширения.
+
+
+## v12.2 — Remote access no address
+
+- Removed workstation/address display under AnyDesk/RuDesktop buttons.
+- Removed fake/demo workstation IDs.
+- Removed copy workstation action.
+- Kept launch/download behavior: installed -> launch, unknown/not installed -> download.
